@@ -52,6 +52,8 @@ final class UserMeAvatarProcessorTest extends KernelTestCase
         $this->avatarUrlResolver = $this->createMock(AvatarUrlResolverInterface::class);
         $userResourcePresenter = new UserResourcePresenter($this->avatarUrlResolver);
         $this->operation = $this->createMock(Operation::class);
+        $this->operation->expects($this->never())
+            ->method('getName');
         $this->user = $this->createMock(User::class);
 
         $this->userMeAvatarProcessor = new UserMeAvatarProcessor(
@@ -100,6 +102,15 @@ final class UserMeAvatarProcessorTest extends KernelTestCase
     {
         $invalidInput = new stdClass();
 
+        $this->security->expects($this->never())
+            ->method('getUser');
+        $this->user->expects($this->never())
+            ->method('getId');
+        $this->commandBus->expects($this->never())
+            ->method('dispatch');
+        $this->avatarUrlResolver->expects($this->never())
+            ->method('resolve');
+
         $this->expectException(LogicException::class);
         $this->expectExceptionMessage(PresentationErrorCode::INVALID_INPUT->value);
 
@@ -108,6 +119,15 @@ final class UserMeAvatarProcessorTest extends KernelTestCase
 
     public function testProcessThrowsLogicExceptionForNullInput(): void
     {
+        $this->security->expects($this->never())
+            ->method('getUser');
+        $this->user->expects($this->never())
+            ->method('getId');
+        $this->commandBus->expects($this->never())
+            ->method('dispatch');
+        $this->avatarUrlResolver->expects($this->never())
+            ->method('resolve');
+
         $this->expectException(LogicException::class);
         $this->expectExceptionMessage(PresentationErrorCode::INVALID_INPUT->value);
 
@@ -116,6 +136,15 @@ final class UserMeAvatarProcessorTest extends KernelTestCase
 
     public function testProcessThrowsLogicExceptionForStringInput(): void
     {
+        $this->security->expects($this->never())
+            ->method('getUser');
+        $this->user->expects($this->never())
+            ->method('getId');
+        $this->commandBus->expects($this->never())
+            ->method('dispatch');
+        $this->avatarUrlResolver->expects($this->never())
+            ->method('resolve');
+
         $this->expectException(LogicException::class);
         $this->expectExceptionMessage(PresentationErrorCode::INVALID_INPUT->value);
 
@@ -124,6 +153,15 @@ final class UserMeAvatarProcessorTest extends KernelTestCase
 
     public function testProcessThrowsLogicExceptionForArrayInput(): void
     {
+        $this->security->expects($this->never())
+            ->method('getUser');
+        $this->user->expects($this->never())
+            ->method('getId');
+        $this->commandBus->expects($this->never())
+            ->method('dispatch');
+        $this->avatarUrlResolver->expects($this->never())
+            ->method('resolve');
+
         $this->expectException(LogicException::class);
         $this->expectExceptionMessage(PresentationErrorCode::INVALID_INPUT->value);
 
@@ -133,6 +171,15 @@ final class UserMeAvatarProcessorTest extends KernelTestCase
     public function testProcessThrowsLogicExceptionWhenAvatarFileIsMissing(): void
     {
         $input = new UserMeAvatarInput();
+
+        $this->security->expects($this->never())
+            ->method('getUser');
+        $this->user->expects($this->never())
+            ->method('getId');
+        $this->commandBus->expects($this->never())
+            ->method('dispatch');
+        $this->avatarUrlResolver->expects($this->never())
+            ->method('resolve');
 
         $this->expectException(LogicException::class);
         $this->expectExceptionMessage(PresentationErrorCode::INVALID_INPUT->value);
@@ -145,9 +192,14 @@ final class UserMeAvatarProcessorTest extends KernelTestCase
         $input = new UserMeAvatarInput();
         /** @var UploadedFile&MockObject $mockFile */
         $mockFile = $this->createMock(UploadedFile::class);
-        $mockFile->method('getClientOriginalName')->willReturn('avatar.jpg');
-        $mockFile->method('getClientOriginalExtension')->willReturn('jpg');
-        $mockFile->method('isValid')->willReturn(true);
+        $mockFile->expects($this->once())
+            ->method('getClientOriginalName')
+            ->willReturn('avatar.jpg');
+        $mockFile->expects($this->never())
+            ->method('getClientOriginalExtension');
+        $mockFile->expects($this->once())
+            ->method('isValid')
+            ->willReturn(true);
         $input->avatarFile = $mockFile;
 
         return $input;

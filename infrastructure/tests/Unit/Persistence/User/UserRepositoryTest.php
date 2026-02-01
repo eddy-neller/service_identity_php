@@ -62,7 +62,7 @@ final class UserRepositoryTest extends KernelTestCase
 
     public function testUpgradePasswordThrowsException(): void
     {
-        $mock = $this->createMock(PasswordAuthenticatedUserInterface::class);
+        $mock = $this->createStub(PasswordAuthenticatedUserInterface::class);
 
         $this->expectException(UnsupportedUserException::class);
 

@@ -26,6 +26,8 @@ final class ProductDeleteProcessorTest extends TestCase
     {
         $this->commandBus = $this->createMock(CommandBusInterface::class);
         $this->operation = $this->createMock(Operation::class);
+        $this->operation->expects($this->never())
+            ->method('getName');
         $this->processor = new ProductDeleteProcessor($this->commandBus);
     }
 
@@ -50,6 +52,9 @@ final class ProductDeleteProcessorTest extends TestCase
 
     public function testProcessThrowsLogicExceptionWhenIdIsMissing(): void
     {
+        $this->commandBus->expects($this->never())
+            ->method('dispatch');
+
         $this->expectException(LogicException::class);
         $this->expectExceptionMessage(PresentationErrorCode::INVALID_INPUT->value);
 
@@ -58,6 +63,9 @@ final class ProductDeleteProcessorTest extends TestCase
 
     public function testProcessThrowsLogicExceptionWhenIdIsNotString(): void
     {
+        $this->commandBus->expects($this->never())
+            ->method('dispatch');
+
         $this->expectException(LogicException::class);
         $this->expectExceptionMessage(PresentationErrorCode::INVALID_INPUT->value);
 

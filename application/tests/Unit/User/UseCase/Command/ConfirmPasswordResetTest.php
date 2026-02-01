@@ -104,6 +104,15 @@ final class ConfirmPasswordResetTest extends TestCase
         $newPassword = 'new-password';
         $command = new ConfirmPasswordResetCommand($token, $newPassword);
 
+        $this->passwordHasher->expects($this->never())
+            ->method('hash');
+
+        $this->clock->expects($this->never())
+            ->method('now');
+
+        $this->transactional->expects($this->never())
+            ->method('transactional');
+
         $this->tokenProvider->expects($this->once())
             ->method('split')
             ->with($token)

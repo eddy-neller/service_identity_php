@@ -50,6 +50,8 @@ final class ProductImageProcessorTest extends TestCase
         $this->commandBus = $this->createMock(CommandBusInterface::class);
         $this->productImageUrlResolver = $this->createMock(ProductImageUrlResolverInterface::class);
         $this->operation = $this->createMock(Operation::class);
+        $this->operation->expects($this->never())
+            ->method('getName');
 
         $presenter = new ProductResourcePresenter(
             $this->productImageUrlResolver,
@@ -65,7 +67,7 @@ final class ProductImageProcessorTest extends TestCase
     public function testProcessWithValidInput(): void
     {
         $input = new ProductImageInput();
-        $input->imageFile = $this->createUploadedFile();
+        $input->imageFile = $this->createUploadedFile(true);
 
         $productId = '550e8400-e29b-41d4-a716-446655440000';
         $output = new UpdateProductImageByAdminOutput($this->createProductView());
@@ -96,6 +98,11 @@ final class ProductImageProcessorTest extends TestCase
     {
         $invalidInput = new stdClass();
 
+        $this->commandBus->expects($this->never())
+            ->method('dispatch');
+        $this->productImageUrlResolver->expects($this->never())
+            ->method('resolve');
+
         $this->expectException(LogicException::class);
         $this->expectExceptionMessage(PresentationErrorCode::INVALID_INPUT->value);
 
@@ -106,6 +113,11 @@ final class ProductImageProcessorTest extends TestCase
     {
         $input = new ProductImageInput();
 
+        $this->commandBus->expects($this->never())
+            ->method('dispatch');
+        $this->productImageUrlResolver->expects($this->never())
+            ->method('resolve');
+
         $this->expectException(LogicException::class);
         $this->expectExceptionMessage(PresentationErrorCode::INVALID_INPUT->value);
 
@@ -115,7 +127,12 @@ final class ProductImageProcessorTest extends TestCase
     public function testProcessThrowsLogicExceptionWhenIdIsMissing(): void
     {
         $input = new ProductImageInput();
-        $input->imageFile = $this->createUploadedFile();
+        $input->imageFile = $this->createUploadedFile(false);
+
+        $this->commandBus->expects($this->never())
+            ->method('dispatch');
+        $this->productImageUrlResolver->expects($this->never())
+            ->method('resolve');
 
         $this->expectException(LogicException::class);
         $this->expectExceptionMessage(PresentationErrorCode::INVALID_INPUT->value);
@@ -126,7 +143,12 @@ final class ProductImageProcessorTest extends TestCase
     public function testProcessThrowsLogicExceptionWhenIdIsNotString(): void
     {
         $input = new ProductImageInput();
-        $input->imageFile = $this->createUploadedFile();
+        $input->imageFile = $this->createUploadedFile(false);
+
+        $this->commandBus->expects($this->never())
+            ->method('dispatch');
+        $this->productImageUrlResolver->expects($this->never())
+            ->method('resolve');
 
         $this->expectException(LogicException::class);
         $this->expectExceptionMessage(PresentationErrorCode::INVALID_INPUT->value);
@@ -134,13 +156,27 @@ final class ProductImageProcessorTest extends TestCase
         $this->processor->process($input, $this->operation, ['id' => 123]);
     }
 
-    private function createUploadedFile(): UploadedFile
+    private function createUploadedFile(bool $shouldBeUsed): UploadedFile
     {
         /** @var UploadedFile&MockObject $mockFile */
         $mockFile = $this->createMock(UploadedFile::class);
-        $mockFile->method('getClientOriginalName')->willReturn('product.jpg');
-        $mockFile->method('getClientOriginalExtension')->willReturn('jpg');
-        $mockFile->method('isValid')->willReturn(true);
+        if ($shouldBeUsed) {
+            $mockFile->expects($this->once())
+                ->method('getClientOriginalName')
+                ->willReturn('product.jpg');
+            $mockFile->expects($this->never())
+                ->method('getClientOriginalExtension');
+            $mockFile->expects($this->once())
+                ->method('isValid')
+                ->willReturn(true);
+        } else {
+            $mockFile->expects($this->never())
+                ->method('getClientOriginalName');
+            $mockFile->expects($this->never())
+                ->method('getClientOriginalExtension');
+            $mockFile->expects($this->never())
+                ->method('isValid');
+        }
 
         return $mockFile;
     }

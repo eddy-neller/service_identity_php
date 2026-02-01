@@ -43,6 +43,8 @@ final class UserPatchProcessorTest extends KernelTestCase
         $this->avatarUrlResolver = $this->createMock(AvatarUrlResolverInterface::class);
         $userResourcePresenter = new UserResourcePresenter($this->avatarUrlResolver);
         $this->operation = $this->createMock(Operation::class);
+        $this->operation->expects($this->never())
+            ->method('getName');
 
         $this->userPatchProcessor = new UserPatchProcessor(
             $this->commandBus,
@@ -85,6 +87,11 @@ final class UserPatchProcessorTest extends KernelTestCase
     {
         $invalidInput = new stdClass();
 
+        $this->commandBus->expects($this->never())
+            ->method('dispatch');
+        $this->avatarUrlResolver->expects($this->never())
+            ->method('resolve');
+
         $this->expectException(LogicException::class);
         $this->expectExceptionMessage(PresentationErrorCode::INVALID_INPUT->value);
 
@@ -93,6 +100,11 @@ final class UserPatchProcessorTest extends KernelTestCase
 
     public function testProcessThrowsLogicExceptionForNullInput(): void
     {
+        $this->commandBus->expects($this->never())
+            ->method('dispatch');
+        $this->avatarUrlResolver->expects($this->never())
+            ->method('resolve');
+
         $this->expectException(LogicException::class);
         $this->expectExceptionMessage(PresentationErrorCode::INVALID_INPUT->value);
 
@@ -101,6 +113,11 @@ final class UserPatchProcessorTest extends KernelTestCase
 
     public function testProcessThrowsLogicExceptionForStringInput(): void
     {
+        $this->commandBus->expects($this->never())
+            ->method('dispatch');
+        $this->avatarUrlResolver->expects($this->never())
+            ->method('resolve');
+
         $this->expectException(LogicException::class);
         $this->expectExceptionMessage(PresentationErrorCode::INVALID_INPUT->value);
 
@@ -111,6 +128,11 @@ final class UserPatchProcessorTest extends KernelTestCase
     {
         $input = $this->createValidUserPatchInput();
 
+        $this->commandBus->expects($this->never())
+            ->method('dispatch');
+        $this->avatarUrlResolver->expects($this->never())
+            ->method('resolve');
+
         $this->expectException(LogicException::class);
         $this->expectExceptionMessage(PresentationErrorCode::INVALID_INPUT->value);
 
@@ -120,6 +142,11 @@ final class UserPatchProcessorTest extends KernelTestCase
     public function testProcessThrowsLogicExceptionWhenUriVariableIsNotString(): void
     {
         $input = $this->createValidUserPatchInput();
+
+        $this->commandBus->expects($this->never())
+            ->method('dispatch');
+        $this->avatarUrlResolver->expects($this->never())
+            ->method('resolve');
 
         $this->expectException(LogicException::class);
         $this->expectExceptionMessage(PresentationErrorCode::INVALID_INPUT->value);

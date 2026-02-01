@@ -49,6 +49,8 @@ final class ProductPatchProcessorTest extends TestCase
         $this->commandBus = $this->createMock(CommandBusInterface::class);
         $this->productImageUrlResolver = $this->createMock(ProductImageUrlResolverInterface::class);
         $this->operation = $this->createMock(Operation::class);
+        $this->operation->expects($this->never())
+            ->method('getName');
 
         $presenter = new ProductResourcePresenter(
             $this->productImageUrlResolver,
@@ -102,6 +104,11 @@ final class ProductPatchProcessorTest extends TestCase
     {
         $invalidInput = new stdClass();
 
+        $this->commandBus->expects($this->never())
+            ->method('dispatch');
+        $this->productImageUrlResolver->expects($this->never())
+            ->method('resolve');
+
         $this->expectException(LogicException::class);
         $this->expectExceptionMessage(PresentationErrorCode::INVALID_INPUT->value);
 
@@ -112,6 +119,11 @@ final class ProductPatchProcessorTest extends TestCase
     {
         $input = new ProductPatchInput();
 
+        $this->commandBus->expects($this->never())
+            ->method('dispatch');
+        $this->productImageUrlResolver->expects($this->never())
+            ->method('resolve');
+
         $this->expectException(LogicException::class);
         $this->expectExceptionMessage(PresentationErrorCode::INVALID_INPUT->value);
 
@@ -121,6 +133,11 @@ final class ProductPatchProcessorTest extends TestCase
     public function testProcessThrowsLogicExceptionWhenIdIsNotString(): void
     {
         $input = new ProductPatchInput();
+
+        $this->commandBus->expects($this->never())
+            ->method('dispatch');
+        $this->productImageUrlResolver->expects($this->never())
+            ->method('resolve');
 
         $this->expectException(LogicException::class);
         $this->expectExceptionMessage(PresentationErrorCode::INVALID_INPUT->value);

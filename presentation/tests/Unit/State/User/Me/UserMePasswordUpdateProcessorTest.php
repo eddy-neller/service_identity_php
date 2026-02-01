@@ -35,6 +35,8 @@ final class UserMePasswordUpdateProcessorTest extends KernelTestCase
         $this->security = $this->createMock(Security::class);
         $this->commandBus = $this->createMock(CommandBusInterface::class);
         $this->operation = $this->createMock(Operation::class);
+        $this->operation->expects($this->never())
+            ->method('getName');
         $this->user = $this->createMock(User::class);
 
         $this->processor = new UserMePasswordUpdateProcessor(
@@ -74,6 +76,13 @@ final class UserMePasswordUpdateProcessorTest extends KernelTestCase
     {
         $invalidInput = new stdClass();
 
+        $this->security->expects($this->never())
+            ->method('getUser');
+        $this->user->expects($this->never())
+            ->method('getId');
+        $this->commandBus->expects($this->never())
+            ->method('dispatch');
+
         $this->expectException(LogicException::class);
         $this->expectExceptionMessage(PresentationErrorCode::INVALID_INPUT->value);
 
@@ -82,6 +91,13 @@ final class UserMePasswordUpdateProcessorTest extends KernelTestCase
 
     public function testProcessThrowsLogicExceptionForNullInput(): void
     {
+        $this->security->expects($this->never())
+            ->method('getUser');
+        $this->user->expects($this->never())
+            ->method('getId');
+        $this->commandBus->expects($this->never())
+            ->method('dispatch');
+
         $this->expectException(LogicException::class);
         $this->expectExceptionMessage(PresentationErrorCode::INVALID_INPUT->value);
 
@@ -90,6 +106,13 @@ final class UserMePasswordUpdateProcessorTest extends KernelTestCase
 
     public function testProcessThrowsLogicExceptionForStringInput(): void
     {
+        $this->security->expects($this->never())
+            ->method('getUser');
+        $this->user->expects($this->never())
+            ->method('getId');
+        $this->commandBus->expects($this->never())
+            ->method('dispatch');
+
         $this->expectException(LogicException::class);
         $this->expectExceptionMessage(PresentationErrorCode::INVALID_INPUT->value);
 
@@ -98,6 +121,13 @@ final class UserMePasswordUpdateProcessorTest extends KernelTestCase
 
     public function testProcessThrowsLogicExceptionForArrayInput(): void
     {
+        $this->security->expects($this->never())
+            ->method('getUser');
+        $this->user->expects($this->never())
+            ->method('getId');
+        $this->commandBus->expects($this->never())
+            ->method('dispatch');
+
         $this->expectException(LogicException::class);
         $this->expectExceptionMessage(PresentationErrorCode::INVALID_INPUT->value);
 

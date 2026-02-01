@@ -93,6 +93,12 @@ final class ValidateActivationTest extends TestCase
         $rawToken = 'raw-token';
         $command = new ValidateActivationCommand($token);
 
+        $this->clock->expects($this->never())
+            ->method('now');
+
+        $this->transactional->expects($this->never())
+            ->method('transactional');
+
         $this->tokenProvider->expects($this->once())
             ->method('split')
             ->with($token)
@@ -116,6 +122,12 @@ final class ValidateActivationTest extends TestCase
         $rawToken = 'raw-token';
         $command = new ValidateActivationCommand($token);
         $user = $this->createUserWithActivationToken('other@example.com', $rawToken, time() + 3600);
+
+        $this->clock->expects($this->never())
+            ->method('now');
+
+        $this->transactional->expects($this->never())
+            ->method('transactional');
 
         $this->tokenProvider->expects($this->once())
             ->method('split')

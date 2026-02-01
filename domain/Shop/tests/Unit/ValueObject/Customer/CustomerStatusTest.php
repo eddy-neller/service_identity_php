@@ -1,0 +1,36 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Domain\Shop\Tests\Unit\ValueObject\Customer;
+
+use App\Domain\Shop\Customer\ValueObject\CustomerStatus;
+use PHPUnit\Framework\TestCase;
+
+final class CustomerStatusTest extends TestCase
+{
+    public function testActiveStatus(): void
+    {
+        $status = CustomerStatus::active();
+
+        $this->assertTrue($status->isActive());
+        $this->assertFalse($status->isDisabled());
+        $this->assertSame(CustomerStatus::ACTIVE, $status->toInt());
+    }
+
+    public function testDisabledStatus(): void
+    {
+        $status = CustomerStatus::disabled();
+
+        $this->assertTrue($status->isDisabled());
+        $this->assertFalse($status->isActive());
+        $this->assertSame(CustomerStatus::DISABLED, $status->toInt());
+    }
+
+    public function testFromIntCreatesStatus(): void
+    {
+        $status = CustomerStatus::fromInt(CustomerStatus::DISABLED);
+
+        $this->assertTrue($status->isDisabled());
+    }
+}

@@ -70,7 +70,9 @@ final class GenerateUserImagesCommandTest extends KernelTestCase
     {
         /** @var UserRepository&MockObject $userRepo */
         $userRepo = $this->createMock(UserRepository::class);
-        $userRepo->method('findAll')->willReturn([]);
+        $userRepo->expects($this->once())
+            ->method('findAll')
+            ->willReturn([]);
 
         /** @var EntityManagerInterface&MockObject $em */
         $em = $this->createMock(EntityManagerInterface::class);
@@ -78,6 +80,8 @@ final class GenerateUserImagesCommandTest extends KernelTestCase
 
         /** @var CustomImageProvider&MockObject $customImageProvider */
         $customImageProvider = $this->createMock(CustomImageProvider::class);
+        $customImageProvider->expects($this->never())
+            ->method('customImage');
 
         $command = new GenerateUserImagesCommand($userRepo, $em, $customImageProvider);
 
@@ -105,7 +109,9 @@ final class GenerateUserImagesCommandTest extends KernelTestCase
         // Mock User Repository
         /** @var UserRepository&MockObject $userRepo */
         $userRepo = $this->createMock(UserRepository::class);
-        $userRepo->method('findAll')->willReturn([$user]);
+        $userRepo->expects($this->once())
+            ->method('findAll')
+            ->willReturn([$user]);
 
         /** @var EntityManagerInterface&MockObject $em */
         $em = $this->createMock(EntityManagerInterface::class);
@@ -121,10 +127,16 @@ final class GenerateUserImagesCommandTest extends KernelTestCase
         /** @var CustomImageProvider&MockObject $customImageProvider */
         $customImageProvider = $this->createMock(CustomImageProvider::class);
 
-        if ($imageGenerationFails) {
-            $customImageProvider->method('customImage')->willReturn(null);
+        if ($hasAvatar) {
+            $customImageProvider->expects($this->never())
+                ->method('customImage');
+        } elseif ($imageGenerationFails) {
+            $customImageProvider->expects($this->once())
+                ->method('customImage')
+                ->willReturn(null);
         } else {
-            $customImageProvider->method('customImage')
+            $customImageProvider->expects($this->once())
+                ->method('customImage')
                 ->with('public/uploads/images/user/avatar', 96, 96)
                 ->willReturn('test_avatar.jpg');
         }
@@ -155,7 +167,9 @@ final class GenerateUserImagesCommandTest extends KernelTestCase
 
         /** @var UserRepository&MockObject $userRepo */
         $userRepo = $this->createMock(UserRepository::class);
-        $userRepo->method('findAll')->willReturn([$userWithAvatar, $userWithoutAvatar]);
+        $userRepo->expects($this->once())
+            ->method('findAll')
+            ->willReturn([$userWithAvatar, $userWithoutAvatar]);
 
         /** @var EntityManagerInterface&MockObject $em */
         $em = $this->createMock(EntityManagerInterface::class);
@@ -163,7 +177,8 @@ final class GenerateUserImagesCommandTest extends KernelTestCase
 
         /** @var CustomImageProvider&MockObject $customImageProvider */
         $customImageProvider = $this->createMock(CustomImageProvider::class);
-        $customImageProvider->method('customImage')
+        $customImageProvider->expects($this->once())
+            ->method('customImage')
             ->with('public/uploads/images/user/avatar', 96, 96)
             ->willReturn('test_avatar.jpg');
 

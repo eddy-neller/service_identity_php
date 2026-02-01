@@ -39,7 +39,7 @@ final class AvatarUploaderTest extends KernelTestCase
 
         file_put_contents($tempFile, 'avatar');
 
-        $file = $this->createMock(FileInterface::class);
+        $file = $this->createStub(FileInterface::class);
         $file->method('getPathname')->willReturn($tempFile);
         $file->method('getClientOriginalName')->willReturn('avatar.jpg');
         $file->method('getMimeType')->willReturn('image/jpeg');
@@ -72,7 +72,7 @@ final class AvatarUploaderTest extends KernelTestCase
     public function testUploadThrowsWhenUserNotFound(): void
     {
         $userId = UserId::fromString('550e8400-e29b-41d4-a716-446655440001');
-        $file = $this->createMock(FileInterface::class);
+        $file = $this->createStub(FileInterface::class);
 
         $this->em->expects($this->once())
             ->method('getReference')

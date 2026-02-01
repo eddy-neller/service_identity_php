@@ -30,6 +30,9 @@ final class TokenManagerTest extends KernelTestCase
 
     public function testSplitTokenSuccess(): void
     {
+        $this->userRepository->expects($this->never())
+            ->method('findInJsonField');
+
         $token = 'sometoken';
         $email = 'test@example.com';
 
@@ -42,6 +45,9 @@ final class TokenManagerTest extends KernelTestCase
 
     public function testGenerateEmailToken(): void
     {
+        $this->userRepository->expects($this->never())
+            ->method('findInJsonField');
+
         $token = 'tok';
         $email = 'a@b.com';
 
@@ -54,8 +60,10 @@ final class TokenManagerTest extends KernelTestCase
 
     public function testRetrieveUserReturnsUser(): void
     {
-        $user = $this->createMock(User::class);
-        $this->userRepository->method('findInJsonField')->willReturn($user);
+        $user = $this->createStub(User::class);
+        $this->userRepository->expects($this->once())
+            ->method('findInJsonField')
+            ->willReturn($user);
 
         $result = $this->tokenManager->retrieveUser('activeEmail', 'token', 'abc123');
 
@@ -64,7 +72,9 @@ final class TokenManagerTest extends KernelTestCase
 
     public function testRetrieveUserReturnsNull(): void
     {
-        $this->userRepository->method('findInJsonField')->willReturn(null);
+        $this->userRepository->expects($this->once())
+            ->method('findInJsonField')
+            ->willReturn(null);
 
         $result = $this->tokenManager->retrieveUser('activeEmail', 'token', 'nonexistent');
 
@@ -73,6 +83,9 @@ final class TokenManagerTest extends KernelTestCase
 
     public function testClearJsonField(): void
     {
+        $this->userRepository->expects($this->never())
+            ->method('findInJsonField');
+
         $array = ['foo' => 'bar', 'baz' => 123];
 
         $result = $this->tokenManager->clearJsonField($array);
@@ -84,6 +97,9 @@ final class TokenManagerTest extends KernelTestCase
 
     public function testClearJsonFieldWithEmptyArray(): void
     {
+        $this->userRepository->expects($this->never())
+            ->method('findInJsonField');
+
         $array = [];
 
         $result = $this->tokenManager->clearJsonField($array);
@@ -94,6 +110,9 @@ final class TokenManagerTest extends KernelTestCase
 
     public function testSplitTokenWithSpecialCharacters(): void
     {
+        $this->userRepository->expects($this->never())
+            ->method('findInJsonField');
+
         $token = 'token-with-special-chars!@#$%';
         $email = 'user+tag@example.com';
 
@@ -106,6 +125,9 @@ final class TokenManagerTest extends KernelTestCase
 
     public function testGenerateEmailTokenFormat(): void
     {
+        $this->userRepository->expects($this->never())
+            ->method('findInJsonField');
+
         $token = 'testtoken123';
         $email = 'test@example.com';
 
@@ -120,6 +142,9 @@ final class TokenManagerTest extends KernelTestCase
 
     public function testSplitTokenWithTokenContainingSeparator(): void
     {
+        $this->userRepository->expects($this->never())
+            ->method('findInJsonField');
+
         $token = 'token&with&separators';
         $email = 'test@example.com';
 

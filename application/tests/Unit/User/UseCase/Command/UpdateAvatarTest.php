@@ -55,7 +55,7 @@ final class UpdateAvatarTest extends TestCase
         $userId = UserId::fromString('550e8400-e29b-41d4-a716-446655440000');
         $user = $this->createUser($userId);
         $avatarFileName = 'avatar.jpg';
-        $file = $this->createMock(FileInterface::class);
+        $file = $this->createStub(FileInterface::class);
         $file->method('isValid')->willReturn(true);
         $file->method('getClientOriginalName')->willReturn($avatarFileName);
 
@@ -94,7 +94,7 @@ final class UpdateAvatarTest extends TestCase
     public function testHandleThrowsExceptionWhenUserNotFound(): void
     {
         $userId = UserId::fromString('550e8400-e29b-41d4-a716-446655440001');
-        $file = $this->createMock(FileInterface::class);
+        $file = $this->createStub(FileInterface::class);
         $file->method('isValid')->willReturn(true);
         $file->method('getClientOriginalName')->willReturn('avatar.jpg');
 
@@ -104,6 +104,9 @@ final class UpdateAvatarTest extends TestCase
             ->method('findById')
             ->with($userId)
             ->willReturn(null);
+
+        $this->clock->expects($this->never())
+            ->method('now');
 
         $this->avatarUploader->expects($this->never())
             ->method('upload');
@@ -120,10 +123,22 @@ final class UpdateAvatarTest extends TestCase
     public function testHandleThrowsExceptionWhenAvatarFileIsInvalid(): void
     {
         $userId = UserId::fromString('550e8400-e29b-41d4-a716-446655440002');
-        $file = $this->createMock(FileInterface::class);
+        $file = $this->createStub(FileInterface::class);
         $file->method('isValid')->willReturn(false);
 
         $command = new UpdateAvatarCommand($userId, $file);
+
+        $this->repository->expects($this->never())
+            ->method('findById');
+
+        $this->avatarUploader->expects($this->never())
+            ->method('upload');
+
+        $this->clock->expects($this->never())
+            ->method('now');
+
+        $this->transactional->expects($this->never())
+            ->method('transactional');
 
         $this->expectException(UserDomainException::class);
         $this->expectExceptionMessage('Fichier avatar invalide.');

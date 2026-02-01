@@ -24,7 +24,6 @@ use App\Domain\Shop\Catalog\ValueObject\ProductSubtitle;
 use App\Domain\Shop\Catalog\ValueObject\ProductTitle;
 use App\Domain\Shop\Shared\ValueObject\Money;
 use DateTimeImmutable;
-use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 
 final class UpdateProductByAdminTest extends TestCase
@@ -35,15 +34,15 @@ final class UpdateProductByAdminTest extends TestCase
 
     private const string NEW_CATEGORY_ID = '550e8400-e29b-41d4-a716-446655440002';
 
-    private ProductRepositoryInterface&MockObject $productRepository;
+    private ProductRepositoryInterface $productRepository;
 
-    private CategoryRepositoryInterface&MockObject $categoryRepository;
+    private CategoryRepositoryInterface $categoryRepository;
 
-    private ClockInterface&MockObject $clock;
+    private ClockInterface $clock;
 
-    private TransactionalInterface&MockObject $transactional;
+    private TransactionalInterface $transactional;
 
-    private SlugGeneratorInterface&MockObject $slugGenerator;
+    private SlugGeneratorInterface $slugGenerator;
 
     private UpdateProductByAdminCommandHandler $handler;
 
@@ -254,6 +253,15 @@ final class UpdateProductByAdminTest extends TestCase
 
     public function testHandleThrowsWhenProductNotFound(): void
     {
+        $this->categoryRepository->expects($this->never())
+            ->method('findById');
+        $this->clock->expects($this->never())
+            ->method('now');
+        $this->transactional->expects($this->never())
+            ->method('transactional');
+        $this->slugGenerator->expects($this->never())
+            ->method('generate');
+
         $productId = ProductId::fromString(self::PRODUCT_ID);
         $command = new UpdateProductByAdminCommand(
             productId: $productId,
@@ -277,6 +285,9 @@ final class UpdateProductByAdminTest extends TestCase
 
     public function testHandleThrowsWhenNewCategoryNotFound(): void
     {
+        $this->slugGenerator->expects($this->never())
+            ->method('generate');
+
         $now = new DateTimeImmutable('2024-02-01 12:00:00');
         $productId = ProductId::fromString(self::PRODUCT_ID);
         $oldCategoryId = CategoryId::fromString(self::CATEGORY_ID);

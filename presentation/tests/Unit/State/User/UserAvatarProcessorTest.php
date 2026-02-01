@@ -45,6 +45,8 @@ final class UserAvatarProcessorTest extends KernelTestCase
         $this->avatarUrlResolver = $this->createMock(AvatarUrlResolverInterface::class);
         $userResourcePresenter = new UserResourcePresenter($this->avatarUrlResolver);
         $this->operation = $this->createMock(Operation::class);
+        $this->operation->expects($this->never())
+            ->method('getName');
 
         $this->userAvatarProcessor = new UserAvatarProcessor(
             $this->commandBus,
@@ -54,7 +56,7 @@ final class UserAvatarProcessorTest extends KernelTestCase
 
     public function testProcessWithValidInput(): void
     {
-        $input = $this->createValidUserAvatarInput();
+        $input = $this->createValidUserAvatarInput(true);
         $userId = Uuid::uuid4()->toString();
         $userIdVO = UserId::fromString($userId);
         $uriVariables = ['id' => $userId];
@@ -87,6 +89,11 @@ final class UserAvatarProcessorTest extends KernelTestCase
         $invalidInput = new stdClass();
         $uriVariables = ['id' => 'test-id'];
 
+        $this->commandBus->expects($this->never())
+            ->method('dispatch');
+        $this->avatarUrlResolver->expects($this->never())
+            ->method('resolve');
+
         $this->expectException(LogicException::class);
         $this->expectExceptionMessage(PresentationErrorCode::INVALID_INPUT->value);
 
@@ -97,6 +104,11 @@ final class UserAvatarProcessorTest extends KernelTestCase
     {
         $uriVariables = ['id' => 'test-id'];
 
+        $this->commandBus->expects($this->never())
+            ->method('dispatch');
+        $this->avatarUrlResolver->expects($this->never())
+            ->method('resolve');
+
         $this->expectException(LogicException::class);
         $this->expectExceptionMessage(PresentationErrorCode::INVALID_INPUT->value);
 
@@ -106,6 +118,11 @@ final class UserAvatarProcessorTest extends KernelTestCase
     public function testProcessThrowsLogicExceptionForStringInput(): void
     {
         $uriVariables = ['id' => 'test-id'];
+
+        $this->commandBus->expects($this->never())
+            ->method('dispatch');
+        $this->avatarUrlResolver->expects($this->never())
+            ->method('resolve');
 
         $this->expectException(LogicException::class);
         $this->expectExceptionMessage(PresentationErrorCode::INVALID_INPUT->value);
@@ -118,6 +135,11 @@ final class UserAvatarProcessorTest extends KernelTestCase
         $input = new UserAvatarInput();
         $uriVariables = ['id' => Uuid::uuid4()->toString()];
 
+        $this->commandBus->expects($this->never())
+            ->method('dispatch');
+        $this->avatarUrlResolver->expects($this->never())
+            ->method('resolve');
+
         $this->expectException(LogicException::class);
         $this->expectExceptionMessage(PresentationErrorCode::INVALID_INPUT->value);
 
@@ -126,7 +148,12 @@ final class UserAvatarProcessorTest extends KernelTestCase
 
     public function testProcessThrowsLogicExceptionWhenUriVariableMissing(): void
     {
-        $input = $this->createValidUserAvatarInput();
+        $input = $this->createValidUserAvatarInput(false);
+
+        $this->commandBus->expects($this->never())
+            ->method('dispatch');
+        $this->avatarUrlResolver->expects($this->never())
+            ->method('resolve');
 
         $this->expectException(LogicException::class);
         $this->expectExceptionMessage(PresentationErrorCode::INVALID_INPUT->value);
@@ -136,7 +163,12 @@ final class UserAvatarProcessorTest extends KernelTestCase
 
     public function testProcessThrowsLogicExceptionWhenUriVariableIsNotString(): void
     {
-        $input = $this->createValidUserAvatarInput();
+        $input = $this->createValidUserAvatarInput(false);
+
+        $this->commandBus->expects($this->never())
+            ->method('dispatch');
+        $this->avatarUrlResolver->expects($this->never())
+            ->method('resolve');
 
         $this->expectException(LogicException::class);
         $this->expectExceptionMessage(PresentationErrorCode::INVALID_INPUT->value);
@@ -144,14 +176,28 @@ final class UserAvatarProcessorTest extends KernelTestCase
         $this->userAvatarProcessor->process($input, $this->operation, ['id' => 123]);
     }
 
-    private function createValidUserAvatarInput(): UserAvatarInput
+    private function createValidUserAvatarInput(bool $shouldBeUsed): UserAvatarInput
     {
         $input = new UserAvatarInput();
         /** @var UploadedFile&MockObject $mockFile */
         $mockFile = $this->createMock(UploadedFile::class);
-        $mockFile->method('getClientOriginalName')->willReturn('avatar.jpg');
-        $mockFile->method('getClientOriginalExtension')->willReturn('jpg');
-        $mockFile->method('isValid')->willReturn(true);
+        if ($shouldBeUsed) {
+            $mockFile->expects($this->once())
+                ->method('getClientOriginalName')
+                ->willReturn('avatar.jpg');
+            $mockFile->expects($this->never())
+                ->method('getClientOriginalExtension');
+            $mockFile->expects($this->once())
+                ->method('isValid')
+                ->willReturn(true);
+        } else {
+            $mockFile->expects($this->never())
+                ->method('getClientOriginalName');
+            $mockFile->expects($this->never())
+                ->method('getClientOriginalExtension');
+            $mockFile->expects($this->never())
+                ->method('isValid');
+        }
         $input->avatarFile = $mockFile;
 
         return $input;

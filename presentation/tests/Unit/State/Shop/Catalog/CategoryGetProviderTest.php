@@ -34,6 +34,8 @@ final class CategoryGetProviderTest extends TestCase
     {
         $this->queryBus = $this->createMock(QueryBusInterface::class);
         $this->operation = $this->createMock(Operation::class);
+        $this->operation->expects($this->never())
+            ->method('getName');
         $presenter = new CategoryResourcePresenter();
 
         $this->provider = new CategoryGetProvider($this->queryBus, $presenter);
@@ -61,6 +63,9 @@ final class CategoryGetProviderTest extends TestCase
 
     public function testProvideThrowsLogicExceptionWhenIdIsMissing(): void
     {
+        $this->queryBus->expects($this->never())
+            ->method('dispatch');
+
         $this->expectException(LogicException::class);
         $this->expectExceptionMessage(PresentationErrorCode::INVALID_INPUT->value);
 
@@ -69,6 +74,9 @@ final class CategoryGetProviderTest extends TestCase
 
     public function testProvideThrowsLogicExceptionWhenIdIsNotString(): void
     {
+        $this->queryBus->expects($this->never())
+            ->method('dispatch');
+
         $this->expectException(LogicException::class);
         $this->expectExceptionMessage(PresentationErrorCode::INVALID_INPUT->value);
 

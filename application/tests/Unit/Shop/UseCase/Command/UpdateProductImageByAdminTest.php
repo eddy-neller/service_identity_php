@@ -24,7 +24,6 @@ use App\Domain\Shop\Catalog\ValueObject\ProductSubtitle;
 use App\Domain\Shop\Catalog\ValueObject\ProductTitle;
 use App\Domain\Shop\Shared\ValueObject\Money;
 use DateTimeImmutable;
-use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 
 final class UpdateProductImageByAdminTest extends TestCase
@@ -33,11 +32,11 @@ final class UpdateProductImageByAdminTest extends TestCase
 
     private const string CATEGORY_ID = '550e8400-e29b-41d4-a716-446655440001';
 
-    private ProductRepositoryInterface&MockObject $productRepository;
+    private ProductRepositoryInterface $productRepository;
 
-    private CategoryRepositoryInterface&MockObject $categoryRepository;
+    private CategoryRepositoryInterface $categoryRepository;
 
-    private TransactionalInterface&MockObject $transactional;
+    private TransactionalInterface $transactional;
 
     private UpdateProductImageByAdminCommandHandler $handler;
 
@@ -58,7 +57,7 @@ final class UpdateProductImageByAdminTest extends TestCase
         $productId = ProductId::fromString(self::PRODUCT_ID);
         $product = $this->createProduct($productId);
         $category = $this->createCategory($product->getCategoryId());
-        $file = $this->createMock(FileInterface::class);
+        $file = $this->createStub(FileInterface::class);
         $file->method('isValid')->willReturn(true);
 
         $command = new UpdateProductImageByAdminCommand(
@@ -90,8 +89,11 @@ final class UpdateProductImageByAdminTest extends TestCase
 
     public function testHandleThrowsExceptionWhenProductNotFound(): void
     {
+        $this->categoryRepository->expects($this->never())
+            ->method('findById');
+
         $productId = ProductId::fromString(self::PRODUCT_ID);
-        $file = $this->createMock(FileInterface::class);
+        $file = $this->createStub(FileInterface::class);
         $file->method('isValid')->willReturn(true);
 
         $command = new UpdateProductImageByAdminCommand(
@@ -120,7 +122,7 @@ final class UpdateProductImageByAdminTest extends TestCase
     {
         $productId = ProductId::fromString(self::PRODUCT_ID);
         $product = $this->createProduct($productId);
-        $file = $this->createMock(FileInterface::class);
+        $file = $this->createStub(FileInterface::class);
         $file->method('isValid')->willReturn(true);
 
         $command = new UpdateProductImageByAdminCommand(
@@ -152,8 +154,15 @@ final class UpdateProductImageByAdminTest extends TestCase
 
     public function testHandleThrowsExceptionWhenImageFileIsInvalid(): void
     {
+        $this->productRepository->expects($this->never())
+            ->method('updateImage');
+        $this->categoryRepository->expects($this->never())
+            ->method('findById');
+        $this->transactional->expects($this->never())
+            ->method('transactional');
+
         $productId = ProductId::fromString(self::PRODUCT_ID);
-        $file = $this->createMock(FileInterface::class);
+        $file = $this->createStub(FileInterface::class);
         $file->method('isValid')->willReturn(false);
 
         $command = new UpdateProductImageByAdminCommand(

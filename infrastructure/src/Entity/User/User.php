@@ -7,7 +7,6 @@ use App\Domain\User\Security\ValueObject\ResetPassword;
 use App\Domain\User\Security\ValueObject\RoleSet;
 use App\Domain\User\Security\ValueObject\Security;
 use App\Domain\User\Security\ValueObject\UserStatus;
-use App\Entity\Shop\Address;
 use App\Entity\Shop\Order;
 use App\Infrastructure\Persistence\Doctrine\User\UserRepository;
 use DateTimeImmutable;
@@ -82,9 +81,6 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column(type: Types::INTEGER)]
     private int $nbLogin = 0;
 
-    #[ORM\OneToMany(targetEntity: Address::class, mappedBy: 'user')]
-    private Collection $addresses;
-
     #[ORM\OneToMany(targetEntity: Order::class, mappedBy: 'user')]
     private Collection $orders;
 
@@ -101,7 +97,6 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         $this->security = new Security()->toArray();
         $this->activeEmail = new ActiveEmail()->toArray();
         $this->resetPassword = new ResetPassword()->toArray();
-        $this->addresses = new ArrayCollection();
         $this->orders = new ArrayCollection();
         $this->lastVisit = new DateTimeImmutable();
     }
@@ -338,34 +333,6 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function setNbLogin(mixed $nbLogin): self
     {
         $this->nbLogin = $nbLogin;
-
-        return $this;
-    }
-
-    /**
-     * @return Address[]
-     */
-    public function getAddresses(): array
-    {
-        return $this->addresses->getValues();
-    }
-
-    public function addAddress(Address $address): self
-    {
-        if (!$this->addresses->contains($address)) {
-            $this->addresses[] = $address;
-            $address->setUser($this);
-        }
-
-        return $this;
-    }
-
-    public function removeAddress(Address $address): self
-    {
-        // set the owning side to null (unless already changed)
-        if ($this->addresses->removeElement($address) && $address->getUser() === $this) {
-            $address->setUser(null);
-        }
 
         return $this;
     }

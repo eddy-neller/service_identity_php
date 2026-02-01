@@ -21,7 +21,6 @@ use App\Domain\Shop\Catalog\ValueObject\ProductSubtitle;
 use App\Domain\Shop\Catalog\ValueObject\ProductTitle;
 use App\Domain\Shop\Shared\ValueObject\Money;
 use DateTimeImmutable;
-use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 
 final class DisplayProductTest extends TestCase
@@ -30,9 +29,9 @@ final class DisplayProductTest extends TestCase
 
     private const string CATEGORY_ID = '550e8400-e29b-41d4-a716-446655440001';
 
-    private ProductRepositoryInterface&MockObject $productRepository;
+    private ProductRepositoryInterface $productRepository;
 
-    private CategoryRepositoryInterface&MockObject $categoryRepository;
+    private CategoryRepositoryInterface $categoryRepository;
 
     private DisplayProductQueryHandler $handler;
 
@@ -72,6 +71,9 @@ final class DisplayProductTest extends TestCase
 
     public function testHandleThrowsWhenProductNotFound(): void
     {
+        $this->categoryRepository->expects($this->never())
+            ->method('findById');
+
         $productId = ProductId::fromString(self::PRODUCT_ID);
         $query = new DisplayProductQuery($productId);
 

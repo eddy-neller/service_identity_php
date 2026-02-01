@@ -25,6 +25,8 @@ final class PaginatedCollectionProviderTest extends KernelTestCase
     {
         $this->provider = $this->createMock(ProviderInterface::class);
         $this->operation = $this->createMock(Operation::class);
+        $this->operation->expects($this->never())
+            ->method('getName');
 
         $this->paginColProvider = new PaginatedCollectionProvider($this->provider);
     }

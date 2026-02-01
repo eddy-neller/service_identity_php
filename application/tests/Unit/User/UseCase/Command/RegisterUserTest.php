@@ -142,14 +142,28 @@ final class RegisterUserTest extends TestCase
             ->method('nextIdentity')
             ->willReturn($userId);
 
+        $this->clock->expects($this->once())
+            ->method('now')
+            ->willReturn(new DateTimeImmutable());
+
         $this->uniquenessChecker->expects($this->once())
             ->method('ensureEmailAndUsernameAvailable')
             ->with(new EmailAddress($email), new Username($username))
             ->willThrowException(new EmailAlreadyUsedException());
 
+        $this->passwordHasher->expects($this->never())
+            ->method('hash');
+
+        $this->tokenProvider->expects($this->never())
+            ->method('generateRandomToken');
+
+        $this->config->expects($this->never())
+            ->method('getString');
+
         $this->expectException(EmailAlreadyUsedException::class);
 
-        $this->transactional->method('transactional')
+        $this->transactional->expects($this->once())
+            ->method('transactional')
             ->willReturnCallback(function (callable $callback) {
                 return $callback();
             });
@@ -173,14 +187,28 @@ final class RegisterUserTest extends TestCase
             ->method('nextIdentity')
             ->willReturn($userId);
 
+        $this->clock->expects($this->once())
+            ->method('now')
+            ->willReturn(new DateTimeImmutable());
+
         $this->uniquenessChecker->expects($this->once())
             ->method('ensureEmailAndUsernameAvailable')
             ->with(new EmailAddress($email), new Username($username))
             ->willThrowException(new UsernameAlreadyUsedException());
 
+        $this->passwordHasher->expects($this->never())
+            ->method('hash');
+
+        $this->tokenProvider->expects($this->never())
+            ->method('generateRandomToken');
+
+        $this->config->expects($this->never())
+            ->method('getString');
+
         $this->expectException(UsernameAlreadyUsedException::class);
 
-        $this->transactional->method('transactional')
+        $this->transactional->expects($this->once())
+            ->method('transactional')
             ->willReturnCallback(function (callable $callback) {
                 return $callback();
             });

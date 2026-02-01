@@ -28,8 +28,7 @@ final class SendMailProcessorTest extends KernelTestCase
     /** @var ParameterBagInterface&MockObject */
     private MockObject $parameterBag;
 
-    /** @var SendMailInput&MockObject */
-    private MockObject $data;
+    private SendMailInput $data;
 
     /** @var Request&MockObject */
     private MockObject $request;
@@ -38,7 +37,7 @@ final class SendMailProcessorTest extends KernelTestCase
     {
         $this->bus = $this->createMock(MessageBusInterface::class);
         $this->parameterBag = $this->createMock(ParameterBagInterface::class);
-        $this->data = $this->createMock(SendMailInput::class);
+        $this->data = new SendMailInput();
         $this->request = $this->createMock(Request::class);
 
         $this->sendMailProcessor = new SendMailProcessor(
@@ -51,18 +50,23 @@ final class SendMailProcessorTest extends KernelTestCase
     {
         $invalidData = new stdClass();
 
+        $this->bus->expects($this->never())
+            ->method('dispatch');
+        $this->parameterBag->expects($this->never())
+            ->method('get');
+        $this->request->expects($this->never())
+            ->method('getPreferredLanguage');
+
         $this->expectException(LogicException::class);
         $this->expectExceptionMessage(PresentationErrorCode::INVALID_INPUT->value);
 
-        /** @var Operation&MockObject $operation */
-        $operation = $this->createMock(Operation::class);
+        $operation = $this->createStub(Operation::class);
         $this->sendMailProcessor->process($invalidData, $operation);
     }
 
     public function testProcessSendsEmailSuccessfully(): void
     {
-        /** @var Operation&MockObject $operation */
-        $operation = $this->createMock(Operation::class);
+        $operation = $this->createStub(Operation::class);
         $context = ['request' => $this->request];
 
         $this->data->name = 'John Doe';
@@ -77,6 +81,7 @@ final class SendMailProcessorTest extends KernelTestCase
             ->willReturn('en');
 
         $this->parameterBag
+            ->expects($this->exactly(2))
             ->method('get')
             ->willReturnMap([
                 ['app.enabled_locales', ['en', 'fr']],
@@ -106,8 +111,7 @@ final class SendMailProcessorTest extends KernelTestCase
 
     public function testProcessWithFrenchLanguage(): void
     {
-        /** @var Operation&MockObject $operation */
-        $operation = $this->createMock(Operation::class);
+        $operation = $this->createStub(Operation::class);
         $context = ['request' => $this->request];
 
         $this->data->name = 'Jean Dupont';
@@ -122,6 +126,7 @@ final class SendMailProcessorTest extends KernelTestCase
             ->willReturn('fr');
 
         $this->parameterBag
+            ->expects($this->exactly(2))
             ->method('get')
             ->willReturnMap([
                 ['app.enabled_locales', ['en', 'fr']],
@@ -143,9 +148,11 @@ final class SendMailProcessorTest extends KernelTestCase
 
     public function testProcessWithNoRequestContextUsesDefaultLanguage(): void
     {
-        /** @var Operation&MockObject $operation */
-        $operation = $this->createMock(Operation::class);
+        $operation = $this->createStub(Operation::class);
         $context = [];
+
+        $this->request->expects($this->never())
+            ->method('getPreferredLanguage');
 
         $this->data->name = 'Jane Doe';
         $this->data->email = 'jane@example.com';
@@ -153,6 +160,7 @@ final class SendMailProcessorTest extends KernelTestCase
         $this->data->message = 'Test Message';
 
         $this->parameterBag
+            ->expects($this->once())
             ->method('get')
             ->with('mailer_to')
             ->willReturn('admin@example.com');
@@ -172,8 +180,10 @@ final class SendMailProcessorTest extends KernelTestCase
 
     public function testProcessWithRealRequestUsesPreferredLanguage(): void
     {
-        /** @var Operation&MockObject $operation */
-        $operation = $this->createMock(Operation::class);
+        $operation = $this->createStub(Operation::class);
+
+        $this->request->expects($this->never())
+            ->method('getPreferredLanguage');
 
         $realRequest = new Request();
         $realRequest->headers->set('Accept-Language', 'en');
@@ -186,6 +196,7 @@ final class SendMailProcessorTest extends KernelTestCase
         $this->data->message = 'Test Message';
 
         $this->parameterBag
+            ->expects($this->exactly(2))
             ->method('get')
             ->willReturnMap([
                 ['app.enabled_locales', ['en', 'fr']],
@@ -207,8 +218,7 @@ final class SendMailProcessorTest extends KernelTestCase
 
     public function testProcessWithCorrectEmailContext(): void
     {
-        /** @var Operation&MockObject $operation */
-        $operation = $this->createMock(Operation::class);
+        $operation = $this->createStub(Operation::class);
         $context = ['request' => $this->request];
 
         $this->data->name = 'Alice Johnson';
@@ -223,6 +233,7 @@ final class SendMailProcessorTest extends KernelTestCase
             ->willReturn('en');
 
         $this->parameterBag
+            ->expects($this->exactly(2))
             ->method('get')
             ->willReturnMap([
                 ['app.enabled_locales', ['en', 'fr']],

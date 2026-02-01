@@ -95,6 +95,15 @@ final class RequestActivationEmailTest extends TestCase
         $email = 'nonexistent@example.com';
         $command = new RequestActivationEmailCommand($email);
 
+        $this->clock->expects($this->never())
+            ->method('now');
+
+        $this->transactional->expects($this->never())
+            ->method('transactional');
+
+        $this->config->expects($this->never())
+            ->method('getString');
+
         $this->repository->expects($this->once())
             ->method('findByEmail')
             ->with(new EmailAddress($email))

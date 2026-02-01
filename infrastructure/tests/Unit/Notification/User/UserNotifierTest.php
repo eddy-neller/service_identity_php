@@ -57,15 +57,18 @@ final class UserNotifierTest extends KernelTestCase
         $encodedToken = 'encoded-token-123';
         $expectedLink = $baseLink . '?token=' . urlencode($encodedToken);
 
-        $this->translator->method('trans')
+        $this->translator->expects($this->once())
+            ->method('trans')
             ->with('user.register.activation.title', [], 'messages', 'en')
             ->willReturn($subject);
 
-        $this->parameterBag->method('get')->willReturnMap([
-            ['mailerFrontLinkRegisterValidation', $baseLink],
-            ['app.enabled_locales', ['en', 'fr']],
-            ['app.default_locale', 'en'],
-        ]);
+        $this->parameterBag->expects($this->exactly(3))
+            ->method('get')
+            ->willReturnMap([
+                ['mailerFrontLinkRegisterValidation', $baseLink],
+                ['app.enabled_locales', ['en', 'fr']],
+                ['app.default_locale', 'en'],
+            ]);
 
         $this->bus->expects($this->once())
             ->method('dispatch')
@@ -92,15 +95,18 @@ final class UserNotifierTest extends KernelTestCase
         $encodedToken = 'encoded-token-456';
         $expectedLink = $baseLink . '?token=' . urlencode($encodedToken);
 
-        $this->translator->method('trans')
+        $this->translator->expects($this->once())
+            ->method('trans')
             ->with('user.reset.password.title', [], 'messages', 'en')
             ->willReturn($subject);
 
-        $this->parameterBag->method('get')->willReturnMap([
-            ['mailerFrontLinkResetPassword', $baseLink],
-            ['app.enabled_locales', ['en', 'fr']],
-            ['app.default_locale', 'en'],
-        ]);
+        $this->parameterBag->expects($this->exactly(3))
+            ->method('get')
+            ->willReturnMap([
+                ['mailerFrontLinkResetPassword', $baseLink],
+                ['app.enabled_locales', ['en', 'fr']],
+                ['app.default_locale', 'en'],
+            ]);
 
         $this->bus->expects($this->once())
             ->method('dispatch')
@@ -127,15 +133,18 @@ final class UserNotifierTest extends KernelTestCase
         $encodedToken = 'encoded-token-789';
         $expectedLink = $baseLink . '?token=' . urlencode($encodedToken);
 
-        $this->translator->method('trans')
+        $this->translator->expects($this->once())
+            ->method('trans')
             ->with('user.register.activation.title', [], 'messages', 'fr')
             ->willReturn($subject);
 
-        $this->parameterBag->method('get')->willReturnMap([
-            ['mailerFrontLinkRegisterValidation', $baseLink],
-            ['app.enabled_locales', ['en', 'fr']],
-            ['app.default_locale', 'en'],
-        ]);
+        $this->parameterBag->expects($this->exactly(3))
+            ->method('get')
+            ->willReturnMap([
+                ['mailerFrontLinkRegisterValidation', $baseLink],
+                ['app.enabled_locales', ['en', 'fr']],
+                ['app.default_locale', 'en'],
+            ]);
 
         $this->bus->expects($this->once())
             ->method('dispatch')
@@ -163,15 +172,18 @@ final class UserNotifierTest extends KernelTestCase
         $expectedLink = $baseLink . '?token=' . urlencode($encodedToken);
 
         // fallback attendu => 'en'
-        $this->translator->method('trans')
+        $this->translator->expects($this->once())
+            ->method('trans')
             ->with('user.register.activation.title', [], 'messages', 'en')
             ->willReturn($subject);
 
-        $this->parameterBag->method('get')->willReturnMap([
-            ['mailerFrontLinkRegisterValidation', $baseLink],
-            ['app.enabled_locales', ['en', 'fr']],
-            ['app.default_locale', 'en'],
-        ]);
+        $this->parameterBag->expects($this->exactly(3))
+            ->method('get')
+            ->willReturnMap([
+                ['mailerFrontLinkRegisterValidation', $baseLink],
+                ['app.enabled_locales', ['en', 'fr']],
+                ['app.default_locale', 'en'],
+            ]);
 
         $this->bus->expects($this->once())
             ->method('dispatch')
@@ -200,17 +212,20 @@ final class UserNotifierTest extends KernelTestCase
         $encodedToken = 'encoded-token-mno';
         $expectedLink = $baseLink . '?token=' . urlencode($encodedToken);
 
-        $this->translator->method('trans')
+        $this->translator->expects($this->once())
+            ->method('trans')
             ->with('user.register.activation.title', [], 'messages', 'en')
             ->willReturn($subject);
 
         // enabled_locales renvoie une chaîne -> $allowed = [$default]
         // 'fr' n'est pas dans [$default], donc fallback à 'en'
-        $this->parameterBag->method('get')->willReturnMap([
-            ['mailerFrontLinkRegisterValidation', $baseLink],
-            ['app.enabled_locales', 'en'], // pas un tableau -> $allowed = [$default]
-            ['app.default_locale', 'en'],
-        ]);
+        $this->parameterBag->expects($this->exactly(3))
+            ->method('get')
+            ->willReturnMap([
+                ['mailerFrontLinkRegisterValidation', $baseLink],
+                ['app.enabled_locales', 'en'], // pas un tableau -> $allowed = [$default]
+                ['app.default_locale', 'en'],
+            ]);
 
         $this->bus->expects($this->once())
             ->method('dispatch')
@@ -237,15 +252,18 @@ final class UserNotifierTest extends KernelTestCase
         $encodedToken = 'encoded-token-pqr';
         $expectedLink = $baseLink . '?token=' . urlencode($encodedToken);
 
-        $this->translator->method('trans')
+        $this->translator->expects($this->once())
+            ->method('trans')
             ->with('user.register.activation.title', [], 'messages', 'en')
             ->willReturn($subject);
 
-        $this->parameterBag->method('get')->willReturnMap([
-            ['mailerFrontLinkRegisterValidation', $baseLink],
-            ['app.enabled_locales', ['en', 'fr']],
-            ['app.default_locale', 'en'],
-        ]);
+        $this->parameterBag->expects($this->exactly(3))
+            ->method('get')
+            ->willReturnMap([
+                ['mailerFrontLinkRegisterValidation', $baseLink],
+                ['app.enabled_locales', ['en', 'fr']],
+                ['app.default_locale', 'en'],
+            ]);
 
         $this->bus->expects($this->once())
             ->method('dispatch')

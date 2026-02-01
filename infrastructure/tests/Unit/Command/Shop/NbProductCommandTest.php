@@ -74,7 +74,7 @@ final class NbProductCommandTest extends KernelTestCase
         }
 
         // Crée un mock d'EntityManager pour le repository
-        $dummyEm = $this->createMock(EntityManagerInterface::class);
+        $dummyEm = $this->createStub(EntityManagerInterface::class);
         $dummyMetadata = new ClassMetadata(Category::class);
 
         // Mock Category Repository (hérite bien d'EntityRepository)
@@ -82,20 +82,26 @@ final class NbProductCommandTest extends KernelTestCase
             ->setConstructorArgs([$dummyEm, $dummyMetadata])
             ->onlyMethods(['findAll'])
             ->getMock();
-        $categoryRepo->method('findAll')->willReturn([$category]);
+        $categoryRepo->expects($this->once())
+            ->method('findAll')
+            ->willReturn([$category]);
 
         // Mock Product Repository
         $productRepo = $this->getMockBuilder(ProductRepository::class)
             ->disableOriginalConstructor()
             ->onlyMethods(['countNbProductByCategory'])
             ->getMock();
-        $productRepo->method('countNbProductByCategory')->willReturn($foundNbProduct);
+        $productRepo->expects($this->once())
+            ->method('countNbProductByCategory')
+            ->willReturn($foundNbProduct);
 
         $em = $this->createMock(EntityManagerInterface::class);
-        $em->method('getRepository')->willReturnMap([
-            [Category::class, $categoryRepo],
-            [Product::class, $productRepo],
-        ]);
+        $em->expects($this->exactly(2))
+            ->method('getRepository')
+            ->willReturnMap([
+                [Category::class, $categoryRepo],
+                [Product::class, $productRepo],
+            ]);
 
         if (!($options['debug'] ?? false)) {
             $em->expects($this->once())->method('flush');

@@ -15,18 +15,17 @@ use App\Domain\Shop\Catalog\Model\Category;
 use App\Domain\Shop\Catalog\ValueObject\CategoryId;
 use App\Domain\Shop\Catalog\ValueObject\CategoryTitle;
 use DateTimeImmutable;
-use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 
 final class DeleteCategoryByAdminTest extends TestCase
 {
     private const string CATEGORY_ID = '550e8400-e29b-41d4-a716-446655440000';
 
-    private CategoryRepositoryInterface&MockObject $repository;
+    private CategoryRepositoryInterface $repository;
 
-    private ClockInterface&MockObject $clock;
+    private ClockInterface $clock;
 
-    private TransactionalInterface&MockObject $transactional;
+    private TransactionalInterface $transactional;
 
     private DeleteCategoryByAdminCommandHandler $handler;
 
@@ -76,6 +75,11 @@ final class DeleteCategoryByAdminTest extends TestCase
 
     public function testHandleThrowsWhenCategoryNotFound(): void
     {
+        $this->clock->expects($this->never())
+            ->method('now');
+        $this->transactional->expects($this->never())
+            ->method('transactional');
+
         $categoryId = CategoryId::fromString(self::CATEGORY_ID);
         $command = new DeleteCategoryByAdminCommand($categoryId);
 

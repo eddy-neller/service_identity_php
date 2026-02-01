@@ -26,6 +26,8 @@ final class UserDeleteProcessorTest extends TestCase
     {
         $this->commandBus = $this->createMock(CommandBusInterface::class);
         $this->operation = $this->createMock(Operation::class);
+        $this->operation->expects($this->never())
+            ->method('getName');
         $this->userDeleteProcessor = new UserDeleteProcessor(
             $this->commandBus,
         );
@@ -52,6 +54,9 @@ final class UserDeleteProcessorTest extends TestCase
     public function testProcessThrowsLogicExceptionWhenIdIsMissing(): void
     {
         $uriVariables = [];
+
+        $this->commandBus->expects($this->never())
+            ->method('dispatch');
 
         $this->expectException(LogicException::class);
         $this->expectExceptionMessage(PresentationErrorCode::INVALID_INPUT->value);

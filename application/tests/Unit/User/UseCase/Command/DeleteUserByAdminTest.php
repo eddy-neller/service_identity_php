@@ -80,6 +80,12 @@ final class DeleteUserByAdminTest extends TestCase
             userId: $userId,
         );
 
+        $this->clock->expects($this->never())
+            ->method('now');
+
+        $this->transactional->expects($this->never())
+            ->method('transactional');
+
         $this->repository->expects($this->once())
             ->method('findById')
             ->with($userId)

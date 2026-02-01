@@ -28,6 +28,8 @@ final class UpdateUserByAdminTest extends TestCase
 
     private PasswordHasherInterface&MockObject $passwordHasher;
 
+    private ClockInterface&MockObject $clock;
+
     private TransactionalInterface&MockObject $transactional;
 
     private UpdateUserByAdminCommandHandler $handler;
@@ -36,12 +38,12 @@ final class UpdateUserByAdminTest extends TestCase
     {
         $this->repository = $this->createMock(UserRepositoryInterface::class);
         $this->passwordHasher = $this->createMock(PasswordHasherInterface::class);
-        $clock = $this->createMock(ClockInterface::class);
+        $this->clock = $this->createMock(ClockInterface::class);
         $this->transactional = $this->createMock(TransactionalInterface::class);
         $this->handler = new UpdateUserByAdminCommandHandler(
             $this->repository,
             $this->passwordHasher,
-            $clock,
+            $this->clock,
             $this->transactional,
         );
     }
@@ -80,6 +82,10 @@ final class UpdateUserByAdminTest extends TestCase
             ->method('hash')
             ->with($newPassword)
             ->willReturn($hashedPassword);
+
+        $this->clock->expects($this->once())
+            ->method('now')
+            ->willReturn(new DateTimeImmutable());
 
         $this->repository->expects($this->once())
             ->method('save')
@@ -123,6 +129,10 @@ final class UpdateUserByAdminTest extends TestCase
         $this->passwordHasher->expects($this->never())
             ->method('hash');
 
+        $this->clock->expects($this->once())
+            ->method('now')
+            ->willReturn(new DateTimeImmutable());
+
         $this->repository->expects($this->once())
             ->method('save')
             ->with($user);
@@ -146,6 +156,15 @@ final class UpdateUserByAdminTest extends TestCase
         $command = new UpdateUserByAdminCommand(
             userId: $userId,
         );
+
+        $this->passwordHasher->expects($this->never())
+            ->method('hash');
+
+        $this->clock->expects($this->never())
+            ->method('now');
+
+        $this->transactional->expects($this->never())
+            ->method('transactional');
 
         $this->repository->expects($this->once())
             ->method('findById')

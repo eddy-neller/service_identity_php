@@ -48,6 +48,8 @@ final class UserMeProviderTest extends KernelTestCase
         $userResourcePresenter = new UserResourcePresenter($this->avatarUrlResolver);
         $this->user = $this->createMock(User::class);
         $this->operation = $this->createMock(Operation::class);
+        $this->operation->expects($this->never())
+            ->method('getName');
 
         $this->provider = new UserMeProvider(
             $this->security,
@@ -88,6 +90,13 @@ final class UserMeProviderTest extends KernelTestCase
 
     public function testProvideThrowsAccessDeniedExceptionForUnauthenticatedUser(): void
     {
+        $this->user->expects($this->never())
+            ->method('getId');
+        $this->queryBus->expects($this->never())
+            ->method('dispatch');
+        $this->avatarUrlResolver->expects($this->never())
+            ->method('resolve');
+
         $this->security->expects($this->once())
             ->method('getUser')
             ->willReturn(null);

@@ -21,7 +21,7 @@ final class MultipartDecoderTest extends KernelTestCase
     {
         parent::setUp();
 
-        $this->requestStack = $this->createMock(RequestStack::class);
+        $this->requestStack = $this->createStub(RequestStack::class);
         $this->multipartDecoder = new MultipartDecoder($this->requestStack);
     }
 

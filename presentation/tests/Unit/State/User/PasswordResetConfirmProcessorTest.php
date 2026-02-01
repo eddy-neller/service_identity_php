@@ -27,6 +27,8 @@ final class PasswordResetConfirmProcessorTest extends KernelTestCase
     {
         $this->commandBus = $this->createMock(CommandBusInterface::class);
         $this->operation = $this->createMock(Operation::class);
+        $this->operation->expects($this->never())
+            ->method('getName');
 
         $this->processor = new PasswordResetConfirmProcessor(
             $this->commandBus
@@ -54,6 +56,9 @@ final class PasswordResetConfirmProcessorTest extends KernelTestCase
     {
         $invalidInput = new stdClass();
 
+        $this->commandBus->expects($this->never())
+            ->method('dispatch');
+
         $this->expectException(LogicException::class);
         $this->expectExceptionMessage(PresentationErrorCode::INVALID_INPUT->value);
 
@@ -62,6 +67,9 @@ final class PasswordResetConfirmProcessorTest extends KernelTestCase
 
     public function testProcessThrowsLogicExceptionForNullInput(): void
     {
+        $this->commandBus->expects($this->never())
+            ->method('dispatch');
+
         $this->expectException(LogicException::class);
         $this->expectExceptionMessage(PresentationErrorCode::INVALID_INPUT->value);
 
@@ -70,6 +78,9 @@ final class PasswordResetConfirmProcessorTest extends KernelTestCase
 
     public function testProcessThrowsLogicExceptionForStringInput(): void
     {
+        $this->commandBus->expects($this->never())
+            ->method('dispatch');
+
         $this->expectException(LogicException::class);
         $this->expectExceptionMessage(PresentationErrorCode::INVALID_INPUT->value);
 
@@ -78,6 +89,9 @@ final class PasswordResetConfirmProcessorTest extends KernelTestCase
 
     public function testProcessThrowsLogicExceptionForArrayInput(): void
     {
+        $this->commandBus->expects($this->never())
+            ->method('dispatch');
+
         $this->expectException(LogicException::class);
         $this->expectExceptionMessage(PresentationErrorCode::INVALID_INPUT->value);
 

@@ -27,6 +27,8 @@ final class UpdatePasswordTest extends TestCase
 
     private PasswordHasherInterface&MockObject $passwordHasher;
 
+    private ClockInterface&MockObject $clock;
+
     private TransactionalInterface&MockObject $transactional;
 
     private UpdatePasswordCommandHandler $handler;
@@ -35,12 +37,12 @@ final class UpdatePasswordTest extends TestCase
     {
         $this->repository = $this->createMock(UserRepositoryInterface::class);
         $this->passwordHasher = $this->createMock(PasswordHasherInterface::class);
-        $clock = $this->createMock(ClockInterface::class);
+        $this->clock = $this->createMock(ClockInterface::class);
         $this->transactional = $this->createMock(TransactionalInterface::class);
         $this->handler = new UpdatePasswordCommandHandler(
             $this->repository,
             $this->passwordHasher,
-            $clock,
+            $this->clock,
             $this->transactional,
         );
     }
@@ -63,6 +65,10 @@ final class UpdatePasswordTest extends TestCase
             ->with($newPassword)
             ->willReturn($hashedPassword);
 
+        $this->clock->expects($this->once())
+            ->method('now')
+            ->willReturn(new DateTimeImmutable());
+
         $this->repository->expects($this->once())
             ->method('save')
             ->with($user);
@@ -81,6 +87,15 @@ final class UpdatePasswordTest extends TestCase
         $userId = UserId::fromString('550e8400-e29b-41d4-a716-446655440001');
         $newPassword = 'new-password';
         $command = new UpdatePasswordCommand($userId, $newPassword);
+
+        $this->passwordHasher->expects($this->never())
+            ->method('hash');
+
+        $this->clock->expects($this->never())
+            ->method('now');
+
+        $this->transactional->expects($this->never())
+            ->method('transactional');
 
         $this->repository->expects($this->once())
             ->method('findById')

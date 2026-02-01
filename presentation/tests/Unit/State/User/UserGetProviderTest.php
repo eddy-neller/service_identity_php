@@ -41,6 +41,8 @@ final class UserGetProviderTest extends KernelTestCase
         $this->avatarUrlResolver = $this->createMock(AvatarUrlResolverInterface::class);
         $userResourcePresenter = new UserResourcePresenter($this->avatarUrlResolver);
         $this->operation = $this->createMock(Operation::class);
+        $this->operation->expects($this->never())
+            ->method('getName');
 
         $this->provider = new UserGetProvider(
             $this->queryBus,
@@ -77,6 +79,11 @@ final class UserGetProviderTest extends KernelTestCase
 
     public function testProvideThrowsLogicExceptionWhenIdIsMissing(): void
     {
+        $this->queryBus->expects($this->never())
+            ->method('dispatch');
+        $this->avatarUrlResolver->expects($this->never())
+            ->method('resolve');
+
         $this->expectException(LogicException::class);
         $this->expectExceptionMessage(PresentationErrorCode::INVALID_INPUT->value);
 
@@ -85,6 +92,11 @@ final class UserGetProviderTest extends KernelTestCase
 
     public function testProvideThrowsLogicExceptionWhenIdIsNull(): void
     {
+        $this->queryBus->expects($this->never())
+            ->method('dispatch');
+        $this->avatarUrlResolver->expects($this->never())
+            ->method('resolve');
+
         $this->expectException(LogicException::class);
         $this->expectExceptionMessage(PresentationErrorCode::INVALID_INPUT->value);
 

@@ -20,7 +20,6 @@ use App\Domain\Shop\Catalog\ValueObject\CategoryTitle;
 use App\Domain\Shop\Catalog\ValueObject\ProductId;
 use App\Domain\Shop\Shared\ValueObject\Money;
 use DateTimeImmutable;
-use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 
 final class CreateProductByAdminTest extends TestCase
@@ -29,15 +28,15 @@ final class CreateProductByAdminTest extends TestCase
 
     private const string CATEGORY_ID = '550e8400-e29b-41d4-a716-446655440001';
 
-    private ProductRepositoryInterface&MockObject $productRepository;
+    private ProductRepositoryInterface $productRepository;
 
-    private CategoryRepositoryInterface&MockObject $categoryRepository;
+    private CategoryRepositoryInterface $categoryRepository;
 
-    private ClockInterface&MockObject $clock;
+    private ClockInterface $clock;
 
-    private TransactionalInterface&MockObject $transactional;
+    private TransactionalInterface $transactional;
 
-    private SlugGeneratorInterface&MockObject $slugGenerator;
+    private SlugGeneratorInterface $slugGenerator;
 
     private CreateProductByAdminCommandHandler $handler;
 
@@ -127,6 +126,7 @@ final class CreateProductByAdminTest extends TestCase
 
     public function testHandleThrowsWhenCategoryNotFound(): void
     {
+        $now = new DateTimeImmutable('2024-01-01 00:00:00');
         $categoryId = CategoryId::fromString(self::CATEGORY_ID);
         $productId = ProductId::fromString(self::PRODUCT_ID);
 
@@ -137,6 +137,10 @@ final class CreateProductByAdminTest extends TestCase
             price: 10.0,
             categoryId: $categoryId,
         );
+
+        $this->clock->expects($this->once())
+            ->method('now')
+            ->willReturn($now);
 
         $this->productRepository->expects($this->once())
             ->method('nextIdentity')

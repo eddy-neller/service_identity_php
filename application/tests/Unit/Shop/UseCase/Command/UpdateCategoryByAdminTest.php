@@ -19,7 +19,6 @@ use App\Domain\Shop\Catalog\ValueObject\CategoryDescription;
 use App\Domain\Shop\Catalog\ValueObject\CategoryId;
 use App\Domain\Shop\Catalog\ValueObject\CategoryTitle;
 use DateTimeImmutable;
-use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 
 final class UpdateCategoryByAdminTest extends TestCase
@@ -28,13 +27,13 @@ final class UpdateCategoryByAdminTest extends TestCase
 
     private const string PARENT_ID = '550e8400-e29b-41d4-a716-446655440001';
 
-    private CategoryRepositoryInterface&MockObject $repository;
+    private CategoryRepositoryInterface $repository;
 
-    private ClockInterface&MockObject $clock;
+    private ClockInterface $clock;
 
-    private TransactionalInterface&MockObject $transactional;
+    private TransactionalInterface $transactional;
 
-    private SlugGeneratorInterface&MockObject $slugGenerator;
+    private SlugGeneratorInterface $slugGenerator;
 
     private UpdateCategoryByAdminCommandHandler $handler;
 
@@ -172,6 +171,13 @@ final class UpdateCategoryByAdminTest extends TestCase
 
     public function testHandleThrowsWhenCategoryNotFound(): void
     {
+        $this->clock->expects($this->never())
+            ->method('now');
+        $this->transactional->expects($this->never())
+            ->method('transactional');
+        $this->slugGenerator->expects($this->never())
+            ->method('generate');
+
         $categoryId = CategoryId::fromString(self::CATEGORY_ID);
         $command = new UpdateCategoryByAdminCommand(
             categoryId: $categoryId,
@@ -233,6 +239,9 @@ final class UpdateCategoryByAdminTest extends TestCase
 
     public function testHandleThrowsWhenParentNotFound(): void
     {
+        $this->slugGenerator->expects($this->never())
+            ->method('generate');
+
         $now = new DateTimeImmutable('2024-02-01 12:00:00');
         $categoryId = CategoryId::fromString(self::CATEGORY_ID);
         $parentId = CategoryId::fromString(self::PARENT_ID);

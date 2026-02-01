@@ -1,0 +1,90 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Presentation\Shop\Dto\Customer\Address;
+
+use Symfony\Component\Validator\Constraints as Assert;
+
+final class AddressPostInput
+{
+    #[Assert\NotBlank]
+    #[Assert\Length(
+        min: 2,
+        max: 100,
+        minMessage: 'The name must be at least {{ limit }} characters long.',
+        maxMessage: 'The name must be at most {{ limit }} characters long.'
+    )]
+    public string $name;
+
+    #[Assert\NotBlank]
+    #[Assert\Length(
+        min: 2,
+        max: 32,
+        minMessage: 'The firstname must be at least {{ limit }} characters long.',
+        maxMessage: 'The firstname must be at most {{ limit }} characters long.'
+    )]
+    public string $firstname;
+
+    #[Assert\NotBlank]
+    #[Assert\Length(
+        min: 2,
+        max: 32,
+        minMessage: 'The lastname must be at least {{ limit }} characters long.',
+        maxMessage: 'The lastname must be at most {{ limit }} characters long.'
+    )]
+    public string $lastname;
+
+    #[Assert\Length(
+        min: 2,
+        max: 50,
+        minMessage: 'The company must be at least {{ limit }} characters long.',
+        maxMessage: 'The company must be at most {{ limit }} characters long.'
+    )]
+    public ?string $company = null;
+
+    #[Assert\NotBlank]
+    #[Assert\Length(
+        min: 2,
+        max: 150,
+        minMessage: 'The address must be at least {{ limit }} characters long.',
+        maxMessage: 'The address must be at most {{ limit }} characters long.'
+    )]
+    public string $address;
+
+    #[Assert\NotBlank]
+    #[Assert\Length(
+        min: 2,
+        max: 30,
+        minMessage: 'The zipcode must be at least {{ limit }} characters long.',
+        maxMessage: 'The zipcode must be at most {{ limit }} characters long.'
+    )]
+    public string $zip;
+
+    #[Assert\NotBlank]
+    #[Assert\Length(
+        min: 2,
+        max: 50,
+        minMessage: 'The city must be at least {{ limit }} characters long.',
+        maxMessage: 'The city must be at most {{ limit }} characters long.'
+    )]
+    public string $city;
+
+    #[Assert\NotBlank]
+    #[Assert\Length(
+        min: 2,
+        max: 50,
+        minMessage: 'The country must be at least {{ limit }} characters long.',
+        maxMessage: 'The country must be at most {{ limit }} characters long.'
+    )]
+    public string $country;
+
+    #[Assert\NotBlank]
+    #[Assert\Length(
+        min: 2,
+        max: 30,
+        minMessage: 'The phone must be at least {{ limit }} characters long.',
+        maxMessage: 'The phone must be at most {{ limit }} characters long.'
+    )]
+    public string $phone;
+}

@@ -36,6 +36,8 @@ final class CategoryPostProcessorTest extends TestCase
     {
         $this->commandBus = $this->createMock(CommandBusInterface::class);
         $this->operation = $this->createMock(Operation::class);
+        $this->operation->expects($this->never())
+            ->method('getName');
         $presenter = new CategoryResourcePresenter();
 
         $this->processor = new CategoryPostProcessor(
@@ -73,6 +75,9 @@ final class CategoryPostProcessorTest extends TestCase
     public function testProcessThrowsLogicExceptionForInvalidInput(): void
     {
         $invalidInput = new stdClass();
+
+        $this->commandBus->expects($this->never())
+            ->method('dispatch');
 
         $this->expectException(LogicException::class);
         $this->expectExceptionMessage(PresentationErrorCode::INVALID_INPUT->value);

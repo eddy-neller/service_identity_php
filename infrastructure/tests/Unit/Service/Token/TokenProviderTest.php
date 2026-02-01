@@ -27,6 +27,11 @@ final class TokenProviderTest extends TestCase
 
     public function testGenerateRandomToken(): void
     {
+        $this->tokenManager->expects($this->never())
+            ->method('generateEmailToken');
+        $this->tokenManager->expects($this->never())
+            ->method('splitToken');
+
         $token = $this->tokenProvider->generateRandomToken();
 
         $this->assertSame(64, strlen($token));
@@ -35,6 +40,11 @@ final class TokenProviderTest extends TestCase
 
     public function testGenerateRandomTokenReturnsDifferentValues(): void
     {
+        $this->tokenManager->expects($this->never())
+            ->method('generateEmailToken');
+        $this->tokenManager->expects($this->never())
+            ->method('splitToken');
+
         $token1 = $this->tokenProvider->generateRandomToken();
         $token2 = $this->tokenProvider->generateRandomToken();
 
@@ -103,6 +113,7 @@ final class TokenProviderTest extends TestCase
         ];
 
         $this->tokenManager
+            ->expects($this->once())
             ->method('splitToken')
             ->willReturn($mockResult);
 

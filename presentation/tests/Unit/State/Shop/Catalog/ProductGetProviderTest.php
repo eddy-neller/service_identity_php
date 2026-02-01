@@ -46,6 +46,8 @@ final class ProductGetProviderTest extends TestCase
         $this->queryBus = $this->createMock(QueryBusInterface::class);
         $this->productImageUrlResolver = $this->createMock(ProductImageUrlResolverInterface::class);
         $this->operation = $this->createMock(Operation::class);
+        $this->operation->expects($this->never())
+            ->method('getName');
 
         $presenter = new ProductResourcePresenter(
             $this->productImageUrlResolver,
@@ -83,6 +85,11 @@ final class ProductGetProviderTest extends TestCase
 
     public function testProvideThrowsLogicExceptionWhenIdIsMissing(): void
     {
+        $this->queryBus->expects($this->never())
+            ->method('dispatch');
+        $this->productImageUrlResolver->expects($this->never())
+            ->method('resolve');
+
         $this->expectException(LogicException::class);
         $this->expectExceptionMessage(PresentationErrorCode::INVALID_INPUT->value);
 
@@ -91,6 +98,11 @@ final class ProductGetProviderTest extends TestCase
 
     public function testProvideThrowsLogicExceptionWhenIdIsNotString(): void
     {
+        $this->queryBus->expects($this->never())
+            ->method('dispatch');
+        $this->productImageUrlResolver->expects($this->never())
+            ->method('resolve');
+
         $this->expectException(LogicException::class);
         $this->expectExceptionMessage(PresentationErrorCode::INVALID_INPUT->value);
 
