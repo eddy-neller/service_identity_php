@@ -2,14 +2,14 @@
 
 namespace App\Infrastructure\DataFixtures\test\Shop;
 
-use App\Entity\Shop\Address;
 use App\Infrastructure\DataFixtures\DataFixturesTrait;
-use App\Infrastructure\DataFixtures\test\User\UserFixtures;
-use App\Infrastructure\Entity\User\User;
+use App\Infrastructure\Entity\Shop\Address;
+use App\Infrastructure\Entity\Shop\Customer;
 use Doctrine\Bundle\FixturesBundle\Fixture;
 use Doctrine\Bundle\FixturesBundle\FixtureGroupInterface;
 use Doctrine\Common\DataFixtures\DependentFixtureInterface;
 use Doctrine\Persistence\ObjectManager;
+use Ramsey\Uuid\Uuid;
 
 class AddressFixtures extends Fixture implements DependentFixtureInterface, FixtureGroupInterface
 {
@@ -17,8 +17,8 @@ class AddressFixtures extends Fixture implements DependentFixtureInterface, Fixt
 
     public function load(ObjectManager $manager): void
     {
-        /** @var User $userMember */
-        $userMember = $this->getReference('user_member', User::class);
+        /** @var Customer $customer */
+        $customer = $this->getReference('customer_member', Customer::class);
 
         $addressesData = [
             [
@@ -47,6 +47,7 @@ class AddressFixtures extends Fixture implements DependentFixtureInterface, Fixt
 
         foreach ($addressesData as $addressData) {
             $address = new Address();
+            $address->setId(Uuid::uuid4());
             $address->setName($addressData['name']);
             $address->setFirstname($addressData['firstname']);
             $address->setLastname($addressData['lastname']);
@@ -56,7 +57,7 @@ class AddressFixtures extends Fixture implements DependentFixtureInterface, Fixt
             $address->setCity($addressData['city']);
             $address->setCountry($addressData['country']);
             $address->setPhone($addressData['phone']);
-            $address->setUser($userMember);
+            $address->setCustomer($customer);
 
             $timestamps = $this->generateTimestamps();
             $address->setCreatedAt($timestamps['createdAt']);
@@ -71,7 +72,7 @@ class AddressFixtures extends Fixture implements DependentFixtureInterface, Fixt
     public function getDependencies(): array
     {
         return [
-            UserFixtures::class,
+            CustomerFixtures::class,
         ];
     }
 

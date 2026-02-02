@@ -4,10 +4,12 @@ declare(strict_types=1);
 
 namespace App\Presentation\Shop\Dto\Customer\Address;
 
+use Symfony\Component\Serializer\Attribute\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
 
 final class AddressPostInput
 {
+    #[Groups(['shop_address:write'])]
     #[Assert\NotBlank]
     #[Assert\Length(
         min: 2,
@@ -17,6 +19,7 @@ final class AddressPostInput
     )]
     public string $name;
 
+    #[Groups(['shop_address:write'])]
     #[Assert\NotBlank]
     #[Assert\Length(
         min: 2,
@@ -26,6 +29,7 @@ final class AddressPostInput
     )]
     public string $firstname;
 
+    #[Groups(['shop_address:write'])]
     #[Assert\NotBlank]
     #[Assert\Length(
         min: 2,
@@ -43,6 +47,7 @@ final class AddressPostInput
     )]
     public ?string $company = null;
 
+    #[Groups(['shop_address:write'])]
     #[Assert\NotBlank]
     #[Assert\Length(
         min: 2,
@@ -52,6 +57,7 @@ final class AddressPostInput
     )]
     public string $address;
 
+    #[Groups(['shop_address:write'])]
     #[Assert\NotBlank]
     #[Assert\Length(
         min: 2,
@@ -61,6 +67,7 @@ final class AddressPostInput
     )]
     public string $zip;
 
+    #[Groups(['shop_address:write'])]
     #[Assert\NotBlank]
     #[Assert\Length(
         min: 2,
@@ -70,6 +77,7 @@ final class AddressPostInput
     )]
     public string $city;
 
+    #[Groups(['shop_address:write'])]
     #[Assert\NotBlank]
     #[Assert\Length(
         min: 2,
@@ -79,6 +87,7 @@ final class AddressPostInput
     )]
     public string $country;
 
+    #[Groups(['shop_address:write'])]
     #[Assert\NotBlank]
     #[Assert\Length(
         min: 2,

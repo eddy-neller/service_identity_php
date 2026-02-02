@@ -7,6 +7,9 @@ namespace App\Infrastructure\EventSubscriber\User;
 use App\Application\User\Port\TokenProviderInterface;
 use App\Application\User\Port\UserNotifierInterface;
 use App\Application\User\Port\UserRepositoryInterface;
+use App\Application\Shared\CQRS\Command\CommandBusInterface;
+use App\Application\Shop\UseCase\Command\Customer\CreateCustomer\CreateCustomerCommand;
+use App\Application\Shop\UseCase\Command\Customer\DisableCustomer\DisableCustomerCommand;
 use App\Domain\User\Event\ActivationEmailRequestedEvent;
 use App\Domain\User\Event\PasswordResetCompletedEvent;
 use App\Domain\User\Event\PasswordResetRequestedEvent;
@@ -19,6 +22,7 @@ use App\Domain\User\Event\UserRegisteredEvent;
 use App\Domain\User\Event\UserUpdatedByAdminEvent;
 use App\Domain\User\Event\UserWrongPasswordAttemptRegisteredEvent;
 use App\Domain\User\Event\UserWrongPasswordAttemptsResetEvent;
+use App\Domain\Shop\Customer\ValueObject\UserAccountId;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 
@@ -29,6 +33,7 @@ final readonly class UserEventSubscriber implements EventSubscriberInterface
         private TokenProviderInterface $tokenProvider,
         private UserNotifierInterface $notifier,
         private LoggerInterface $logger,
+        private CommandBusInterface $commandBus,
     ) {
     }
 
@@ -57,6 +62,8 @@ final readonly class UserEventSubscriber implements EventSubscriberInterface
             'email' => $event->getEmail()->toString(),
             'occurred_on' => $event->occurredOn()->format('Y-m-d H:i:s'),
         ]);
+
+        $this->syncCustomerForUser($event->getUserId()->toString());
 
         $user = $this->repository->findById($event->getUserId());
 
@@ -152,6 +159,10 @@ final readonly class UserEventSubscriber implements EventSubscriberInterface
             'occurred_on' => $event->occurredOn()->format('Y-m-d H:i:s'),
         ]);
 
+        $this->commandBus->dispatch(new DisableCustomerCommand(
+            UserAccountId::fromString($event->getUserId()->toString()),
+        ));
+
         // Ici, on peut ajouter d'autres actions :
         // - Nettoyer les données associées
         // - Notifier les systèmes externes
@@ -165,6 +176,8 @@ final readonly class UserEventSubscriber implements EventSubscriberInterface
             'email' => $event->getEmail()->toString(),
             'occurred_on' => $event->occurredOn()->format('Y-m-d H:i:s'),
         ]);
+
+        $this->syncCustomerForUser($event->getUserId()->toString());
 
         // Ici, on peut ajouter d'autres actions :
         // - Envoyer un email de notification à l'utilisateur
@@ -235,5 +248,12 @@ final readonly class UserEventSubscriber implements EventSubscriberInterface
         // - Notifier l'utilisateur
         // - Journaliser pour audit
         // - Mettre à jour des métriques
+    }
+
+    private function syncCustomerForUser(string $userId): void
+    {
+        $this->commandBus->dispatch(new CreateCustomerCommand(
+            UserAccountId::fromString($userId),
+        ));
     }
 }

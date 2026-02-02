@@ -30,16 +30,16 @@ final readonly class UpdateAddressCommandHandler implements CommandHandlerInterf
 
         $this->transactional->transactional(function () use ($address, $command): void {
             $address->update(
-                label: $command->label,
-                firstname: $command->firstname,
-                lastname: $command->lastname,
-                street: $command->street,
-                zipCode: $command->zipCode,
-                city: $command->city,
-                country: $command->country,
-                phone: $command->phone,
+                label: $command->label ?? $address->getLabel(),
+                firstname: $command->firstname ?? $address->getFirstname(),
+                lastname: $command->lastname ?? $address->getLastname(),
+                street: $command->street ?? $address->getStreet(),
+                zipCode: $command->zipCode ?? $address->getZipCode(),
+                city: $command->city ?? $address->getCity(),
+                country: $command->country ?? $address->getCountry(),
+                phone: $command->phone ?? $address->getPhone(),
                 now: $this->clock->now(),
-                company: $command->company,
+                company: $command->company ?? $address->getCompany(),
             );
 
             $this->repository->save($address);

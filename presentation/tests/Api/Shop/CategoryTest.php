@@ -28,7 +28,7 @@ final class CategoryTest extends BaseTest
     {
         parent::setUp();
 
-        $this->iri = $this->findIriByHttp(self::URL_API_OPE, self::CRITERIA_IRI, asAdmin: true);
+        $this->iri = $this->findIriByHttp(self::URL_API_OPE, self::CRITERIA_IRI, $this->userAdmin);
     }
 
     public static function provideColShopCategory(): Generator

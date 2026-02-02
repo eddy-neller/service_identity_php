@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Presentation\Tests\Api\Shop;
 
-use App\Entity\Shop\Address;
+use App\Infrastructure\Entity\Shop\Address;
 use App\Presentation\Tests\Api\BaseTest;
 use Faker\Factory;
 use Generator;
@@ -25,7 +25,7 @@ final class AddressTest extends BaseTest
     {
         parent::setUp();
 
-        $this->iri = $this->findIriBy(Address::class, self::CRITERIA_IRI);
+        $this->iri = $this->findIriByHttp(self::URL_API_OPE, self::CRITERIA_IRI, $this->userMember);
     }
 
     public static function provideColShopAddress(): Generator
@@ -109,8 +109,6 @@ final class AddressTest extends BaseTest
                 'country',
                 'phone',
                 'createdAt',
-            ],
-            'notHasKey' => [
                 'updatedAt',
             ],
         ];
@@ -242,7 +240,7 @@ phone: This value should not be blank.',
             Request::METHOD_GET,
             $this->iri,
             [
-                'auth_bearer' => $this->getToken($this->userAdmin),
+                'auth_bearer' => $this->getToken($this->userMember),
             ],
             Response::HTTP_OK,
             [
@@ -254,7 +252,7 @@ phone: This value should not be blank.',
     public static function provideUpdateShopAddressSuccess(): Generator
     {
         $fakeData = self::getFakeDataShopAddress();
-        $adminToken = self::PLACEHOLDERS['TOKENS']['ADMIN'];
+        $memberToken = self::PLACEHOLDERS['TOKENS']['MEMBER'];
 
         $assertSerialization = [
             'hasKey' => [
@@ -274,7 +272,7 @@ phone: This value should not be blank.',
 
         yield 'Full' => [
             [
-                'auth_bearer' => $adminToken,
+                'auth_bearer' => $memberToken,
                 'headers' => [
                     'Content-Type' => 'application/merge-patch+json',
                 ],
@@ -296,7 +294,7 @@ phone: This value should not be blank.',
 
         yield 'Partial: name only' => [
             [
-                'auth_bearer' => $adminToken,
+                'auth_bearer' => $memberToken,
                 'headers' => [
                     'Content-Type' => 'application/merge-patch+json',
                 ],

@@ -252,13 +252,13 @@ abstract class BaseTest extends ApiTestCase
      *
      * A utiliser pour les entités qui ont la traduction activée.
      */
-    protected function findIriByHttp(string $uri, array $criteria, bool $asAdmin = false): string
+    protected function findIriByHttp(string $uri, array $criteria, ?string $user = null): string
     {
         $page = 1;
         $headers = [];
 
-        if ($asAdmin) {
-            $headers['Authorization'] = 'Bearer ' . $this->getToken($this->userAdmin);
+        if (null !== $user) {
+            $headers['Authorization'] = 'Bearer ' . $this->getToken($user);
         }
 
         while (true) {

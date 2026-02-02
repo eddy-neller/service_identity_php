@@ -37,6 +37,8 @@ final readonly class UpdateProductByAdminCommandHandler implements CommandHandle
             throw new ProductNotFoundException();
         }
 
+        // Product uses explicit domain methods (rename/reprice/...) to keep invariants clear
+        // instead of a generic update() like Address.
         return $this->transactional->transactional(function () use ($command, $product): UpdateProductByAdminOutput {
             $now = $this->clock->now();
 

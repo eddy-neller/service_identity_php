@@ -113,6 +113,73 @@ final class UpdateAddressTest extends TestCase
         $this->assertSame($address, $output->addressItem->address);
     }
 
+    public function testHandleUpdatesOnlyProvidedFields(): void
+    {
+        $createdAt = new DateTimeImmutable('2025-01-01 10:00:00');
+        $updatedAt = new DateTimeImmutable('2025-01-02 10:00:00');
+        $addressId = AddressId::fromString(self::ADDRESS_ID);
+        $customerId = CustomerId::fromString(self::CUSTOMER_ID);
+
+        $address = Address::create(
+            id: $addressId,
+            ownerId: $customerId,
+            label: 'Home',
+            firstname: 'John',
+            lastname: 'Doe',
+            street: '12 Main St',
+            zipCode: '12345',
+            city: 'Paris',
+            country: 'France',
+            phone: '+33 1 23 45 67 89',
+            now: $createdAt,
+        );
+
+        $command = new UpdateAddressCommand(
+            addressId: $addressId,
+            ownerId: $customerId,
+            label: 'Office',
+            firstname: null,
+            lastname: null,
+            company: null,
+            street: null,
+            zipCode: null,
+            city: null,
+            country: null,
+            phone: null,
+        );
+
+        $this->repository->expects($this->once())
+            ->method('findById')
+            ->with($addressId)
+            ->willReturn($address);
+
+        $this->clock->expects($this->once())
+            ->method('now')
+            ->willReturn($updatedAt);
+
+        $this->repository->expects($this->once())
+            ->method('save')
+            ->with($this->callback(function (Address $saved) use ($updatedAt): bool {
+                return $saved->getLabel() === 'Office'
+                    && $saved->getFirstname() === 'John'
+                    && $saved->getLastname() === 'Doe'
+                    && $saved->getStreet() === '12 Main St'
+                    && $saved->getZipCode() === '12345'
+                    && $saved->getCity() === 'Paris'
+                    && $saved->getCountry() === 'France'
+                    && $saved->getPhone() === '+33 1 23 45 67 89'
+                    && $saved->getUpdatedAt() === $updatedAt;
+            }));
+
+        $this->transactional->expects($this->once())
+            ->method('transactional')
+            ->willReturnCallback(function (callable $callback) {
+                return $callback();
+            });
+
+        $this->handler->handle($command);
+    }
+
     public function testHandleThrowsWhenAddressMissing(): void
     {
         $addressId = AddressId::fromString(self::ADDRESS_ID);

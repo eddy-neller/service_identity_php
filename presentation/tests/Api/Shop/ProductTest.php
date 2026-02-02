@@ -38,7 +38,7 @@ final class ProductTest extends BaseTest
         $this->categoryIri = $this->findIriByHttp(
             self::URL_API_CATEGORY_OPE,
             self::CATEGORY_CRITERIA_IRI,
-            asAdmin: true,
+            $this->userAdmin,
         );
     }
 

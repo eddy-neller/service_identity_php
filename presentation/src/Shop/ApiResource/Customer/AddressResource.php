@@ -36,7 +36,7 @@ use Symfony\Component\Serializer\Attribute\Groups;
             openapi: new Model\Operation(
                 security: [['ApiKeyAuth' => []]]
             ),
-            security: "is_granted('shop_address:item:read', id)",
+            security: "is_granted('shop_address:item:read', object)",
             name: self::PREFIX_NAME . 'me-get',
             provider: AddressGetProvider::class,
         ),
@@ -46,7 +46,7 @@ use Symfony\Component\Serializer\Attribute\Groups;
             openapi: new Model\Operation(
                 security: [['ApiKeyAuth' => []]]
             ),
-            security: "is_granted('shop_address:item:write', id)",
+            security: "is_granted('shop_address:item:write', object)",
             input: AddressPatchInput::class,
             name: self::PREFIX_NAME . 'me-patch',
             processor: AddressPatchProcessor::class,
@@ -58,7 +58,7 @@ use Symfony\Component\Serializer\Attribute\Groups;
             openapi: new Model\Operation(
                 security: [['ApiKeyAuth' => []]]
             ),
-            security: "is_granted('shop_address:item:write', id)",
+            security: "is_granted('shop_address:item:write', object)",
             output: false,
             name: self::PREFIX_NAME . 'me-delete',
             processor: AddressDeleteProcessor::class,
