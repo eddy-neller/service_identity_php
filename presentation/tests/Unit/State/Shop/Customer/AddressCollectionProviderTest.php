@@ -2,14 +2,14 @@
 
 declare(strict_types=1);
 
-namespace App\Presentation\Tests\Unit\State\Shop\Customer\Address;
+namespace App\Presentation\Tests\Unit\State\Shop\Customer;
 
 use ApiPlatform\Metadata\GetCollection;
 use App\Application\Shared\CQRS\Query\QueryBusInterface;
-use App\Application\Shop\UseCase\Query\Customer\DisplayCustomer\DisplayCustomerOutput;
-use App\Application\Shop\UseCase\Query\Customer\DisplayCustomer\DisplayCustomerQuery;
 use App\Application\Shop\UseCase\Query\Customer\DisplayListAddress\DisplayListAddressOutput;
 use App\Application\Shop\UseCase\Query\Customer\DisplayListAddress\DisplayListAddressQuery;
+use App\Application\Shop\UseCase\Query\Customer\DisplayMyCustomer\DisplayMyCustomerOutput;
+use App\Application\Shop\UseCase\Query\Customer\DisplayMyCustomer\DisplayMyCustomerQuery;
 use App\Domain\Shop\Customer\Model\Address as DomainAddress;
 use App\Domain\Shop\Customer\ValueObject\AddressId;
 use App\Domain\Shop\Customer\ValueObject\CustomerId;
@@ -22,7 +22,6 @@ use DateTimeImmutable;
 use PHPUnit\Framework\TestCase;
 use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\HttpFoundation\Request;
-use App\Presentation\Tests\Unit\State\Shop\Customer\CustomerUserTrait;
 
 final class AddressCollectionProviderTest extends TestCase
 {
@@ -39,14 +38,14 @@ final class AddressCollectionProviderTest extends TestCase
             ->willReturn($user);
 
         $customerId = CustomerId::fromString('550e8400-e29b-41d4-a716-446655440201');
-        $customerOutput = new DisplayCustomerOutput($customerId, CustomerStatus::active());
+        $customerOutput = new DisplayMyCustomerOutput($customerId, CustomerStatus::active());
         $address = $this->createAddress($customerId);
         $listOutput = new DisplayListAddressOutput([$address], 2, 1);
 
         $queryBus->expects($this->exactly(2))
             ->method('dispatch')
-            ->willReturnCallback(function ($query) use ($customerOutput, $listOutput): DisplayCustomerOutput|DisplayListAddressOutput {
-                if ($query instanceof DisplayCustomerQuery) {
+            ->willReturnCallback(function ($query) use ($customerOutput, $listOutput): DisplayMyCustomerOutput|DisplayListAddressOutput {
+                if ($query instanceof DisplayMyCustomerQuery) {
                     $this->assertTrue($query->userAccountId->equals(UserAccountId::fromString('550e8400-e29b-41d4-a716-446655440200')));
 
                     return $customerOutput;
@@ -107,7 +106,7 @@ final class AddressCollectionProviderTest extends TestCase
             ->willReturn($user);
 
         $customerId = CustomerId::fromString('550e8400-e29b-41d4-a716-446655440211');
-        $customerOutput = new DisplayCustomerOutput($customerId, CustomerStatus::active());
+        $customerOutput = new DisplayMyCustomerOutput($customerId, CustomerStatus::active());
         $address = $this->createAddress($customerId);
         $listOutput = new DisplayListAddressOutput([$address], 1, 1);
 

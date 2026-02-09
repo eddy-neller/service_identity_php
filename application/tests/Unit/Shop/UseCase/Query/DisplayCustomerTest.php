@@ -4,11 +4,16 @@ declare(strict_types=1);
 
 namespace App\Application\Tests\Unit\Shop\UseCase\Query;
 
+use App\Application\Shared\ReadModel\Pagination;
+use App\Application\Shop\Port\AddressRepositoryInterface;
 use App\Application\Shop\Port\CustomerRepositoryInterface;
+use App\Application\Shop\ReadModel\AddressList;
 use App\Application\Shop\UseCase\Query\Customer\DisplayCustomer\DisplayCustomerQuery;
 use App\Application\Shop\UseCase\Query\Customer\DisplayCustomer\DisplayCustomerQueryHandler;
 use App\Domain\Shop\Customer\Exception\CustomerNotFoundException;
+use App\Domain\Shop\Customer\Model\Address;
 use App\Domain\Shop\Customer\Model\Customer;
+use App\Domain\Shop\Customer\ValueObject\AddressId;
 use App\Domain\Shop\Customer\ValueObject\CustomerId;
 use App\Domain\Shop\Customer\ValueObject\UserAccountId;
 use DateTimeImmutable;
@@ -18,48 +23,78 @@ use PHPUnit\Framework\TestCase;
 final class DisplayCustomerTest extends TestCase
 {
     private const string CUSTOMER_ID = '550e8400-e29b-41d4-a716-446655440100';
-    private const string ACCOUNT_ID = '550e8400-e29b-41d4-a716-446655440101';
+    private const string USER_ACCOUNT_ID = '550e8400-e29b-41d4-a716-446655440101';
+    private const string ADDRESS_ID = '550e8400-e29b-41d4-a716-446655440102';
 
-    private CustomerRepositoryInterface&MockObject $repository;
+    private CustomerRepositoryInterface&MockObject $customerRepository;
+    private AddressRepositoryInterface&MockObject $addressRepository;
     private DisplayCustomerQueryHandler $handler;
 
     protected function setUp(): void
     {
-        $this->repository = $this->createMock(CustomerRepositoryInterface::class);
-        $this->handler = new DisplayCustomerQueryHandler($this->repository);
+        $this->customerRepository = $this->createMock(CustomerRepositoryInterface::class);
+        $this->addressRepository = $this->createMock(AddressRepositoryInterface::class);
+        $this->handler = new DisplayCustomerQueryHandler($this->customerRepository, $this->addressRepository);
     }
 
-    public function testHandleReturnsCustomerData(): void
+    public function testHandleReturnsCustomerAndAddresses(): void
     {
-        $accountId = UserAccountId::fromString(self::ACCOUNT_ID);
+        $now = new DateTimeImmutable('2025-01-01 10:00:00');
+        $customerId = CustomerId::fromString(self::CUSTOMER_ID);
         $customer = Customer::create(
-            id: CustomerId::fromString(self::CUSTOMER_ID),
-            now: new DateTimeImmutable('2025-01-01 10:00:00'),
-            userAccountId: $accountId,
+            id: $customerId,
+            now: $now,
+            userAccountId: UserAccountId::fromString(self::USER_ACCOUNT_ID),
+        );
+        $address = Address::create(
+            id: AddressId::fromString(self::ADDRESS_ID),
+            ownerId: $customerId,
+            label: 'Home',
+            firstname: 'John',
+            lastname: 'Doe',
+            street: '12 Main St',
+            zipCode: '12345',
+            city: 'Paris',
+            country: 'France',
+            phone: '+33 1 23 45 67 89',
+            now: $now,
         );
 
-        $this->repository->expects($this->once())
-            ->method('findByUserAccountId')
-            ->with($accountId)
+        $this->customerRepository->expects($this->once())
+            ->method('findById')
+            ->with($customerId)
             ->willReturn($customer);
 
-        $output = $this->handler->handle(new DisplayCustomerQuery($accountId));
+        $this->addressRepository->expects($this->once())
+            ->method('listByOwner')
+            ->with(
+                $customerId,
+                $this->callback(static fn (Pagination $pagination): bool => 1 === $pagination->page && 1000 === $pagination->itemsPerPage),
+                ['createdAt' => 'DESC'],
+                [],
+            )
+            ->willReturn(new AddressList([$address], 1, 1));
 
-        $this->assertTrue($output->customerId->equals($customer->getId()));
-        $this->assertSame($customer->getStatus(), $output->status);
+        $output = $this->handler->handle(new DisplayCustomerQuery($customerId));
+
+        $this->assertSame($customer, $output->customerItem->customer);
+        $this->assertSame([$address], $output->customerItem->addresses);
     }
 
     public function testHandleThrowsWhenCustomerMissing(): void
     {
-        $accountId = UserAccountId::fromString(self::ACCOUNT_ID);
+        $customerId = CustomerId::fromString(self::CUSTOMER_ID);
 
-        $this->repository->expects($this->once())
-            ->method('findByUserAccountId')
-            ->with($accountId)
+        $this->customerRepository->expects($this->once())
+            ->method('findById')
+            ->with($customerId)
             ->willReturn(null);
+
+        $this->addressRepository->expects($this->never())
+            ->method('listByOwner');
 
         $this->expectException(CustomerNotFoundException::class);
 
-        $this->handler->handle(new DisplayCustomerQuery($accountId));
+        $this->handler->handle(new DisplayCustomerQuery($customerId));
     }
 }

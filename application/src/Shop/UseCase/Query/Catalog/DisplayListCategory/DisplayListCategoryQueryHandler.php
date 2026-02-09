@@ -16,15 +16,13 @@ final readonly class DisplayListCategoryQueryHandler implements QueryHandlerInte
 
     public function handle(DisplayListCategoryQuery $query): DisplayListCategoryOutput
     {
-        $page = $query->pagination->page;
-        $itemsPerPage = $query->pagination->itemsPerPage;
         $orderBy = [] !== $query->orderBy ? $query->orderBy : ['createdAt' => 'DESC'];
 
         $list = $this->repository->list(
-            level: $query->level,
+            filters: $query->filters,
             orderBy: $orderBy,
-            page: $page,
-            itemsPerPage: $itemsPerPage,
+            page: $query->pagination->page,
+            itemsPerPage: $query->pagination->itemsPerPage,
         );
 
         return new DisplayListCategoryOutput(

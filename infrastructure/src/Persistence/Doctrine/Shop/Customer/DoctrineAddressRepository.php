@@ -34,34 +34,6 @@ final readonly class DoctrineAddressRepository implements AddressRepositoryInter
         return AddressId::fromString($this->uuidGenerator->generate());
     }
 
-    public function save(DomainAddress $address): void
-    {
-        $entity = $this->findEntity($address->getId());
-        $entity = $this->mapper->toDoctrine($address, $entity);
-        $entity->setCustomer($this->getCustomerReference($address->getOwnerId()));
-
-        $this->em->persist($entity);
-        $this->em->flush();
-    }
-
-    public function delete(DomainAddress $address): void
-    {
-        $entity = $this->findEntity($address->getId());
-        if (null === $entity) {
-            return;
-        }
-
-        $this->em->remove($entity);
-        $this->em->flush();
-    }
-
-    public function findById(AddressId $id): ?DomainAddress
-    {
-        $entity = $this->findEntity($id);
-
-        return null === $entity ? null : $this->mapper->toDomain($entity);
-    }
-
     public function listByOwner(CustomerId $ownerId, Pagination $pagination, array $orderBy, array $filters): AddressList
     {
         $qb = $this->createQueryBuilder()
@@ -90,6 +62,34 @@ final readonly class DoctrineAddressRepository implements AddressRepositoryInter
             totalItems: $totalItems,
             totalPages: $totalPages,
         );
+    }
+
+    public function save(DomainAddress $address): void
+    {
+        $entity = $this->findEntity($address->getId());
+        $entity = $this->mapper->toDoctrine($address, $entity);
+        $entity->setCustomer($this->getCustomerReference($address->getOwnerId()));
+
+        $this->em->persist($entity);
+        $this->em->flush();
+    }
+
+    public function delete(DomainAddress $address): void
+    {
+        $entity = $this->findEntity($address->getId());
+        if (null === $entity) {
+            return;
+        }
+
+        $this->em->remove($entity);
+        $this->em->flush();
+    }
+
+    public function findById(AddressId $id): ?DomainAddress
+    {
+        $entity = $this->findEntity($id);
+
+        return null === $entity ? null : $this->mapper->toDomain($entity);
     }
 
     private function findEntity(AddressId $id): ?DoctrineAddress

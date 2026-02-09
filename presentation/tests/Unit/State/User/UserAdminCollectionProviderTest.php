@@ -41,8 +41,8 @@ final class UserAdminCollectionProviderTest extends TestCase
                 $this->assertInstanceOf(DisplayListUserQuery::class, $query);
                 $this->assertSame(2, $query->pagination->page);
                 $this->assertSame(15, $query->pagination->itemsPerPage);
-                $this->assertSame('john', $query->username);
-                $this->assertSame('john@example.com', $query->email);
+                $this->assertSame('john', $query->filters['username'] ?? null);
+                $this->assertSame('john@example.com', $query->filters['email'] ?? null);
                 $this->assertSame(['createdAt' => 'asc'], $query->orderBy);
 
                 return $output;
@@ -96,8 +96,7 @@ final class UserAdminCollectionProviderTest extends TestCase
                 $this->assertInstanceOf(DisplayListUserQuery::class, $query);
                 $this->assertSame(1, $query->pagination->page);
                 $this->assertSame(30, $query->pagination->itemsPerPage);
-                $this->assertNull($query->username);
-                $this->assertNull($query->email);
+                $this->assertSame([], $query->filters);
                 $this->assertSame([], $query->orderBy);
 
                 return $output;

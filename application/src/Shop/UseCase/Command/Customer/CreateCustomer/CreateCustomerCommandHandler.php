@@ -8,6 +8,8 @@ use App\Application\Shared\CQRS\Command\CommandHandlerInterface;
 use App\Application\Shared\Port\ClockInterface;
 use App\Application\Shared\Port\TransactionalInterface;
 use App\Application\Shop\Port\CustomerRepositoryInterface;
+use App\Application\Shop\ReadModel\CustomerItem;
+use App\Domain\Shop\Customer\Exception\CustomerAlreadyExistsException;
 use App\Domain\Shop\Customer\Model\Customer;
 
 final readonly class CreateCustomerCommandHandler implements CommandHandlerInterface
@@ -19,23 +21,24 @@ final readonly class CreateCustomerCommandHandler implements CommandHandlerInter
     ) {
     }
 
-    public function handle(CreateCustomerCommand $command): void
+    public function handle(CreateCustomerCommand $command): CreateCustomerOutput
     {
-        $this->transactional->transactional(function () use ($command): void {
-            $now = $this->clock->now();
+        return $this->transactional->transactional(function () use ($command): CreateCustomerOutput {
             $customer = $this->repository->findByUserAccountId($command->userAccountId);
 
-            if (null === $customer) {
-                $customer = Customer::create(
-                    id: $this->repository->nextIdentity(),
-                    now: $now,
-                    userAccountId: $command->userAccountId,
-                );
-            } else {
-                $customer->activate($now);
+            if (null !== $customer) {
+                throw new CustomerAlreadyExistsException();
             }
 
+            $customer = Customer::create(
+                id: $this->repository->nextIdentity(),
+                now: $this->clock->now(),
+                userAccountId: $command->userAccountId,
+            );
+
             $this->repository->save($customer);
+
+            return new CreateCustomerOutput($customer);
         });
     }
 }

@@ -29,13 +29,8 @@ final readonly class CustomerMapper
     {
         $entity ??= new DoctrineCustomer();
 
-        $userAccountId = $customer->getUserAccountId();
-        if (null === $userAccountId) {
-            throw new InvalidArgumentException('Customer user account id cannot be null.');
-        }
-
         $entity->setId(Uuid::fromString($customer->getId()->toString()));
-        $entity->setUserAccountId(Uuid::fromString($userAccountId->toString()));
+        $entity->setUserAccountId(Uuid::fromString($customer->getUserAccountId()->toString()));
         $entity->setStatus($customer->getStatus()->toInt());
 
         return $entity;

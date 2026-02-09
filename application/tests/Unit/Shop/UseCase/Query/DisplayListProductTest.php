@@ -40,9 +40,10 @@ final class DisplayListProductTest extends TestCase
     {
         $query = new DisplayListProductQuery(
             pagination: Pagination::fromValues(2, 5),
-            title: 'Product',
-            subtitle: 'Subtitle',
-            description: null,
+            filters: [
+                'title' => 'Product',
+                'subtitle' => 'Subtitle',
+            ],
             orderBy: ['title' => 'ASC'],
         );
 
@@ -55,7 +56,7 @@ final class DisplayListProductTest extends TestCase
 
         $this->repository->expects($this->once())
             ->method('list')
-            ->with('Product', 'Subtitle', null, ['title' => 'ASC'], 2, 5)
+            ->with(['title' => 'Product', 'subtitle' => 'Subtitle'], ['title' => 'ASC'], 2, 5)
             ->willReturn($list);
 
         $output = $this->handler->handle($query);
@@ -69,9 +70,7 @@ final class DisplayListProductTest extends TestCase
     {
         $query = new DisplayListProductQuery(
             pagination: Pagination::fromValues(0, 0),
-            title: null,
-            subtitle: null,
-            description: null,
+            filters: [],
             orderBy: [],
         );
 
@@ -84,12 +83,42 @@ final class DisplayListProductTest extends TestCase
 
         $this->repository->expects($this->once())
             ->method('list')
-            ->with(null, null, null, ['createdAt' => 'DESC'], 1, 30)
+            ->with([], ['createdAt' => 'DESC'], 1, 30)
             ->willReturn($list);
 
         $output = $this->handler->handle($query);
 
         $this->assertSame([$item], $output->products);
+    }
+
+    public function testQueryCacheKeyIsStableWhenFiltersAndOrderByAreReordered(): void
+    {
+        $this->repository->expects($this->never())->method('list');
+
+        $queryA = new DisplayListProductQuery(
+            pagination: Pagination::fromValues(2, 5),
+            filters: ['title' => 'Product', 'subtitle' => 'Sub'],
+            orderBy: ['title' => 'ASC', 'createdAt' => 'DESC'],
+        );
+        $queryB = new DisplayListProductQuery(
+            pagination: Pagination::fromValues(2, 5),
+            filters: ['subtitle' => 'Sub', 'title' => 'Product'],
+            orderBy: ['createdAt' => 'DESC', 'title' => 'ASC'],
+        );
+
+        $this->assertSame($queryA->cacheKey(), $queryB->cacheKey());
+    }
+
+    public function testQueryCacheMetadata(): void
+    {
+        $this->repository->expects($this->never())->method('list');
+
+        $query = new DisplayListProductQuery(
+            pagination: Pagination::fromValues(1, 10),
+        );
+
+        $this->assertSame(3600, $query->cacheTtl());
+        $this->assertSame(['products-collection'], $query->cacheTags());
     }
 
     private function createCategory(CategoryId $categoryId): Category

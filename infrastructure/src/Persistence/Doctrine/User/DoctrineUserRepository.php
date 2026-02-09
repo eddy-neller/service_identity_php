@@ -34,20 +34,11 @@ final readonly class DoctrineUserRepository implements UserRepositoryInterface
         return UserId::fromString($this->uuidGenerator->generate());
     }
 
-    public function list(?string $username, ?string $email, array $orderBy, int $page, int $itemsPerPage): UserList
+    public function list(array $filters, array $orderBy, int $page, int $itemsPerPage): UserList
     {
         $qb = $this->repository->createQueryBuilder('u');
 
-        if (null !== $username && '' !== $username) {
-            $qb->andWhere('u.username LIKE :username')
-                ->setParameter('username', '%' . $username . '%');
-        }
-
-        if (null !== $email && '' !== $email) {
-            $qb->andWhere('u.email LIKE :email')
-                ->setParameter('email', '%' . $email . '%');
-        }
-
+        $this->applyFilters($qb, $filters);
         $this->applyOrdering($qb, $orderBy);
 
         $offset = max(0, ($page - 1) * $itemsPerPage);
@@ -147,6 +138,21 @@ final readonly class DoctrineUserRepository implements UserRepositoryInterface
         }
 
         return $this->repository->find($id->toString());
+    }
+
+    private function applyFilters(QueryBuilder $qb, array $filters): void
+    {
+        $username = $filters['username'] ?? null;
+        if (is_string($username) && '' !== trim($username)) {
+            $qb->andWhere('u.username LIKE :username')
+                ->setParameter('username', '%' . trim($username) . '%');
+        }
+
+        $email = $filters['email'] ?? null;
+        if (is_string($email) && '' !== trim($email)) {
+            $qb->andWhere('u.email LIKE :email')
+                ->setParameter('email', '%' . trim($email) . '%');
+        }
     }
 
     private function applyOrdering(QueryBuilder $qb, array $orderBy): void

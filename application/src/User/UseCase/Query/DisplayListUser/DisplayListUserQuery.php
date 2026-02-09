@@ -13,8 +13,7 @@ final readonly class DisplayListUserQuery implements CacheableQueryInterface
 
     public function __construct(
         public Pagination $pagination,
-        public ?string $username,
-        public ?string $email,
+        public array $filters = [],
         public array $orderBy = [],
     ) {
     }
@@ -24,8 +23,7 @@ final readonly class DisplayListUserQuery implements CacheableQueryInterface
         $payload = [
             'page' => $this->pagination->page,
             'itemsPerPage' => $this->pagination->itemsPerPage,
-            'username' => $this->username,
-            'email' => $this->email,
+            'filters' => $this->normalizedFilters(),
             'orderBy' => $this->normalizedOrderBy(),
         ];
 
@@ -50,5 +48,13 @@ final readonly class DisplayListUserQuery implements CacheableQueryInterface
         ksort($orderBy);
 
         return $orderBy;
+    }
+
+    private function normalizedFilters(): array
+    {
+        $filters = $this->filters;
+        ksort($filters);
+
+        return $filters;
     }
 }

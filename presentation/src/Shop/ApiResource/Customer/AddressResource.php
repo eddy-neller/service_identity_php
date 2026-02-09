@@ -94,39 +94,39 @@ final class AddressResource
 {
     private const string PREFIX_NAME = 'shop-addresses-';
 
-    #[Groups(['shop_address:read'])]
+    #[Groups(['shop_address:read', 'shop_customer:item:read'])]
     public string $id;
 
-    #[Groups(['shop_address:read', 'shop_address:write'])]
+    #[Groups(['shop_address:read', 'shop_address:write', 'shop_customer:item:read'])]
     public string $name;
 
-    #[Groups(['shop_address:read', 'shop_address:write'])]
+    #[Groups(['shop_address:read', 'shop_address:write', 'shop_customer:item:read'])]
     public string $firstname;
 
-    #[Groups(['shop_address:read', 'shop_address:write'])]
+    #[Groups(['shop_address:read', 'shop_address:write', 'shop_customer:item:read'])]
     public string $lastname;
 
-    #[Groups(['shop_address:read', 'shop_address:write'])]
+    #[Groups(['shop_address:read', 'shop_address:write', 'shop_customer:item:read'])]
     public ?string $company = null;
 
-    #[Groups(['shop_address:read', 'shop_address:write'])]
+    #[Groups(['shop_address:read', 'shop_address:write', 'shop_customer:item:read'])]
     public string $address;
 
-    #[Groups(['shop_address:read', 'shop_address:write'])]
+    #[Groups(['shop_address:read', 'shop_address:write', 'shop_customer:item:read'])]
     public string $zip;
 
-    #[Groups(['shop_address:read', 'shop_address:write'])]
+    #[Groups(['shop_address:read', 'shop_address:write', 'shop_customer:item:read'])]
     public string $city;
 
-    #[Groups(['shop_address:read', 'shop_address:write'])]
+    #[Groups(['shop_address:read', 'shop_address:write', 'shop_customer:item:read'])]
     public string $country;
 
-    #[Groups(['shop_address:read', 'shop_address:write'])]
+    #[Groups(['shop_address:read', 'shop_address:write', 'shop_customer:item:read'])]
     public string $phone;
 
-    #[Groups(['shop_address:read'])]
+    #[Groups(['shop_address:read', 'shop_customer:item:read'])]
     public DateTimeImmutable $createdAt;
 
-    #[Groups(['shop_address:read'])]
+    #[Groups(['shop_address:read', 'shop_customer:item:read'])]
     public DateTimeImmutable $updatedAt;
 }

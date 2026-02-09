@@ -62,18 +62,6 @@ final class Customer
         $this->touch($now);
     }
 
-    public function linkToAccount(UserAccountId $userAccountId, DateTimeImmutable $now): void
-    {
-        $this->userAccountId = $userAccountId;
-        $this->touch($now);
-    }
-
-    public function unlinkAccount(DateTimeImmutable $now): void
-    {
-        $this->userAccountId = null;
-        $this->touch($now);
-    }
-
     public function getId(): CustomerId
     {
         return $this->id;

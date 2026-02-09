@@ -9,7 +9,7 @@ use ApiPlatform\State\ProcessorInterface;
 use App\Application\Shared\CQRS\Command\CommandBusInterface;
 use App\Application\Shared\CQRS\Query\QueryBusInterface;
 use App\Application\Shop\UseCase\Command\Customer\UpdateAddress\UpdateAddressCommand;
-use App\Application\Shop\UseCase\Query\Customer\DisplayCustomer\DisplayCustomerQuery;
+use App\Application\Shop\UseCase\Query\Customer\DisplayMyCustomer\DisplayMyCustomerQuery;
 use App\Domain\Shop\Customer\ValueObject\AddressId;
 use App\Domain\Shop\Customer\ValueObject\UserAccountId;
 use App\Presentation\Shared\State\PresentationErrorCode;
@@ -42,19 +42,18 @@ final readonly class AddressPatchProcessor implements ProcessorInterface
             throw new LogicException(PresentationErrorCode::INVALID_INPUT->value);
         }
 
-        $rawId = $uriVariables['id'] ?? null;
-        if (!is_string($rawId) || '' === $rawId) {
+        if (!isset($uriVariables['id']) || !is_string($uriVariables['id'])) {
             throw new LogicException(PresentationErrorCode::INVALID_INPUT->value);
         }
 
         $user = $this->getCurrentUserOrThrow();
         $userId = $this->getUserIdFromAuthenticatedUser($user);
-        $customerOutput = $this->queryBus->dispatch(new DisplayCustomerQuery(
+        $customerOutput = $this->queryBus->dispatch(new DisplayMyCustomerQuery(
             userAccountId: UserAccountId::fromString($userId->toString()),
         ));
 
         $command = new UpdateAddressCommand(
-            addressId: AddressId::fromString($rawId),
+            addressId: AddressId::fromString($uriVariables['id']),
             ownerId: $customerOutput->customerId,
             label: $data->name,
             firstname: $data->firstname,

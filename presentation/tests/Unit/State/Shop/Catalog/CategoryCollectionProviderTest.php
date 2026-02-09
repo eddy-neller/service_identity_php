@@ -35,7 +35,7 @@ final class CategoryCollectionProviderTest extends TestCase
                 $this->assertInstanceOf(DisplayListCategoryQuery::class, $query);
                 $this->assertSame(2, $query->pagination->page);
                 $this->assertSame(15, $query->pagination->itemsPerPage);
-                $this->assertSame(1, $query->level);
+                $this->assertSame('1', $query->filters['level'] ?? null);
                 $this->assertSame(['title' => 'asc'], $query->orderBy);
 
                 return $output;
@@ -79,7 +79,7 @@ final class CategoryCollectionProviderTest extends TestCase
                 $this->assertInstanceOf(DisplayListCategoryQuery::class, $query);
                 $this->assertSame(1, $query->pagination->page);
                 $this->assertSame(30, $query->pagination->itemsPerPage);
-                $this->assertNull($query->level);
+                $this->assertSame([], $query->filters);
                 $this->assertSame([], $query->orderBy);
 
                 return $output;

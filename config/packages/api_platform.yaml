@@ -23,6 +23,9 @@ api_platform:
     exception_to_status:
         App\Domain\Shop\Catalog\Exception\CategoryNotFoundException: 404
         App\Domain\Shop\Catalog\Exception\ProductNotFoundException: 404
+        App\Domain\Shop\Customer\Exception\AddressNotFoundException: 404
+        App\Domain\Shop\Customer\Exception\CustomerAlreadyExistsException: 409
+        App\Domain\Shop\Customer\Exception\CustomerNotFoundException: 404
         App\Domain\User\Exception\UserNotFoundException: 404
         App\Domain\User\Exception\Uniqueness\EmailAlreadyUsedException: 409
         App\Domain\User\Exception\Uniqueness\UsernameAlreadyUsedException: 409

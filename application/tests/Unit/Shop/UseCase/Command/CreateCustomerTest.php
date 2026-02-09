@@ -9,6 +9,8 @@ use App\Application\Shared\Port\TransactionalInterface;
 use App\Application\Shop\Port\CustomerRepositoryInterface;
 use App\Application\Shop\UseCase\Command\Customer\CreateCustomer\CreateCustomerCommand;
 use App\Application\Shop\UseCase\Command\Customer\CreateCustomer\CreateCustomerCommandHandler;
+use App\Application\Shop\UseCase\Command\Customer\CreateCustomer\CreateCustomerOutput;
+use App\Domain\Shop\Customer\Exception\CustomerAlreadyExistsException;
 use App\Domain\Shop\Customer\Model\Customer;
 use App\Domain\Shop\Customer\ValueObject\CustomerId;
 use App\Domain\Shop\Customer\ValueObject\UserAccountId;
@@ -74,19 +76,20 @@ final class CreateCustomerTest extends TestCase
                 return $callback();
             });
 
-        $this->handler->handle($command);
+        $result = $this->handler->handle($command);
+
+        $this->assertInstanceOf(CreateCustomerOutput::class, $result);
+        $this->assertTrue($result->customer->getId()->equals($customerId));
+        $this->assertTrue($result->customer->getUserAccountId()?->equals($accountId));
+        $this->assertTrue($result->customer->getStatus()->isActive());
     }
 
-    public function testHandleActivatesExistingCustomer(): void
+    public function testHandleThrowsWhenCustomerAlreadyExistsForUser(): void
     {
         $createdAt = new DateTimeImmutable('2025-01-01 10:00:00');
-        $disabledAt = new DateTimeImmutable('2025-01-02 10:00:00');
-        $now = new DateTimeImmutable('2025-01-03 10:00:00');
         $customerId = CustomerId::fromString(self::CUSTOMER_ID);
         $accountId = UserAccountId::fromString(self::ACCOUNT_ID);
         $customer = Customer::create($customerId, $createdAt, $accountId);
-        $customer->disable($disabledAt);
-
         $command = new CreateCustomerCommand($accountId);
 
         $this->repository->expects($this->once())
@@ -97,25 +100,20 @@ final class CreateCustomerTest extends TestCase
         $this->repository->expects($this->never())
             ->method('nextIdentity');
 
-        $this->clock->expects($this->once())
-            ->method('now')
-            ->willReturn($now);
+        $this->clock->expects($this->never())
+            ->method('now');
 
-        $this->repository->expects($this->once())
-            ->method('save')
-            ->with($this->callback(function (Customer $saved) use ($customerId, $accountId, $createdAt, $now): bool {
-                return $saved->getId()->equals($customerId)
-                    && $saved->getUserAccountId()?->equals($accountId)
-                    && $saved->getStatus()->isActive()
-                    && $saved->getCreatedAt() === $createdAt
-                    && $saved->getUpdatedAt() === $now;
-            }));
+        $this->repository->expects($this->never())
+            ->method('save');
 
         $this->transactional->expects($this->once())
             ->method('transactional')
             ->willReturnCallback(function (callable $callback) {
                 return $callback();
             });
+
+        $this->expectException(CustomerAlreadyExistsException::class);
+        $this->expectExceptionMessage('Customer already exists for this user account.');
 
         $this->handler->handle($command);
     }

@@ -13,7 +13,7 @@ interface CategoryRepositoryInterface
 {
     public function nextIdentity(): CategoryId;
 
-    public function list(?int $level, array $orderBy, int $page, int $itemsPerPage): CategoryList;
+    public function list(array $filters, array $orderBy, int $page, int $itemsPerPage): CategoryList;
 
     public function save(Category $category): void;
 

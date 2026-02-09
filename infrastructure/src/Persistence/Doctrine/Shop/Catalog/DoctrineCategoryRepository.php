@@ -33,15 +33,11 @@ final readonly class DoctrineCategoryRepository implements CategoryRepositoryInt
         return CategoryId::fromString($this->uuidGenerator->generate());
     }
 
-    public function list(?int $level, array $orderBy, int $page, int $itemsPerPage): CategoryList
+    public function list(array $filters, array $orderBy, int $page, int $itemsPerPage): CategoryList
     {
         $qb = $this->createQueryBuilder();
 
-        if (null !== $level) {
-            $qb->andWhere('c.level = :level')
-                ->setParameter('level', $level);
-        }
-
+        $this->applyFilters($qb, $filters);
         $this->applyOrdering($qb, $orderBy);
 
         $offset = max(0, ($page - 1) * $itemsPerPage);
@@ -137,6 +133,17 @@ final readonly class DoctrineCategoryRepository implements CategoryRepositoryInt
         }
 
         return $repository->createQueryBuilder('c');
+    }
+
+    private function applyFilters(QueryBuilder $qb, array $filters): void
+    {
+        $levelValue = filter_var($filters['level'] ?? null, FILTER_VALIDATE_INT, ['options' => ['min_range' => 0]]);
+        $level = false === $levelValue ? null : (int) $levelValue;
+
+        if (null !== $level) {
+            $qb->andWhere('c.level = :level')
+                ->setParameter('level', $level);
+        }
     }
 
     private function applyOrdering(QueryBuilder $qb, array $orderBy): void

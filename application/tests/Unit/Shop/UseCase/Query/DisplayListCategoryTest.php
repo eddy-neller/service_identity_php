@@ -33,7 +33,7 @@ final class DisplayListCategoryTest extends TestCase
     {
         $query = new DisplayListCategoryQuery(
             pagination: Pagination::fromValues(2, 5),
-            level: 1,
+            filters: ['level' => 1],
             orderBy: ['title' => 'ASC'],
         );
 
@@ -42,7 +42,7 @@ final class DisplayListCategoryTest extends TestCase
 
         $this->repository->expects($this->once())
             ->method('list')
-            ->with(1, ['title' => 'ASC'], 2, 5)
+            ->with(['level' => 1], ['title' => 'ASC'], 2, 5)
             ->willReturn($list);
 
         $output = $this->handler->handle($query);
@@ -56,7 +56,7 @@ final class DisplayListCategoryTest extends TestCase
     {
         $query = new DisplayListCategoryQuery(
             pagination: Pagination::fromValues(0, 0),
-            level: null,
+            filters: [],
             orderBy: [],
         );
 
@@ -65,12 +65,42 @@ final class DisplayListCategoryTest extends TestCase
 
         $this->repository->expects($this->once())
             ->method('list')
-            ->with(null, ['createdAt' => 'DESC'], 1, 30)
+            ->with([], ['createdAt' => 'DESC'], 1, 30)
             ->willReturn($list);
 
         $output = $this->handler->handle($query);
 
         $this->assertSame([$category], $output->categories);
+    }
+
+    public function testQueryCacheKeyIsStableWhenFiltersAndOrderByAreReordered(): void
+    {
+        $this->repository->expects($this->never())->method('list');
+
+        $queryA = new DisplayListCategoryQuery(
+            pagination: Pagination::fromValues(2, 5),
+            filters: ['status' => 1, 'level' => 2],
+            orderBy: ['title' => 'ASC', 'createdAt' => 'DESC'],
+        );
+        $queryB = new DisplayListCategoryQuery(
+            pagination: Pagination::fromValues(2, 5),
+            filters: ['level' => 2, 'status' => 1],
+            orderBy: ['createdAt' => 'DESC', 'title' => 'ASC'],
+        );
+
+        $this->assertSame($queryA->cacheKey(), $queryB->cacheKey());
+    }
+
+    public function testQueryCacheMetadata(): void
+    {
+        $this->repository->expects($this->never())->method('list');
+
+        $query = new DisplayListCategoryQuery(
+            pagination: Pagination::fromValues(1, 10),
+        );
+
+        $this->assertSame(3600, $query->cacheTtl());
+        $this->assertSame(['categories-collection'], $query->cacheTags());
     }
 
     private function createCategory(CategoryId $categoryId): Category

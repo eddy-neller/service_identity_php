@@ -101,6 +101,7 @@
             <directory>infrastructure/src/EventListener</directory>
             <directory>infrastructure/src/EventSubscriber</directory>
             <directory>infrastructure/src/OpenApi</directory>
+            <directory>infrastructure/src/Security/Voter</directory>
             <directory>infrastructure/src/Service/Helper</directory>
             <directory>presentation/src/Shared/Adapter</directory>
             <directory>presentation/src/User/Security</directory>

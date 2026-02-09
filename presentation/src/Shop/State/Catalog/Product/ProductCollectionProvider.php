@@ -28,16 +28,11 @@ final readonly class ProductCollectionProvider implements ProviderInterface
         }
 
         $pagination = Pagination::fromRaw($filters['page'] ?? null, $filters['itemsPerPage'] ?? null);
-        $title = is_string($filters['title'] ?? null) ? $filters['title'] : null;
-        $subtitle = is_string($filters['subtitle'] ?? null) ? $filters['subtitle'] : null;
-        $description = is_string($filters['description'] ?? null) ? $filters['description'] : null;
         $orderBy = is_array($filters['order'] ?? null) ? $filters['order'] : [];
 
         $output = $this->queryBus->dispatch(new DisplayListProductQuery(
             pagination: $pagination,
-            title: $title,
-            subtitle: $subtitle,
-            description: $description,
+            filters: $filters,
             orderBy: $orderBy,
         ));
 

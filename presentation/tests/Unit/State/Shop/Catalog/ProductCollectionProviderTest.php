@@ -48,9 +48,9 @@ final class ProductCollectionProviderTest extends TestCase
                 $this->assertInstanceOf(DisplayListProductQuery::class, $query);
                 $this->assertSame(2, $query->pagination->page);
                 $this->assertSame(15, $query->pagination->itemsPerPage);
-                $this->assertSame('Product', $query->title);
-                $this->assertSame('Subtitle', $query->subtitle);
-                $this->assertSame('Nice', $query->description);
+                $this->assertSame('Product', $query->filters['title'] ?? null);
+                $this->assertSame('Subtitle', $query->filters['subtitle'] ?? null);
+                $this->assertSame('Nice', $query->filters['description'] ?? null);
                 $this->assertSame(['createdAt' => 'asc'], $query->orderBy);
 
                 return $output;
@@ -113,9 +113,7 @@ final class ProductCollectionProviderTest extends TestCase
                 $this->assertInstanceOf(DisplayListProductQuery::class, $query);
                 $this->assertSame(1, $query->pagination->page);
                 $this->assertSame(30, $query->pagination->itemsPerPage);
-                $this->assertNull($query->title);
-                $this->assertNull($query->subtitle);
-                $this->assertNull($query->description);
+                $this->assertSame([], $query->filters);
                 $this->assertSame([], $query->orderBy);
 
                 return $output;

@@ -35,8 +35,7 @@ final class DisplayListUserTest extends TestCase
     {
         $query = new DisplayListUserQuery(
             pagination: Pagination::fromValues(2, 5),
-            username: 'john',
-            email: null,
+            filters: ['username' => 'john'],
             orderBy: ['username' => 'ASC'],
         );
 
@@ -45,7 +44,7 @@ final class DisplayListUserTest extends TestCase
 
         $this->repository->expects($this->once())
             ->method('list')
-            ->with('john', null, ['username' => 'ASC'], 2, 5)
+            ->with(['username' => 'john'], ['username' => 'ASC'], 2, 5)
             ->willReturn($list);
 
         $output = $this->handler->handle($query);
@@ -59,8 +58,7 @@ final class DisplayListUserTest extends TestCase
     {
         $query = new DisplayListUserQuery(
             pagination: Pagination::fromValues(0, 0),
-            username: null,
-            email: null,
+            filters: [],
             orderBy: [],
         );
 
@@ -69,12 +67,42 @@ final class DisplayListUserTest extends TestCase
 
         $this->repository->expects($this->once())
             ->method('list')
-            ->with(null, null, ['createdAt' => 'DESC'], 1, 30)
+            ->with([], ['createdAt' => 'DESC'], 1, 30)
             ->willReturn($list);
 
         $output = $this->handler->handle($query);
 
         $this->assertSame([$user], $output->users);
+    }
+
+    public function testQueryCacheKeyIsStableWhenFiltersAndOrderByAreReordered(): void
+    {
+        $this->repository->expects($this->never())->method('list');
+
+        $queryA = new DisplayListUserQuery(
+            pagination: Pagination::fromValues(2, 5),
+            filters: ['username' => 'john', 'isVerified' => true],
+            orderBy: ['username' => 'ASC', 'createdAt' => 'DESC'],
+        );
+        $queryB = new DisplayListUserQuery(
+            pagination: Pagination::fromValues(2, 5),
+            filters: ['isVerified' => true, 'username' => 'john'],
+            orderBy: ['createdAt' => 'DESC', 'username' => 'ASC'],
+        );
+
+        $this->assertSame($queryA->cacheKey(), $queryB->cacheKey());
+    }
+
+    public function testQueryCacheMetadata(): void
+    {
+        $this->repository->expects($this->never())->method('list');
+
+        $query = new DisplayListUserQuery(
+            pagination: Pagination::fromValues(1, 10),
+        );
+
+        $this->assertSame(3600, $query->cacheTtl());
+        $this->assertSame(['users-collection'], $query->cacheTags());
     }
 
     private function createUser(UserId $userId): User

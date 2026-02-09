@@ -9,7 +9,7 @@ use ApiPlatform\State\ProcessorInterface;
 use App\Application\Shared\CQRS\Command\CommandBusInterface;
 use App\Application\Shared\CQRS\Query\QueryBusInterface;
 use App\Application\Shop\UseCase\Command\Customer\CreateAddress\CreateAddressCommand;
-use App\Application\Shop\UseCase\Query\Customer\DisplayCustomer\DisplayCustomerQuery;
+use App\Application\Shop\UseCase\Query\Customer\DisplayMyCustomer\DisplayMyCustomerQuery;
 use App\Domain\Shop\Customer\ValueObject\UserAccountId;
 use App\Presentation\Shared\State\PresentationErrorCode;
 use App\Presentation\Shop\Dto\Customer\Address\AddressPostInput;
@@ -43,7 +43,7 @@ final readonly class AddressPostProcessor implements ProcessorInterface
 
         $user = $this->getCurrentUserOrThrow();
         $userId = $this->getUserIdFromAuthenticatedUser($user);
-        $customerOutput = $this->queryBus->dispatch(new DisplayCustomerQuery(
+        $customerOutput = $this->queryBus->dispatch(new DisplayMyCustomerQuery(
             userAccountId: UserAccountId::fromString($userId->toString()),
         ));
 

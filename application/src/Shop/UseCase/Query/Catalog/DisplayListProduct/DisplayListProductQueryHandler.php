@@ -16,17 +16,13 @@ final readonly class DisplayListProductQueryHandler implements QueryHandlerInter
 
     public function handle(DisplayListProductQuery $query): DisplayListProductOutput
     {
-        $page = $query->pagination->page;
-        $itemsPerPage = $query->pagination->itemsPerPage;
         $orderBy = [] !== $query->orderBy ? $query->orderBy : ['createdAt' => 'DESC'];
 
         $list = $this->repository->list(
-            title: $query->title,
-            subtitle: $query->subtitle,
-            description: $query->description,
+            filters: $query->filters,
             orderBy: $orderBy,
-            page: $page,
-            itemsPerPage: $itemsPerPage,
+            page: $query->pagination->page,
+            itemsPerPage: $query->pagination->itemsPerPage,
         );
 
         return new DisplayListProductOutput(

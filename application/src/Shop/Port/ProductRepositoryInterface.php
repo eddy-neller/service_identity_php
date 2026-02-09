@@ -13,7 +13,7 @@ interface ProductRepositoryInterface
 {
     public function nextIdentity(): ProductId;
 
-    public function list(?string $title, ?string $subtitle, ?string $description, array $orderBy, int $page, int $itemsPerPage): ProductList;
+    public function list(array $filters, array $orderBy, int $page, int $itemsPerPage): ProductList;
 
     public function save(Product $product): void;
 

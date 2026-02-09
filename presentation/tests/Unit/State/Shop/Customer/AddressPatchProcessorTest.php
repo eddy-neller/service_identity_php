@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Presentation\Tests\Unit\State\Shop\Customer\Address;
+namespace App\Presentation\Tests\Unit\State\Shop\Customer;
 
 use ApiPlatform\Metadata\Operation;
 use App\Application\Shared\CQRS\Command\CommandBusInterface;
@@ -10,7 +10,8 @@ use App\Application\Shared\CQRS\Query\QueryBusInterface;
 use App\Application\Shop\ReadModel\AddressItem;
 use App\Application\Shop\UseCase\Command\Customer\UpdateAddress\UpdateAddressCommand;
 use App\Application\Shop\UseCase\Command\Customer\UpdateAddress\UpdateAddressOutput;
-use App\Application\Shop\UseCase\Query\Customer\DisplayCustomer\DisplayCustomerOutput;
+use App\Application\Shop\UseCase\Query\Customer\DisplayMyCustomer\DisplayMyCustomerOutput;
+use App\Application\Shop\UseCase\Query\Customer\DisplayMyCustomer\DisplayMyCustomerQuery;
 use App\Domain\Shop\Customer\Model\Address as DomainAddress;
 use App\Domain\Shop\Customer\ValueObject\AddressId;
 use App\Domain\Shop\Customer\ValueObject\CustomerId;
@@ -26,7 +27,6 @@ use LogicException;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Symfony\Bundle\SecurityBundle\Security;
-use App\Presentation\Tests\Unit\State\Shop\Customer\CustomerUserTrait;
 
 final class AddressPatchProcessorTest extends TestCase
 {
@@ -69,14 +69,15 @@ final class AddressPatchProcessorTest extends TestCase
         $input->phone = '+33 1 23 45 67 89';
 
         $customerId = CustomerId::fromString('550e8400-e29b-41d4-a716-446655440501');
-        $customerOutput = new DisplayCustomerOutput($customerId, CustomerStatus::active());
+        $customerOutput = new DisplayMyCustomerOutput($customerId, CustomerStatus::active());
 
         $address = $this->createAddress($customerId);
         $output = new UpdateAddressOutput(new AddressItem($address));
 
         $this->queryBus->expects($this->once())
             ->method('dispatch')
-            ->willReturnCallback(function ($query) use ($customerOutput): DisplayCustomerOutput {
+            ->willReturnCallback(function ($query) use ($customerOutput): DisplayMyCustomerOutput {
+                $this->assertInstanceOf(DisplayMyCustomerQuery::class, $query);
                 $this->assertTrue($query->userAccountId->equals(UserAccountId::fromString('550e8400-e29b-41d4-a716-446655440500')));
 
                 return $customerOutput;
@@ -107,7 +108,7 @@ final class AddressPatchProcessorTest extends TestCase
         $this->assertSame('Office', $result->name);
     }
 
-    public function testProcessThrowsOnInvalidId(): void
+    public function testProcessThrowsOnInvalidIdType(): void
     {
         $security = $this->createMock(Security::class);
         $security->expects($this->never())
@@ -137,7 +138,7 @@ final class AddressPatchProcessorTest extends TestCase
         $this->expectException(LogicException::class);
         $this->expectExceptionMessage(PresentationErrorCode::INVALID_INPUT->value);
 
-        $processor->process($input, $this->operation, ['id' => '']);
+        $processor->process($input, $this->operation, ['id' => 123]);
     }
 
     public function testProcessThrowsLogicExceptionForInvalidInput(): void
@@ -182,7 +183,7 @@ final class AddressPatchProcessorTest extends TestCase
         $input->name = 'Office';
 
         $customerId = CustomerId::fromString('550e8400-e29b-41d4-a716-446655440504');
-        $customerOutput = new DisplayCustomerOutput($customerId, CustomerStatus::active());
+        $customerOutput = new DisplayMyCustomerOutput($customerId, CustomerStatus::active());
 
         $address = $this->createAddress($customerId);
         $output = new UpdateAddressOutput(new AddressItem($address));

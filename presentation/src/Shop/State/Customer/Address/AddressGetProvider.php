@@ -8,7 +8,7 @@ use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProviderInterface;
 use App\Application\Shared\CQRS\Query\QueryBusInterface;
 use App\Application\Shop\UseCase\Query\Customer\DisplayAddress\DisplayAddressQuery;
-use App\Application\Shop\UseCase\Query\Customer\DisplayCustomer\DisplayCustomerQuery;
+use App\Application\Shop\UseCase\Query\Customer\DisplayMyCustomer\DisplayMyCustomerQuery;
 use App\Domain\Shop\Customer\ValueObject\AddressId;
 use App\Domain\Shop\Customer\ValueObject\UserAccountId;
 use App\Presentation\Shared\State\PresentationErrorCode;
@@ -42,7 +42,7 @@ final readonly class AddressGetProvider implements ProviderInterface
 
         $user = $this->getCurrentUserOrThrow();
         $userId = $this->getUserIdFromAuthenticatedUser($user);
-        $customerOutput = $this->queryBus->dispatch(new DisplayCustomerQuery(
+        $customerOutput = $this->queryBus->dispatch(new DisplayMyCustomerQuery(
             userAccountId: UserAccountId::fromString($userId->toString()),
         ));
 

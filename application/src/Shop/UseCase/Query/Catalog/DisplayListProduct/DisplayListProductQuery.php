@@ -13,9 +13,7 @@ final readonly class DisplayListProductQuery implements CacheableQueryInterface
 
     public function __construct(
         public Pagination $pagination,
-        public ?string $title,
-        public ?string $subtitle,
-        public ?string $description,
+        public array $filters = [],
         public array $orderBy = [],
     ) {
     }
@@ -25,9 +23,7 @@ final readonly class DisplayListProductQuery implements CacheableQueryInterface
         $payload = [
             'page' => $this->pagination->page,
             'itemsPerPage' => $this->pagination->itemsPerPage,
-            'title' => $this->title,
-            'subtitle' => $this->subtitle,
-            'description' => $this->description,
+            'filters' => $this->normalizedFilters(),
             'orderBy' => $this->normalizedOrderBy(),
         ];
 
@@ -52,5 +48,13 @@ final readonly class DisplayListProductQuery implements CacheableQueryInterface
         ksort($orderBy);
 
         return $orderBy;
+    }
+
+    private function normalizedFilters(): array
+    {
+        $filters = $this->filters;
+        ksort($filters);
+
+        return $filters;
     }
 }

@@ -9,6 +9,9 @@ use App\Application\Shared\Port\TransactionalInterface;
 use App\Application\Shop\Port\CustomerRepositoryInterface;
 use App\Application\Shop\UseCase\Command\Customer\DisableCustomer\DisableCustomerCommand;
 use App\Application\Shop\UseCase\Command\Customer\DisableCustomer\DisableCustomerCommandHandler;
+use App\Application\Shop\UseCase\Command\Customer\DisableCustomer\DisableCustomerOutput;
+use App\Domain\Shop\Customer\Exception\CustomerDomainException;
+use App\Domain\Shop\Customer\Exception\CustomerNotFoundException;
 use App\Domain\Shop\Customer\Model\Customer;
 use App\Domain\Shop\Customer\ValueObject\CustomerId;
 use App\Domain\Shop\Customer\ValueObject\UserAccountId;
@@ -38,14 +41,14 @@ final class DisableCustomerTest extends TestCase
         );
     }
 
-    public function testHandleDoesNothingWhenCustomerMissing(): void
+    public function testHandleThrowsWhenCustomerMissing(): void
     {
-        $accountId = UserAccountId::fromString(self::ACCOUNT_ID);
-        $command = new DisableCustomerCommand($accountId);
+        $customerId = CustomerId::fromString(self::CUSTOMER_ID);
+        $command = new DisableCustomerCommand($customerId);
 
         $this->repository->expects($this->once())
-            ->method('findByUserAccountId')
-            ->with($accountId)
+            ->method('findById')
+            ->with($customerId)
             ->willReturn(null);
 
         $this->clock->expects($this->never())
@@ -56,6 +59,36 @@ final class DisableCustomerTest extends TestCase
 
         $this->repository->expects($this->never())
             ->method('save');
+
+        $this->expectException(CustomerNotFoundException::class);
+        $this->expectExceptionMessage('Customer not found.');
+
+        $this->handler->handle($command);
+    }
+
+    public function testHandleThrowsWhenCustomerHasNoLinkedUserAccount(): void
+    {
+        $createdAt = new DateTimeImmutable('2025-01-01 10:00:00');
+        $customerId = CustomerId::fromString(self::CUSTOMER_ID);
+        $command = new DisableCustomerCommand($customerId);
+        $customer = Customer::create($customerId, $createdAt);
+
+        $this->repository->expects($this->once())
+            ->method('findById')
+            ->with($customerId)
+            ->willReturn($customer);
+
+        $this->clock->expects($this->never())
+            ->method('now');
+
+        $this->transactional->expects($this->never())
+            ->method('transactional');
+
+        $this->repository->expects($this->never())
+            ->method('save');
+
+        $this->expectException(CustomerDomainException::class);
+        $this->expectExceptionMessage('Customer has no user account linked.');
 
         $this->handler->handle($command);
     }
@@ -68,11 +101,11 @@ final class DisableCustomerTest extends TestCase
         $accountId = UserAccountId::fromString(self::ACCOUNT_ID);
         $customer = Customer::create($customerId, $createdAt, $accountId);
 
-        $command = new DisableCustomerCommand($accountId);
+        $command = new DisableCustomerCommand($customerId);
 
         $this->repository->expects($this->once())
-            ->method('findByUserAccountId')
-            ->with($accountId)
+            ->method('findById')
+            ->with($customerId)
             ->willReturn($customer);
 
         $this->clock->expects($this->once())
@@ -95,6 +128,9 @@ final class DisableCustomerTest extends TestCase
                 return $callback();
             });
 
-        $this->handler->handle($command);
+        $output = $this->handler->handle($command);
+
+        $this->assertInstanceOf(DisableCustomerOutput::class, $output);
+        $this->assertTrue($output->customer->getStatus()->isDisabled());
     }
 }

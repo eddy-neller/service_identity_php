@@ -16,16 +16,13 @@ final readonly class DisplayListUserQueryHandler implements QueryHandlerInterfac
 
     public function handle(DisplayListUserQuery $query): DisplayListUserOutput
     {
-        $page = $query->pagination->page;
-        $itemsPerPage = $query->pagination->itemsPerPage;
         $orderBy = [] !== $query->orderBy ? $query->orderBy : ['createdAt' => 'DESC'];
 
         $list = $this->repository->list(
-            username: $query->username,
-            email: $query->email,
+            filters: $query->filters,
             orderBy: $orderBy,
-            page: $page,
-            itemsPerPage: $itemsPerPage,
+            page: $query->pagination->page,
+            itemsPerPage: $query->pagination->itemsPerPage,
         );
 
         return new DisplayListUserOutput(

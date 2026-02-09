@@ -28,14 +28,11 @@ final readonly class CategoryCollectionProvider implements ProviderInterface
         }
 
         $pagination = Pagination::fromRaw($filters['page'] ?? null, $filters['itemsPerPage'] ?? null);
-        $level = filter_var($filters['level'] ?? null, FILTER_VALIDATE_INT, ['options' => ['min_range' => 0]]);
-        $level = false === $level ? null : (int) $level;
-
         $orderBy = is_array($filters['order'] ?? null) ? $filters['order'] : [];
 
         $output = $this->queryBus->dispatch(new DisplayListCategoryQuery(
             pagination: $pagination,
-            level: $level,
+            filters: $filters,
             orderBy: $orderBy,
         ));
 

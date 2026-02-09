@@ -28,14 +28,11 @@ final readonly class UserAdminCollectionProvider implements ProviderInterface
         }
 
         $pagination = Pagination::fromRaw($filters['page'] ?? null, $filters['itemsPerPage'] ?? null);
-        $username = is_string($filters['username'] ?? null) ? $filters['username'] : null;
-        $email = is_string($filters['email'] ?? null) ? $filters['email'] : null;
         $orderBy = is_array($filters['order'] ?? null) ? $filters['order'] : [];
 
         $output = $this->queryBus->dispatch(new DisplayListUserQuery(
             pagination: $pagination,
-            username: $username,
-            email: $email,
+            filters: $filters,
             orderBy: $orderBy,
         ));
 

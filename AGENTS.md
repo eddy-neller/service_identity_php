@@ -486,6 +486,7 @@ domain/
     -   `ActivationLimitReachedException`, `InsufficientStockException`, etc.
 
 -   Messages métier, pas techniques.
+-   Quand une nouvelle exception Domain peut remonter jusqu'a l'API, ajouter son mapping HTTP dans `api/config/packages/api_platform.yaml` (`api_platform.exception_to_status`).
 
 ### 3.7. Temps & timestamps
 

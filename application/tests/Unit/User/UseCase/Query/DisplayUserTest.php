@@ -62,6 +62,29 @@ final class DisplayUserTest extends TestCase
         $this->handler->handle($query);
     }
 
+    public function testQueryCacheKeyAndTagsUseUserId(): void
+    {
+        $this->repository->expects($this->never())->method('findById');
+
+        $userId = UserId::fromString('550e8400-e29b-41d4-a716-446655440002');
+        $query = new DisplayUserQuery($userId);
+
+        $this->assertSame('user:item:550e8400-e29b-41d4-a716-446655440002', $query->cacheKey());
+        $this->assertSame(
+            ['users-collection', 'user-550e8400-e29b-41d4-a716-446655440002'],
+            $query->cacheTags(),
+        );
+    }
+
+    public function testQueryCacheTtl(): void
+    {
+        $this->repository->expects($this->never())->method('findById');
+
+        $query = new DisplayUserQuery(UserId::fromString('550e8400-e29b-41d4-a716-446655440003'));
+
+        $this->assertSame(3600, $query->cacheTtl());
+    }
+
     private function createUser(UserId $userId): User
     {
         return User::register(

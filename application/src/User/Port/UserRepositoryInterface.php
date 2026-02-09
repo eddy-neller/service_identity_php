@@ -12,7 +12,7 @@ interface UserRepositoryInterface
 {
     public function nextIdentity(): UserId;
 
-    public function list(?string $username, ?string $email, array $orderBy, int $page, int $itemsPerPage): UserList;
+    public function list(array $filters, array $orderBy, int $page, int $itemsPerPage): UserList;
 
     public function save(User $user): void;
 

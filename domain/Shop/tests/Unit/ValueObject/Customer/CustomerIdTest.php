@@ -19,6 +19,13 @@ final class CustomerIdTest extends TestCase
         $this->assertSame(self::UUID, $id->toString());
     }
 
+    public function testToStringMagicMethodReturnsUuid(): void
+    {
+        $id = CustomerId::fromString(self::UUID);
+
+        $this->assertSame(self::UUID, (string) $id);
+    }
+
     public function testFromStringThrowsWhenEmpty(): void
     {
         $this->expectException(InvalidArgumentException::class);

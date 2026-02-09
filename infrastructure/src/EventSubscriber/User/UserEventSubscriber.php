@@ -8,6 +8,7 @@ use App\Application\User\Port\TokenProviderInterface;
 use App\Application\User\Port\UserNotifierInterface;
 use App\Application\User\Port\UserRepositoryInterface;
 use App\Application\Shared\CQRS\Command\CommandBusInterface;
+use App\Application\Shop\Port\CustomerRepositoryInterface;
 use App\Application\Shop\UseCase\Command\Customer\CreateCustomer\CreateCustomerCommand;
 use App\Application\Shop\UseCase\Command\Customer\DisableCustomer\DisableCustomerCommand;
 use App\Domain\User\Event\ActivationEmailRequestedEvent;
@@ -30,6 +31,7 @@ final readonly class UserEventSubscriber implements EventSubscriberInterface
 {
     public function __construct(
         private UserRepositoryInterface $repository,
+        private CustomerRepositoryInterface $customerRepository,
         private TokenProviderInterface $tokenProvider,
         private UserNotifierInterface $notifier,
         private LoggerInterface $logger,
@@ -159,9 +161,13 @@ final readonly class UserEventSubscriber implements EventSubscriberInterface
             'occurred_on' => $event->occurredOn()->format('Y-m-d H:i:s'),
         ]);
 
-        $this->commandBus->dispatch(new DisableCustomerCommand(
+        $customer = $this->customerRepository->findByUserAccountId(
             UserAccountId::fromString($event->getUserId()->toString()),
-        ));
+        );
+
+        if (null !== $customer) {
+            $this->commandBus->dispatch(new DisableCustomerCommand($customer->getId()));
+        }
 
         // Ici, on peut ajouter d'autres actions :
         // - Nettoyer les données associées

@@ -37,25 +37,11 @@ final readonly class DoctrineProductRepository implements ProductRepositoryInter
         return ProductId::fromString($this->uuidGenerator->generate());
     }
 
-    public function list(?string $title, ?string $subtitle, ?string $description, array $orderBy, int $page, int $itemsPerPage): ProductList
+    public function list(array $filters, array $orderBy, int $page, int $itemsPerPage): ProductList
     {
         $qb = $this->createQueryBuilder();
 
-        if (null !== $title && '' !== $title) {
-            $qb->andWhere('p.title LIKE :title')
-                ->setParameter('title', '%' . $title . '%');
-        }
-
-        if (null !== $subtitle && '' !== $subtitle) {
-            $qb->andWhere('p.subtitle LIKE :subtitle')
-                ->setParameter('subtitle', '%' . $subtitle . '%');
-        }
-
-        if (null !== $description && '' !== $description) {
-            $qb->andWhere('p.description LIKE :description')
-                ->setParameter('description', '%' . $description . '%');
-        }
-
+        $this->applyFilters($qb, $filters);
         $this->applyOrdering($qb, $orderBy);
 
         $offset = max(0, ($page - 1) * $itemsPerPage);
@@ -148,6 +134,27 @@ final readonly class DoctrineProductRepository implements ProductRepositoryInter
             ->select('p', 'c')
             ->from(DoctrineProduct::class, 'p')
             ->join('p.category', 'c');
+    }
+
+    private function applyFilters(QueryBuilder $qb, array $filters): void
+    {
+        $title = $filters['title'] ?? null;
+        if (is_string($title) && '' !== trim($title)) {
+            $qb->andWhere('p.title LIKE :title')
+                ->setParameter('title', '%' . trim($title) . '%');
+        }
+
+        $subtitle = $filters['subtitle'] ?? null;
+        if (is_string($subtitle) && '' !== trim($subtitle)) {
+            $qb->andWhere('p.subtitle LIKE :subtitle')
+                ->setParameter('subtitle', '%' . trim($subtitle) . '%');
+        }
+
+        $description = $filters['description'] ?? null;
+        if (is_string($description) && '' !== trim($description)) {
+            $qb->andWhere('p.description LIKE :description')
+                ->setParameter('description', '%' . trim($description) . '%');
+        }
     }
 
     private function applyOrdering(QueryBuilder $qb, array $orderBy): void
