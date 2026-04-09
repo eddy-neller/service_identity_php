@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Presentation\User\State;
 
 use ApiPlatform\Metadata\Operation;
@@ -11,7 +13,7 @@ use App\Presentation\User\Dto\UserRegisterInput;
 use App\Presentation\User\Presenter\UserResourcePresenter;
 use LogicException;
 
-readonly class UserRegisterProcessor implements ProcessorInterface
+final readonly class UserRegisterProcessor implements ProcessorInterface
 {
     public function __construct(
         private CommandBusInterface $commandBus,

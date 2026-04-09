@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Domain\Shop\Customer\Model;
 
 use App\Domain\Shop\Customer\ValueObject\AddressId;

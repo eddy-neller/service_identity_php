@@ -5,15 +5,14 @@ declare(strict_types=1);
 namespace App\Infrastructure\Tests\Unit\Service\Encoder;
 
 use App\Infrastructure\Service\Encoder\MultipartDecoder;
-use PHPUnit\Framework\MockObject\MockObject;
+use PHPUnit\Framework\MockObject\Stub;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\RequestStack;
 
 final class MultipartDecoderTest extends KernelTestCase
 {
-    /** @var RequestStack&MockObject */
-    private RequestStack $requestStack;
+    private RequestStack&Stub $requestStack;
 
     private MultipartDecoder $multipartDecoder;
 

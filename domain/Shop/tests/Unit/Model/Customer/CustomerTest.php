@@ -14,6 +14,7 @@ use PHPUnit\Framework\TestCase;
 final class CustomerTest extends TestCase
 {
     private const string CUSTOMER_ID = '550e8400-e29b-41d4-a716-446655440010';
+
     private const string ACCOUNT_ID = '550e8400-e29b-41d4-a716-446655440011';
 
     public function testRegisterCreatesActiveCustomer(): void

@@ -61,7 +61,7 @@ final class RequestPasswordResetTest extends TestCase
 
         $this->repository->expects($this->once())
             ->method('findByEmail')
-            ->with(new EmailAddress($email))
+            ->with(EmailAddress::fromString($email))
             ->willReturn($user);
 
         $this->clock->expects($this->once())
@@ -106,7 +106,7 @@ final class RequestPasswordResetTest extends TestCase
 
         $this->repository->expects($this->once())
             ->method('findByEmail')
-            ->with(new EmailAddress($email))
+            ->with(EmailAddress::fromString($email))
             ->willReturn(null);
 
         $this->tokenProvider->expects($this->never())
@@ -119,8 +119,8 @@ final class RequestPasswordResetTest extends TestCase
     {
         return User::register(
             id: UserId::fromString('550e8400-e29b-41d4-a716-446655440000'),
-            username: new Username('testuser'),
-            email: new EmailAddress($email),
+            username: Username::fromString('testuser'),
+            email: EmailAddress::fromString($email),
             password: new HashedPassword('hash'),
             preferences: Preferences::fromArray(['lang' => 'fr']),
             now: new DateTimeImmutable(),

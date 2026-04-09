@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Presentation\User\Dto;
 
 use App\Domain\User\Security\ValueObject\RoleSet;
@@ -8,7 +10,7 @@ use App\Presentation\User\Validator as AppAssert;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
 
-class UserPostInput
+final class UserPostInput
 {
     #[Assert\Sequentially([
         new Assert\NotBlank(),

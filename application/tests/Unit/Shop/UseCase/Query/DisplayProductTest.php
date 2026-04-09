@@ -21,6 +21,7 @@ use App\Domain\Shop\Catalog\ValueObject\ProductSubtitle;
 use App\Domain\Shop\Catalog\ValueObject\ProductTitle;
 use App\Domain\Shop\Shared\ValueObject\Money;
 use DateTimeImmutable;
+use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 
 final class DisplayProductTest extends TestCase
@@ -29,9 +30,9 @@ final class DisplayProductTest extends TestCase
 
     private const string CATEGORY_ID = '550e8400-e29b-41d4-a716-446655440001';
 
-    private ProductRepositoryInterface $productRepository;
+    private ProductRepositoryInterface&MockObject $productRepository;
 
-    private CategoryRepositoryInterface $categoryRepository;
+    private CategoryRepositoryInterface&MockObject $categoryRepository;
 
     private DisplayProductQueryHandler $handler;
 

@@ -4,36 +4,36 @@ declare(strict_types=1);
 
 namespace App\Domain\User\Tests\Unit\ValueObject\Security;
 
+use App\Domain\User\Exception\InvalidRoleException;
 use App\Domain\User\Security\ValueObject\RoleSet;
-use InvalidArgumentException;
 use PHPUnit\Framework\TestCase;
 
 final class RoleSetTest extends TestCase
 {
     public function testConstructWithValidRoles(): void
     {
-        $roleSet = new RoleSet(['ROLE_USER', 'ROLE_ADMIN']);
+        $roleSet = RoleSet::fromArray(['ROLE_USER', 'ROLE_ADMIN']);
 
         $this->assertSame(['ROLE_USER', 'ROLE_ADMIN'], $roleSet->all());
     }
 
     public function testConstructWithEmptyArrayUsesDefaultRole(): void
     {
-        $roleSet = new RoleSet([]);
+        $roleSet = RoleSet::fromArray([]);
 
         $this->assertSame(['ROLE_USER'], $roleSet->all());
     }
 
     public function testConstructRemovesDuplicates(): void
     {
-        $roleSet = new RoleSet(['ROLE_USER', 'ROLE_ADMIN', 'ROLE_USER']);
+        $roleSet = RoleSet::fromArray(['ROLE_USER', 'ROLE_ADMIN', 'ROLE_USER']);
 
         $this->assertSame(['ROLE_USER', 'ROLE_ADMIN'], $roleSet->all());
     }
 
     public function testConstructReindexesArray(): void
     {
-        $roleSet = new RoleSet([2 => 'ROLE_USER', 5 => 'ROLE_ADMIN']);
+        $roleSet = RoleSet::fromArray([2 => 'ROLE_USER', 5 => 'ROLE_ADMIN']);
         $roles = $roleSet->all();
 
         $this->assertSame(['ROLE_USER', 'ROLE_ADMIN'], $roles);
@@ -43,48 +43,48 @@ final class RoleSetTest extends TestCase
 
     public function testConstructThrowsExceptionForNonStringRole(): void
     {
-        $this->expectException(InvalidArgumentException::class);
+        $this->expectException(InvalidRoleException::class);
         $this->expectExceptionMessage('Role invalide.');
 
         /* @phpstan-ignore argument.type */
-        new RoleSet(['ROLE_USER', 123]);
+        RoleSet::fromArray(['ROLE_USER', 123]);
     }
 
     public function testConstructThrowsExceptionForEmptyRole(): void
     {
-        $this->expectException(InvalidArgumentException::class);
+        $this->expectException(InvalidRoleException::class);
         $this->expectExceptionMessage('Role invalide.');
 
-        new RoleSet(['ROLE_USER', '']);
+        RoleSet::fromArray(['ROLE_USER', '']);
     }
 
     public function testConstructThrowsExceptionForWhitespaceRole(): void
     {
-        $this->expectException(InvalidArgumentException::class);
+        $this->expectException(InvalidRoleException::class);
         $this->expectExceptionMessage('Role invalide.');
 
-        new RoleSet(['ROLE_USER', '   ']);
+        RoleSet::fromArray(['ROLE_USER', '   ']);
     }
 
     public function testConstructThrowsExceptionForUnauthorizedRole(): void
     {
-        $this->expectException(InvalidArgumentException::class);
+        $this->expectException(InvalidRoleException::class);
         $this->expectExceptionMessage('Role non autorisé: ROLE_UNKNOWN');
 
-        new RoleSet(['ROLE_USER', 'ROLE_UNKNOWN']);
+        RoleSet::fromArray(['ROLE_USER', 'ROLE_UNKNOWN']);
     }
 
     public function testAllReturnsAllRoles(): void
     {
         $roles = ['ROLE_USER', 'ROLE_ADMIN'];
-        $roleSet = new RoleSet($roles);
+        $roleSet = RoleSet::fromArray($roles);
 
         $this->assertSame($roles, $roleSet->all());
     }
 
     public function testContainsReturnsTrueWhenRoleExists(): void
     {
-        $roleSet = new RoleSet(['ROLE_USER', 'ROLE_ADMIN']);
+        $roleSet = RoleSet::fromArray(['ROLE_USER', 'ROLE_ADMIN']);
 
         $this->assertTrue($roleSet->contains('ROLE_USER'));
         $this->assertTrue($roleSet->contains('ROLE_ADMIN'));
@@ -92,21 +92,21 @@ final class RoleSetTest extends TestCase
 
     public function testContainsReturnsFalseWhenRoleDoesNotExist(): void
     {
-        $roleSet = new RoleSet(['ROLE_USER']);
+        $roleSet = RoleSet::fromArray(['ROLE_USER']);
 
         $this->assertFalse($roleSet->contains('ROLE_ADMIN'));
     }
 
     public function testContainsIsStrictComparison(): void
     {
-        $roleSet = new RoleSet(['ROLE_USER']);
+        $roleSet = RoleSet::fromArray(['ROLE_USER']);
 
         $this->assertFalse($roleSet->contains('role_user'));
     }
 
     public function testAddCreatesNewInstanceWithAddedRole(): void
     {
-        $roleSet = new RoleSet(['ROLE_USER']);
+        $roleSet = RoleSet::fromArray(['ROLE_USER']);
         $newRoleSet = $roleSet->add('ROLE_ADMIN');
 
         $this->assertSame(['ROLE_USER'], $roleSet->all());
@@ -115,7 +115,7 @@ final class RoleSetTest extends TestCase
 
     public function testAddIsImmutable(): void
     {
-        $roleSet = new RoleSet(['ROLE_USER']);
+        $roleSet = RoleSet::fromArray(['ROLE_USER']);
         $newRoleSet = $roleSet->add('ROLE_ADMIN');
 
         $this->assertNotSame($roleSet, $newRoleSet);
@@ -123,7 +123,7 @@ final class RoleSetTest extends TestCase
 
     public function testAddDeduplicatesRoles(): void
     {
-        $roleSet = new RoleSet(['ROLE_USER', 'ROLE_ADMIN']);
+        $roleSet = RoleSet::fromArray(['ROLE_USER', 'ROLE_ADMIN']);
         $newRoleSet = $roleSet->add('ROLE_USER');
 
         $this->assertSame(['ROLE_USER', 'ROLE_ADMIN'], $newRoleSet->all());

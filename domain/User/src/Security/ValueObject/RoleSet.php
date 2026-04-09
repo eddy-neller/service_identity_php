@@ -1,10 +1,12 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Domain\User\Security\ValueObject;
 
-use InvalidArgumentException;
+use App\Domain\User\Exception\InvalidRoleException;
 
-final class RoleSet
+final readonly class RoleSet
 {
     public const string ROLE_USER = 'ROLE_USER';
 
@@ -29,23 +31,31 @@ final class RoleSet
     /**
      * @param string[] $roles
      */
-    public function __construct(array $roles)
+    private function __construct(array $roles)
     {
         if ([] === $roles) {
-            $roles = ['ROLE_USER'];
+            $roles = [self::ROLE_USER];
         }
 
         foreach ($roles as $role) {
             if (!is_string($role) || '' === trim($role)) {
-                throw new InvalidArgumentException('Role invalide.');
+                throw InvalidRoleException::invalid();
             }
 
             if (!in_array($role, self::ALLOWED, true)) {
-                throw new InvalidArgumentException('Role non autorisé: ' . $role);
+                throw InvalidRoleException::notAllowed($role);
             }
         }
 
         $this->roles = array_values(array_unique($roles));
+    }
+
+    /**
+     * @param string[] $roles
+     */
+    public static function fromArray(array $roles): self
+    {
+        return new self($roles);
     }
 
     public function all(): array

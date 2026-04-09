@@ -20,12 +20,17 @@ use PHPUnit\Framework\TestCase;
 final class UpdateAddressTest extends TestCase
 {
     private const string ADDRESS_ID = '550e8400-e29b-41d4-a716-446655440060';
+
     private const string CUSTOMER_ID = '550e8400-e29b-41d4-a716-446655440061';
+
     private const string OTHER_CUSTOMER_ID = '550e8400-e29b-41d4-a716-446655440062';
 
     private AddressRepositoryInterface&MockObject $repository;
+
     private ClockInterface&MockObject $clock;
+
     private TransactionalInterface&MockObject $transactional;
+
     private UpdateAddressCommandHandler $handler;
 
     protected function setUp(): void
@@ -89,15 +94,15 @@ final class UpdateAddressTest extends TestCase
             ->with($this->callback(function (Address $saved) use ($addressId, $customerId, $createdAt, $updatedAt): bool {
                 return $saved->getId()->equals($addressId)
                     && $saved->getOwnerId()->equals($customerId)
-                    && $saved->getLabel() === 'Office'
-                    && $saved->getFirstname() === 'Jane'
-                    && $saved->getLastname() === 'Doe'
-                    && $saved->getCompany() === null
-                    && $saved->getStreet() === '45 Second St'
-                    && $saved->getZipCode() === '54321'
-                    && $saved->getCity() === 'Lyon'
-                    && $saved->getCountry() === 'France'
-                    && $saved->getPhone() === '+33 6 12 34 56 78'
+                    && 'Office' === $saved->getLabel()
+                    && 'Jane' === $saved->getFirstname()
+                    && 'Doe' === $saved->getLastname()
+                    && null === $saved->getCompany()
+                    && '45 Second St' === $saved->getStreet()
+                    && '54321' === $saved->getZipCode()
+                    && 'Lyon' === $saved->getCity()
+                    && 'France' === $saved->getCountry()
+                    && '+33 6 12 34 56 78' === $saved->getPhone()
                     && $saved->getCreatedAt() === $createdAt
                     && $saved->getUpdatedAt() === $updatedAt;
             }));
@@ -160,14 +165,14 @@ final class UpdateAddressTest extends TestCase
         $this->repository->expects($this->once())
             ->method('save')
             ->with($this->callback(function (Address $saved) use ($updatedAt): bool {
-                return $saved->getLabel() === 'Office'
-                    && $saved->getFirstname() === 'John'
-                    && $saved->getLastname() === 'Doe'
-                    && $saved->getStreet() === '12 Main St'
-                    && $saved->getZipCode() === '12345'
-                    && $saved->getCity() === 'Paris'
-                    && $saved->getCountry() === 'France'
-                    && $saved->getPhone() === '+33 1 23 45 67 89'
+                return 'Office' === $saved->getLabel()
+                    && 'John' === $saved->getFirstname()
+                    && 'Doe' === $saved->getLastname()
+                    && '12 Main St' === $saved->getStreet()
+                    && '12345' === $saved->getZipCode()
+                    && 'Paris' === $saved->getCity()
+                    && 'France' === $saved->getCountry()
+                    && '+33 1 23 45 67 89' === $saved->getPhone()
                     && $saved->getUpdatedAt() === $updatedAt;
             }));
 

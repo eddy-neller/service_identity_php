@@ -87,7 +87,7 @@ final class CreateUserByAdminTest extends TestCase
 
         $this->uniquenessChecker->expects($this->once())
             ->method('ensureEmailAndUsernameAvailable')
-            ->with(new EmailAddress($email), new Username($username));
+            ->with(EmailAddress::fromString($email), Username::fromString($username));
 
         $this->passwordHasher->expects($this->once())
             ->method('hash')
@@ -99,7 +99,7 @@ final class CreateUserByAdminTest extends TestCase
             ->with($this->callback(function (User $user) use ($userId, $username, $email, $firstname, $lastname, $status, $roles) {
                 return $user->getId()->equals($userId)
                     && $user->getUsername()->toString() === $username
-                    && $user->getEmail()->equals(new EmailAddress($email))
+                    && $user->getEmail()->equals(EmailAddress::fromString($email))
                     && $user->getFirstname()?->toString() === $firstname
                     && $user->getLastname()?->toString() === $lastname
                     && $user->getStatus()->toInt() === $status->toInt()
@@ -115,7 +115,7 @@ final class CreateUserByAdminTest extends TestCase
         $output = $this->handler->handle($command);
 
         $this->assertInstanceOf(User::class, $output->user);
-        $this->assertTrue($output->user->getEmail()->equals(new EmailAddress($email)));
+        $this->assertTrue($output->user->getEmail()->equals(EmailAddress::fromString($email)));
         $this->assertSame($username, $output->user->getUsername()->toString());
     }
 
@@ -143,7 +143,7 @@ final class CreateUserByAdminTest extends TestCase
 
         $this->uniquenessChecker->expects($this->once())
             ->method('ensureEmailAndUsernameAvailable')
-            ->with(new EmailAddress($email), new Username($username))
+            ->with(EmailAddress::fromString($email), Username::fromString($username))
             ->willThrowException(new EmailAlreadyUsedException());
 
         $this->passwordHasher->expects($this->never())
@@ -184,7 +184,7 @@ final class CreateUserByAdminTest extends TestCase
 
         $this->uniquenessChecker->expects($this->once())
             ->method('ensureEmailAndUsernameAvailable')
-            ->with(new EmailAddress($email), new Username($username))
+            ->with(EmailAddress::fromString($email), Username::fromString($username))
             ->willThrowException(new UsernameAlreadyUsedException());
 
         $this->passwordHasher->expects($this->never())

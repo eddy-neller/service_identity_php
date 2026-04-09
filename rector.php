@@ -21,6 +21,7 @@ use Rector\PHPUnit\Set\PHPUnitSetList;
 use Rector\Set\ValueObject\SetList;
 use Rector\Strict\Rector\Empty_\DisallowedEmptyRuleFixerRector;
 use Rector\Transform\Rector\Attribute\AttributeKeyToClassConstFetchRector;
+use Rector\TypeDeclaration\Rector\StmtsAwareInterface\SafeDeclareStrictTypesRector;
 
 return static function (RectorConfig $rectorConfig): void {
     $rectorConfig->paths([
@@ -63,5 +64,9 @@ return static function (RectorConfig $rectorConfig): void {
         AssertEmptyNullableObjectToAssertInstanceofRector::class,
         WithCallbackIdenticalToStandaloneAssertsRector::class,
         NarrowWideUnionReturnTypeRector::class,
+        SafeDeclareStrictTypesRector::class => [
+            __DIR__ . '/src/Kernel.php',
+            __DIR__ . '/tests/bootstrap.php',
+        ],
     ]);
 };

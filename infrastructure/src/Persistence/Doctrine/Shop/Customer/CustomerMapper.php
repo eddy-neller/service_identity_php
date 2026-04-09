@@ -9,7 +9,6 @@ use App\Domain\Shop\Customer\ValueObject\CustomerId;
 use App\Domain\Shop\Customer\ValueObject\CustomerStatus;
 use App\Domain\Shop\Customer\ValueObject\UserAccountId;
 use App\Infrastructure\Entity\Shop\Customer as DoctrineCustomer;
-use InvalidArgumentException;
 use Ramsey\Uuid\Uuid;
 
 final readonly class CustomerMapper

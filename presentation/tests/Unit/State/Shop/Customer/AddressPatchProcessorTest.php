@@ -31,8 +31,11 @@ use Symfony\Bundle\SecurityBundle\Security;
 final class AddressPatchProcessorTest extends TestCase
 {
     use CustomerUserTrait;
+
     private CommandBusInterface&MockObject $commandBus;
+
     private QueryBusInterface&MockObject $queryBus;
+
     private Operation&MockObject $operation;
 
     protected function setUp(): void

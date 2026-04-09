@@ -20,6 +20,7 @@ use App\Domain\Shop\Catalog\ValueObject\CategoryTitle;
 use App\Domain\Shop\Catalog\ValueObject\ProductId;
 use App\Domain\Shop\Shared\ValueObject\Money;
 use DateTimeImmutable;
+use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 
 final class CreateProductByAdminTest extends TestCase
@@ -28,15 +29,15 @@ final class CreateProductByAdminTest extends TestCase
 
     private const string CATEGORY_ID = '550e8400-e29b-41d4-a716-446655440001';
 
-    private ProductRepositoryInterface $productRepository;
+    private ProductRepositoryInterface&MockObject $productRepository;
 
-    private CategoryRepositoryInterface $categoryRepository;
+    private CategoryRepositoryInterface&MockObject $categoryRepository;
 
-    private ClockInterface $clock;
+    private ClockInterface&MockObject $clock;
 
-    private TransactionalInterface $transactional;
+    private TransactionalInterface&MockObject $transactional;
 
-    private SlugGeneratorInterface $slugGenerator;
+    private SlugGeneratorInterface&MockObject $slugGenerator;
 
     private CreateProductByAdminCommandHandler $handler;
 

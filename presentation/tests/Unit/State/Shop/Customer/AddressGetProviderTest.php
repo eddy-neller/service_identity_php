@@ -28,6 +28,7 @@ use Symfony\Bundle\SecurityBundle\Security;
 final class AddressGetProviderTest extends TestCase
 {
     use CustomerUserTrait;
+
     public function testItReturnsAddressResource(): void
     {
         $queryBus = $this->createMock(QueryBusInterface::class);
@@ -101,7 +102,6 @@ final class AddressGetProviderTest extends TestCase
             phone: '+33 1 23 45 67 89',
             createdAt: new DateTimeImmutable('2025-01-01 10:00:00'),
             updatedAt: new DateTimeImmutable('2025-01-02 10:00:00'),
-            company: null,
         );
     }
 }

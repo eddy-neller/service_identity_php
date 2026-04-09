@@ -26,6 +26,7 @@ use Symfony\Component\HttpFoundation\Request;
 final class AddressCollectionProviderTest extends TestCase
 {
     use CustomerUserTrait;
+
     public function testItMapsAddressesAndSetsPagination(): void
     {
         $request = new Request();

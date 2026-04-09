@@ -27,7 +27,9 @@ use stdClass;
 final class CustomerPostProcessorTest extends TestCase
 {
     private CommandBusInterface&MockObject $commandBus;
+
     private Operation&MockObject $operation;
+
     private CustomerPostProcessor $processor;
 
     protected function setUp(): void
@@ -47,27 +49,25 @@ final class CustomerPostProcessorTest extends TestCase
     {
         $input = new CustomerPostInput();
         $input->userAccountId = '550e8400-e29b-41d4-a716-446655440700';
+
         $expectedUserAccountId = UserAccountId::fromString($input->userAccountId);
 
         $this->commandBus->expects($this->once())
             ->method('dispatch')
-            ->with($this->callback(function ($command) use ($expectedUserAccountId): bool {
+            ->willReturnCallback(function ($command) use ($expectedUserAccountId): CreateCustomerOutput {
                 $this->assertInstanceOf(CreateCustomerCommand::class, $command);
                 $this->assertTrue($command->userAccountId->equals($expectedUserAccountId));
 
-                return true;
-            }))
-            ->willReturn(
-                new CreateCustomerOutput(
+                return new CreateCustomerOutput(
                     Customer::reconstitute(
                         id: CustomerId::fromString('550e8400-e29b-41d4-a716-446655440701'),
                         status: CustomerStatus::active(),
-                        userAccountId: $expectedUserAccountId,
                         createdAt: new DateTimeImmutable('2025-01-01 10:00:00'),
                         updatedAt: new DateTimeImmutable('2025-01-01 10:00:00'),
+                        userAccountId: $expectedUserAccountId,
                     ),
-                ),
-            );
+                );
+            });
 
         $result = $this->processor->process($input, $this->operation);
 

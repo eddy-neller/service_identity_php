@@ -24,10 +24,10 @@ final class UserMapper
     {
         return DomainUser::reconstitute(
             id: UserId::fromString($entity->getId()->toString()),
-            username: new Username($entity->getUsername()),
-            email: new EmailAddress($entity->getEmail()),
+            username: Username::fromString($entity->getUsername()),
+            email: EmailAddress::fromString($entity->getEmail()),
             password: new HashedPassword($entity->getPassword()),
-            roles: new RoleSet($entity->getRoles()),
+            roles: RoleSet::fromArray($entity->getRoles()),
             status: UserStatus::fromInt($entity->getStatus()),
             security: $entity->getSecurity(),
             activeEmail: $entity->getActiveEmail(),
@@ -40,8 +40,8 @@ final class UserMapper
             loginCount: $entity->getNbLogin(),
             createdAt: $entity->getCreatedAt(),
             updatedAt: $entity->getUpdatedAt(),
-            firstname: $entity->firstname ? new Firstname($entity->firstname) : null,
-            lastname: $entity->lastname ? new Lastname($entity->lastname) : null,
+            firstname: $entity->firstname ? Firstname::fromString($entity->firstname) : null,
+            lastname: $entity->lastname ? Lastname::fromString($entity->lastname) : null,
         );
     }
 

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Infrastructure\EventListener;
 
 use Symfony\Component\EventDispatcher\Attribute\AsEventListener;
@@ -18,8 +20,8 @@ final readonly class PaginationHeaderListener
         $totalPages = $request->attributes->get('_total_pages');
 
         if (null !== $totalItems) {
-            $response->headers->set('X-Total-Count', $totalItems);
-            $response->headers->set('X-Total-Pages', $totalPages ?? 1);
+            $response->headers->set('X-Total-Count', (string) $totalItems);
+            $response->headers->set('X-Total-Pages', (string) ($totalPages ?? 1));
         }
     }
 }

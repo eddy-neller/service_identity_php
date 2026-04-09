@@ -19,9 +19,11 @@ use PHPUnit\Framework\TestCase;
 final class DisplayListAddressTest extends TestCase
 {
     private const string ADDRESS_ID = '550e8400-e29b-41d4-a716-446655440090';
+
     private const string CUSTOMER_ID = '550e8400-e29b-41d4-a716-446655440091';
 
     private AddressRepositoryInterface&MockObject $repository;
+
     private DisplayListAddressQueryHandler $handler;
 
     protected function setUp(): void

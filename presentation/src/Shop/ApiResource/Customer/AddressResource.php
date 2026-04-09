@@ -34,7 +34,7 @@ use Symfony\Component\Serializer\Attribute\Groups;
             uriTemplate: '/addresses/{id}',
             requirements: ['id' => RouteRequirements::UUID],
             openapi: new Model\Operation(
-                security: [['ApiKeyAuth' => []]]
+                security: [['JWT' => []]]
             ),
             security: "is_granted('shop_address:item:read', object)",
             name: self::PREFIX_NAME . 'me-get',
@@ -44,7 +44,7 @@ use Symfony\Component\Serializer\Attribute\Groups;
             uriTemplate: '/addresses/{id}',
             requirements: ['id' => RouteRequirements::UUID],
             openapi: new Model\Operation(
-                security: [['ApiKeyAuth' => []]]
+                security: [['JWT' => []]]
             ),
             security: "is_granted('shop_address:item:write', object)",
             input: AddressPatchInput::class,
@@ -56,7 +56,7 @@ use Symfony\Component\Serializer\Attribute\Groups;
             requirements: ['id' => RouteRequirements::UUID],
             status: 204,
             openapi: new Model\Operation(
-                security: [['ApiKeyAuth' => []]]
+                security: [['JWT' => []]]
             ),
             security: "is_granted('shop_address:item:write', object)",
             output: false,
@@ -66,7 +66,7 @@ use Symfony\Component\Serializer\Attribute\Groups;
         new Post(
             uriTemplate: '/addresses',
             openapi: new Model\Operation(
-                security: [['ApiKeyAuth' => []]]
+                security: [['JWT' => []]]
             ),
             security: "is_granted('IS_AUTHENTICATED_FULLY')",
             input: AddressPostInput::class,
@@ -76,7 +76,7 @@ use Symfony\Component\Serializer\Attribute\Groups;
         new GetCollection(
             uriTemplate: '/addresses',
             openapi: new Model\Operation(
-                security: [['ApiKeyAuth' => []]]
+                security: [['JWT' => []]]
             ),
             paginationClientItemsPerPage: true,
             security: "is_granted('IS_AUTHENTICATED_FULLY')",

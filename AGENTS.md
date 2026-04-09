@@ -8,7 +8,7 @@
 ## Stack & versions
 
 * **PHP**: 8.4 (`declare(strict_types=1);` partout)
-* **Symfony**: 7.3
+* **Symfony**: 7.4
 * **API Platform**: 4.2
 * **Doctrine ORM** + Migrations
 * **Tests**: PHPUnit + DAMA DoctrineTestBundle
@@ -51,7 +51,7 @@
 
 -   Définir `shortName` au niveau `#[ApiResource]` et un `name` stable sur chaque `Operation` (utile pour les groupes auto et l’OpenAPI).
 -   Utiliser `App\Presentation\RouteRequirements::UUID` pour les paramètres `{id}` UUID.
--   Pour les endpoints sécurisés, déclarer `security` et compléter l’OpenAPI avec `security: [['ApiKeyAuth' => []]]` (schéma ajouté par `App\Infrastructure\OpenApi\JwtDecorator`).
+-   Pour les endpoints sécurisés, déclarer `security` et compléter l’OpenAPI avec `security: [['ApiKeyAuth' => []]]`.
 -   Pour les collections paginées, utiliser `App\Presentation\Shared\State\PaginatedCollectionProvider` afin d’exposer `X-Total-Count` / `X-Total-Pages`.
 
 **Don't**
@@ -106,7 +106,7 @@
 -   Déclarer `inputFormats: ['multipart' => ['multipart/form-data']]` et documenter le `RequestBody` OpenAPI (champ `format: binary`).
 -   Adapter `File|UploadedFile` (Symfony) en `FileInterface` via `App\Presentation\Shared\Adapter\SymfonyFileAdapter` avant d’appeler l’Application.
 -   S’appuyer sur `App\Infrastructure\Service\Encoder\MultipartDecoder` et `App\Infrastructure\Serializer\Denormalizer\UploadedFileDenormalizer` pour la désérialisation multipart.
--   Pour exposer les URLs de fichiers, s’appuyer sur `App\Infrastructure\Serializer\Normalizer\ResolveFileUrlNormalizer` + Vich (pas de calcul d’URL à la main dans les ressources).
+-   Pour exposer les URLs de fichiers, s’appuyer sur la couche de normalisation / upload en place avec Vich (pas de calcul d’URL à la main dans les ressources).
 
 **Don't**
 
@@ -796,8 +796,8 @@ Ports métier :
 
 -   `UserRepositoryInterface` → `DoctrineUserRepository`
 -   `PasswordHasherInterface` → `SymfonyPasswordHasherAdapter`
--   `TokenProviderInterface` → `RandomTokenProvider`
--   `AvatarUploaderInterface` → `VichAvatarUploader`
+-   `TokenProviderInterface` → `TokenProvider`
+-   `AvatarUploaderInterface` → `AvatarUploader`
 
 **Règle :**
 
@@ -829,6 +829,12 @@ services:
     App\Application\Shared\Port\ClockInterface:
         alias: App\Infrastructure\Service\SystemClock
 ```
+
+-   `new \DateTimeImmutable()` est **autorisé** dans Infrastructure (c'est la seule couche où l'horloge réelle est instanciée) :
+    -   `SystemClock::now()` → `new \DateTimeImmutable()`
+    -   Entités Doctrine (lifecycle callbacks, `prePersist`, constructeurs d'entités)
+    -   Event subscribers, console commands
+-   Domain et Application **ne doivent jamais** l'instancier directement — ils reçoivent `$now` en paramètre (Domain) ou injectent `ClockInterface` (Application).
 
 ### 6.6. Checklist Infrastructure
 

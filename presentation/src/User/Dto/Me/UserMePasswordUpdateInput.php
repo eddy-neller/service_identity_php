@@ -1,12 +1,14 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Presentation\User\Dto\Me;
 
 use App\Presentation\User\Validator as AppAssert;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
 
-class UserMePasswordUpdateInput
+final class UserMePasswordUpdateInput
 {
     #[Assert\Sequentially([
         new Assert\NotBlank(),

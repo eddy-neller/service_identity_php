@@ -1,16 +1,19 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Presentation\User\State\Me;
 
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProviderInterface;
 use App\Application\Shared\CQRS\Query\QueryBusInterface;
 use App\Application\User\UseCase\Query\DisplayUser\DisplayUserQuery;
+use App\Presentation\User\ApiResource\UserResource;
 use App\Presentation\User\Presenter\UserResourcePresenter;
 use App\Presentation\User\Security\UserMeSecurityTrait;
 use Symfony\Bundle\SecurityBundle\Security;
 
-readonly class UserMeProvider implements ProviderInterface
+final readonly class UserMeProvider implements ProviderInterface
 {
     use UserMeSecurityTrait;
 
@@ -21,7 +24,7 @@ readonly class UserMeProvider implements ProviderInterface
     ) {
     }
 
-    public function provide(Operation $operation, array $uriVariables = [], array $context = []): array|object|null
+    public function provide(Operation $operation, array $uriVariables = [], array $context = []): UserResource
     {
         $currentUser = $this->getCurrentUserOrThrow();
         $userId = $this->getUserIdFromAuthenticatedUser($currentUser);

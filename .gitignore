@@ -13,6 +13,7 @@
 /makefile.conf
 /.idea
 /coverage
+.codex
 
 # Assets and user uploads
 /assets/*

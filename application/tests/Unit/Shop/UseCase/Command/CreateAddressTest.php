@@ -19,11 +19,15 @@ use PHPUnit\Framework\TestCase;
 final class CreateAddressTest extends TestCase
 {
     private const string ADDRESS_ID = '550e8400-e29b-41d4-a716-446655440050';
+
     private const string CUSTOMER_ID = '550e8400-e29b-41d4-a716-446655440051';
 
     private AddressRepositoryInterface&MockObject $repository;
+
     private ClockInterface&MockObject $clock;
+
     private TransactionalInterface&MockObject $transactional;
+
     private CreateAddressCommandHandler $handler;
 
     protected function setUp(): void
@@ -70,15 +74,15 @@ final class CreateAddressTest extends TestCase
             ->with($this->callback(function (Address $address) use ($addressId, $customerId, $now): bool {
                 return $address->getId()->equals($addressId)
                     && $address->getOwnerId()->equals($customerId)
-                    && $address->getLabel() === 'Home'
-                    && $address->getFirstname() === 'John'
-                    && $address->getLastname() === 'Doe'
-                    && $address->getCompany() === 'ACME'
-                    && $address->getStreet() === '12 Main St'
-                    && $address->getZipCode() === '12345'
-                    && $address->getCity() === 'Paris'
-                    && $address->getCountry() === 'France'
-                    && $address->getPhone() === '+33 1 23 45 67 89'
+                    && 'Home' === $address->getLabel()
+                    && 'John' === $address->getFirstname()
+                    && 'Doe' === $address->getLastname()
+                    && 'ACME' === $address->getCompany()
+                    && '12 Main St' === $address->getStreet()
+                    && '12345' === $address->getZipCode()
+                    && 'Paris' === $address->getCity()
+                    && 'France' === $address->getCountry()
+                    && '+33 1 23 45 67 89' === $address->getPhone()
                     && $address->getCreatedAt() === $now
                     && $address->getUpdatedAt() === $now;
             }));

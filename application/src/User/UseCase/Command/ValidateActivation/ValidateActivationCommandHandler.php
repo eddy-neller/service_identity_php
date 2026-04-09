@@ -25,7 +25,7 @@ final readonly class ValidateActivationCommandHandler implements CommandHandlerI
     public function handle(ValidateActivationCommand $command): void
     {
         $split = $this->tokenProvider->split($command->token);
-        $email = new EmailAddress($split['email'] ?? '');
+        $email = EmailAddress::fromString($split['email'] ?? '');
         $rawToken = $split['token'] ?? '';
 
         $user = $this->repository->findByActivationToken($rawToken);

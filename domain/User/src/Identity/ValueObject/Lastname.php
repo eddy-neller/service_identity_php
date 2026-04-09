@@ -1,10 +1,12 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Domain\User\Identity\ValueObject;
 
-use InvalidArgumentException;
+use App\Domain\User\Exception\InvalidLastnameException;
 
-final class Lastname
+final readonly class Lastname
 {
     private const int MIN_LENGTH = 2;
 
@@ -12,24 +14,29 @@ final class Lastname
 
     private string $value;
 
-    public function __construct(string $value)
+    private function __construct(string $value)
     {
         $trimmed = trim($value);
 
         if (empty($trimmed)) {
-            throw new InvalidArgumentException('Le nom ne peut pas être vide.');
+            throw InvalidLastnameException::empty();
         }
 
         $length = mb_strlen($trimmed);
         if ($length < self::MIN_LENGTH) {
-            throw new InvalidArgumentException(sprintf('Le nom doit contenir au moins %d caractères.', self::MIN_LENGTH));
+            throw InvalidLastnameException::tooShort(self::MIN_LENGTH);
         }
 
         if ($length > self::MAX_LENGTH) {
-            throw new InvalidArgumentException(sprintf('Le nom ne peut pas dépasser %d caractères.', self::MAX_LENGTH));
+            throw InvalidLastnameException::tooLong(self::MAX_LENGTH);
         }
 
         $this->value = $trimmed;
+    }
+
+    public static function fromString(string $value): self
+    {
+        return new self($value);
     }
 
     public function equals(self $other): bool

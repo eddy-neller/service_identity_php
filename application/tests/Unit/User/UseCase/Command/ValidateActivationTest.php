@@ -217,8 +217,8 @@ final class ValidateActivationTest extends TestCase
     {
         $user = User::register(
             id: UserId::fromString('550e8400-e29b-41d4-a716-446655440000'),
-            username: new Username('testuser'),
-            email: new EmailAddress($email),
+            username: Username::fromString('testuser'),
+            email: EmailAddress::fromString($email),
             password: new HashedPassword('hash'),
             preferences: Preferences::fromArray(['lang' => 'fr']),
             now: new DateTimeImmutable(),

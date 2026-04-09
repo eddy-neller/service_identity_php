@@ -44,11 +44,11 @@ final readonly class UpdateUserByAdminCommandHandler implements CommandHandlerIn
 
             $user->updateByAdmin(
                 now: $now,
-                username: $command->username ? new Username($command->username) : null,
-                email: $command->email ? new EmailAddress($command->email) : null,
-                firstname: $command->firstname ? new Firstname($command->firstname) : null,
-                lastname: $command->lastname ? new Lastname($command->lastname) : null,
-                roles: $command->roles ? new RoleSet($command->roles) : null,
+                username: $command->username ? Username::fromString($command->username) : null,
+                email: $command->email ? EmailAddress::fromString($command->email) : null,
+                firstname: $command->firstname ? Firstname::fromString($command->firstname) : null,
+                lastname: $command->lastname ? Lastname::fromString($command->lastname) : null,
+                roles: $command->roles ? RoleSet::fromArray($command->roles) : null,
                 status: $command->status ? UserStatus::fromInt($command->status) : null,
                 password: $hashedPassword,
             );

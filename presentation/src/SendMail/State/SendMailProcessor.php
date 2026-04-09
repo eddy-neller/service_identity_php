@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Presentation\SendMail\State;
 
 use ApiPlatform\Metadata\Operation;
@@ -12,7 +14,7 @@ use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Messenger\MessageBusInterface;
 
-readonly class SendMailProcessor implements ProcessorInterface
+final readonly class SendMailProcessor implements ProcessorInterface
 {
     public function __construct(
         private MessageBusInterface $bus,

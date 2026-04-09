@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Infrastructure\EventSubscriber;
 
 use App\Application\Shared\CQRS\Command\CommandBusInterface;
@@ -81,7 +83,7 @@ final readonly class JWTSubscriber implements EventSubscriberInterface
             email: $email,
         ));
 
-        $user = $this->userRepository->findByEmail(new EmailAddress($email));
+        $user = $this->userRepository->findByEmail(EmailAddress::fromString($email));
         if (null !== $user && $user->isLocked()) {
             $event->setResponse(new JsonResponse(
                 [

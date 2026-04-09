@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Presentation\User\Dto;
 
 use App\Presentation\User\Dto\Partial\UserPreferences;
@@ -7,7 +9,7 @@ use App\Presentation\User\Validator as AppAssert;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
 
-class UserRegisterInput
+final class UserRegisterInput
 {
     #[Assert\Sequentially([
         new Assert\NotBlank(),

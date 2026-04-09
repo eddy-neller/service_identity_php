@@ -33,7 +33,7 @@ final readonly class AddressGetProvider implements ProviderInterface
         return $this->security;
     }
 
-    public function provide(Operation $operation, array $uriVariables = [], array $context = []): ?object
+    public function provide(Operation $operation, array $uriVariables = [], array $context = []): object
     {
         $rawId = $uriVariables['id'] ?? null;
         if (!is_string($rawId) || '' === $rawId) {

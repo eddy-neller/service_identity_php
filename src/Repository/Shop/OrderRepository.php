@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Repository\Shop;
 
 use App\Entity\Shop\Order;

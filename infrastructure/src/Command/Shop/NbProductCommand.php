@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Infrastructure\Command\Shop;
 
 use App\Infrastructure\Entity\Shop\Category;
@@ -41,7 +43,7 @@ class NbProductCommand extends Command
 
             $currentNbProduct = $category->getNbProduct();
 
-            $nbProductFound = (int) $this->em->getRepository(Product::class)->countNbProductByCategory($category->getId());
+            $nbProductFound = (int) $this->em->getRepository(Product::class)->countNbProductByCategory($category->getId()->toString());
 
             // test si une différence est détectée
             if ($nbProductFound !== $currentNbProduct) {

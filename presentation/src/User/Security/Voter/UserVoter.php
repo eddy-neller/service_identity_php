@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Presentation\User\Security\Voter;
 
 use App\Domain\User\Security\ValueObject\RoleSet;
@@ -22,7 +24,7 @@ class UserVoter extends Voter
 
     protected function supports(string $attribute, $subject): bool
     {
-        return in_array($attribute, self::GROUPS) && $subject instanceof User;
+        return in_array($attribute, self::GROUPS, true) && $subject instanceof User;
     }
 
     protected function voteOnAttribute(string $attribute, $subject, TokenInterface $token, ?Vote $vote = null): bool

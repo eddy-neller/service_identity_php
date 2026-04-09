@@ -290,12 +290,12 @@ final class UserNotifierTest extends KernelTestCase
 
         return User::register(
             id: UserId::fromString('550e8400-e29b-41d4-a716-446655440000'),
-            username: new Username('testuser'),
-            email: new EmailAddress('test@example.com'),
+            username: Username::fromString('testuser'),
+            email: EmailAddress::fromString('test@example.com'),
             password: new HashedPassword('hashed-password'),
             preferences: $preferences,
             now: new DateTimeImmutable(),
-            firstname: new Firstname('John'),
+            firstname: Firstname::fromString('John'),
         );
     }
 
@@ -305,8 +305,8 @@ final class UserNotifierTest extends KernelTestCase
 
         return User::register(
             id: UserId::fromString('550e8400-e29b-41d4-a716-446655440001'),
-            username: new Username('testuser'),
-            email: new EmailAddress('test@example.com'),
+            username: Username::fromString('testuser'),
+            email: EmailAddress::fromString('test@example.com'),
             password: new HashedPassword('hashed-password'),
             preferences: $preferences,
             now: new DateTimeImmutable(),

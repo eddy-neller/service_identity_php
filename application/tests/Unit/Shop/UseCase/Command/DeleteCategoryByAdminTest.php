@@ -15,17 +15,18 @@ use App\Domain\Shop\Catalog\Model\Category;
 use App\Domain\Shop\Catalog\ValueObject\CategoryId;
 use App\Domain\Shop\Catalog\ValueObject\CategoryTitle;
 use DateTimeImmutable;
+use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 
 final class DeleteCategoryByAdminTest extends TestCase
 {
     private const string CATEGORY_ID = '550e8400-e29b-41d4-a716-446655440000';
 
-    private CategoryRepositoryInterface $repository;
+    private CategoryRepositoryInterface&MockObject $repository;
 
-    private ClockInterface $clock;
+    private ClockInterface&MockObject $clock;
 
-    private TransactionalInterface $transactional;
+    private TransactionalInterface&MockObject $transactional;
 
     private DeleteCategoryByAdminCommandHandler $handler;
 

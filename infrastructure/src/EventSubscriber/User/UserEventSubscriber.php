@@ -4,13 +4,14 @@ declare(strict_types=1);
 
 namespace App\Infrastructure\EventSubscriber\User;
 
-use App\Application\User\Port\TokenProviderInterface;
-use App\Application\User\Port\UserNotifierInterface;
-use App\Application\User\Port\UserRepositoryInterface;
 use App\Application\Shared\CQRS\Command\CommandBusInterface;
 use App\Application\Shop\Port\CustomerRepositoryInterface;
 use App\Application\Shop\UseCase\Command\Customer\CreateCustomer\CreateCustomerCommand;
 use App\Application\Shop\UseCase\Command\Customer\DisableCustomer\DisableCustomerCommand;
+use App\Application\User\Port\TokenProviderInterface;
+use App\Application\User\Port\UserNotifierInterface;
+use App\Application\User\Port\UserRepositoryInterface;
+use App\Domain\Shop\Customer\ValueObject\UserAccountId;
 use App\Domain\User\Event\ActivationEmailRequestedEvent;
 use App\Domain\User\Event\PasswordResetCompletedEvent;
 use App\Domain\User\Event\PasswordResetRequestedEvent;
@@ -23,7 +24,6 @@ use App\Domain\User\Event\UserRegisteredEvent;
 use App\Domain\User\Event\UserUpdatedByAdminEvent;
 use App\Domain\User\Event\UserWrongPasswordAttemptRegisteredEvent;
 use App\Domain\User\Event\UserWrongPasswordAttemptsResetEvent;
-use App\Domain\Shop\Customer\ValueObject\UserAccountId;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 

@@ -131,8 +131,8 @@ final class UserAdminCollectionProviderTest extends TestCase
         $now = new DateTimeImmutable('2025-01-01 10:00:00');
         $user = DomainUser::register(
             id: UserId::fromString('550e8400-e29b-41d4-a716-446655440000'),
-            username: new Username('john'),
-            email: new EmailAddress('john@example.com'),
+            username: Username::fromString('john'),
+            email: EmailAddress::fromString('john@example.com'),
             password: new HashedPassword('hash'),
             preferences: Preferences::fromArray(['lang' => 'fr']),
             now: $now,

@@ -28,7 +28,7 @@ final readonly class RequestPasswordResetCommandHandler implements CommandHandle
 
     public function handle(RequestPasswordResetCommand $command): void
     {
-        $email = new EmailAddress($command->email);
+        $email = EmailAddress::fromString($command->email);
         $user = $this->repository->findByEmail($email);
 
         if (null === $user) {

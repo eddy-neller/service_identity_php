@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Domain\Shop\Ordering\Model;
 
 use App\Domain\Shop\Ordering\ValueObject\OrderLineId;

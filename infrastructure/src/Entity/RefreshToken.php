@@ -1,8 +1,11 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Infrastructure\Entity;
 
 use App\Infrastructure\Persistence\Doctrine\RefreshTokenRepository;
+use DateTimeInterface;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Gesdinet\JWTRefreshTokenBundle\Model\AbstractRefreshToken;
@@ -18,14 +21,14 @@ class RefreshToken extends AbstractRefreshToken
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column(type: Types::INTEGER)]
-    protected $id;
+    protected int|string|null $id = null;
 
     #[ORM\Column(name: 'refresh_token', type: Types::STRING, length: 128, unique: true)]
-    protected $refreshToken;
+    protected ?string $refreshToken = null;
 
     #[ORM\Column(type: Types::STRING, length: 255)]
-    protected $username;
+    protected ?string $username = null;
 
     #[ORM\Column(type: Types::DATETIME_MUTABLE)]
-    protected $valid;
+    protected ?DateTimeInterface $valid = null;
 }

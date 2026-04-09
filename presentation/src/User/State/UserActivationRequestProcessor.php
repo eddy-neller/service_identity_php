@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Presentation\User\State;
 
 use ApiPlatform\Metadata\Operation;
@@ -10,7 +12,7 @@ use App\Presentation\Shared\State\PresentationErrorCode;
 use App\Presentation\User\Dto\UserActivationRequestInput;
 use LogicException;
 
-readonly class UserActivationRequestProcessor implements ProcessorInterface
+final readonly class UserActivationRequestProcessor implements ProcessorInterface
 {
     public function __construct(
         private CommandBusInterface $commandBus,

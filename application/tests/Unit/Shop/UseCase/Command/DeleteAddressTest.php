@@ -19,11 +19,15 @@ use PHPUnit\Framework\TestCase;
 final class DeleteAddressTest extends TestCase
 {
     private const string ADDRESS_ID = '550e8400-e29b-41d4-a716-446655440070';
+
     private const string CUSTOMER_ID = '550e8400-e29b-41d4-a716-446655440071';
+
     private const string OTHER_CUSTOMER_ID = '550e8400-e29b-41d4-a716-446655440072';
 
     private AddressRepositoryInterface&MockObject $repository;
+
     private TransactionalInterface&MockObject $transactional;
+
     private DeleteAddressCommandHandler $handler;
 
     protected function setUp(): void

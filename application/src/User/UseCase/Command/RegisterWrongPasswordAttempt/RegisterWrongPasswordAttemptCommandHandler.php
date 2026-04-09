@@ -23,7 +23,7 @@ final readonly class RegisterWrongPasswordAttemptCommandHandler implements Comma
 
     public function handle(RegisterWrongPasswordAttemptCommand $command): void
     {
-        $email = new EmailAddress($command->email);
+        $email = EmailAddress::fromString($command->email);
         $user = $this->repository->findByEmail($email);
 
         if (null === $user) {

@@ -209,8 +209,8 @@ final class UserMeAvatarProcessorTest extends KernelTestCase
     {
         return DomainUser::register(
             id: UserId::fromString(Uuid::uuid4()->toString()),
-            username: new Username('testuser'),
-            email: new EmailAddress('test@example.com'),
+            username: Username::fromString('testuser'),
+            email: EmailAddress::fromString('test@example.com'),
             password: new HashedPassword('hash'),
             preferences: Preferences::fromArray(['lang' => 'fr']),
             now: new DateTimeImmutable(),

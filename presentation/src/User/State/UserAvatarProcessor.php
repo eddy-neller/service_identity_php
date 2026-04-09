@@ -11,6 +11,7 @@ use App\Application\User\UseCase\Command\UpdateAvatar\UpdateAvatarCommand;
 use App\Domain\User\Identity\ValueObject\UserId;
 use App\Presentation\Shared\Adapter\SymfonyFileAdapter;
 use App\Presentation\Shared\State\PresentationErrorCode;
+use App\Presentation\User\ApiResource\UserResource;
 use App\Presentation\User\Dto\UserAvatarInput;
 use App\Presentation\User\Presenter\UserResourcePresenter;
 use LogicException;
@@ -18,7 +19,7 @@ use LogicException;
 /**
  * Processor pour gérer l'upload d'avatar d'un utilisateur par un admin.
  */
-readonly class UserAvatarProcessor implements ProcessorInterface
+final readonly class UserAvatarProcessor implements ProcessorInterface
 {
     public function __construct(
         private CommandBusInterface $commandBus,
@@ -26,7 +27,7 @@ readonly class UserAvatarProcessor implements ProcessorInterface
     ) {
     }
 
-    public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): array|object|null
+    public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): UserResource
     {
         if (!$data instanceof UserAvatarInput) {
             throw new LogicException(PresentationErrorCode::INVALID_INPUT->value);

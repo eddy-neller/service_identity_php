@@ -1,10 +1,12 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Domain\User\Identity\ValueObject;
 
-use InvalidArgumentException;
+use App\Domain\User\Exception\InvalidUsernameException;
 
-final class Username
+final readonly class Username
 {
     private const int MIN_LENGTH = 2;
 
@@ -12,24 +14,29 @@ final class Username
 
     private string $value;
 
-    public function __construct(string $value)
+    private function __construct(string $value)
     {
         $trimmed = trim($value);
 
         if (empty($trimmed)) {
-            throw new InvalidArgumentException('Le nom d\'utilisateur ne peut pas être vide.');
+            throw InvalidUsernameException::empty();
         }
 
         $length = mb_strlen($trimmed);
         if ($length < self::MIN_LENGTH) {
-            throw new InvalidArgumentException(sprintf('Le nom d\'utilisateur doit contenir au moins %d caractères.', self::MIN_LENGTH));
+            throw InvalidUsernameException::tooShort(self::MIN_LENGTH);
         }
 
         if ($length > self::MAX_LENGTH) {
-            throw new InvalidArgumentException(sprintf('Le nom d\'utilisateur ne peut pas dépasser %d caractères.', self::MAX_LENGTH));
+            throw InvalidUsernameException::tooLong(self::MAX_LENGTH);
         }
 
         $this->value = $trimmed;
+    }
+
+    public static function fromString(string $value): self
+    {
+        return new self($value);
     }
 
     public function equals(self $other): bool

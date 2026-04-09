@@ -18,6 +18,7 @@ use Symfony\Component\Security\Core\Authorization\Voter\Voter;
 final class ShopAddressVoter extends Voter
 {
     private const string ITEM_READ = 'shop_address:item:read';
+
     private const string ITEM_WRITE = 'shop_address:item:write';
 
     private const array GROUPS = [
@@ -85,6 +86,7 @@ final class ShopAddressVoter extends Voter
                 if ($id instanceof UuidInterface) {
                     return $id->toString();
                 }
+
                 if (is_string($id) && Uuid::isValid($id)) {
                     return $id;
                 }

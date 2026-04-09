@@ -35,13 +35,13 @@ final readonly class CreateUserByAdminCommandHandler implements CommandHandlerIn
         return $this->transactional->transactional(function () use ($command): CreateUserByAdminOutput {
             $now = $this->clock->now();
             $userId = $this->repository->nextIdentity();
-            $username = new Username($command->username);
-            $email = new EmailAddress($command->email);
+            $username = Username::fromString($command->username);
+            $email = EmailAddress::fromString($command->email);
 
             $this->uniquenessChecker->ensureEmailAndUsernameAvailable($email, $username);
 
             $hashedPassword = $this->passwordHasher->hash($command->plainPassword);
-            $roles = new RoleSet($command->roles);
+            $roles = RoleSet::fromArray($command->roles);
             $status = UserStatus::fromInt($command->status);
 
             $user = User::createByAdmin(
@@ -52,8 +52,8 @@ final readonly class CreateUserByAdminCommandHandler implements CommandHandlerIn
                 roles: $roles,
                 status: $status,
                 now: $now,
-                firstname: $command->firstname ? new Firstname($command->firstname) : null,
-                lastname: $command->lastname ? new Lastname($command->lastname) : null,
+                firstname: $command->firstname ? Firstname::fromString($command->firstname) : null,
+                lastname: $command->lastname ? Lastname::fromString($command->lastname) : null,
                 preferences: new Preferences(),
             );
 

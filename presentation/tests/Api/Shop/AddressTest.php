@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Presentation\Tests\Api\Shop;
 
-use App\Infrastructure\Entity\Shop\Address;
 use App\Presentation\Tests\Api\BaseTest;
 use Faker\Factory;
 use Generator;

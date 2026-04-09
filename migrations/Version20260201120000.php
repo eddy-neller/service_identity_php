@@ -24,6 +24,6 @@ final class Version20260201120000 extends AbstractMigration
     public function down(Schema $schema): void
     {
         $this->addSql('ALTER TABLE refresh_tokens ALTER COLUMN id DROP IDENTITY IF EXISTS');
-        $this->addSql('ALTER TABLE refresh_tokens ALTER COLUMN id SET DEFAULT nextval(\'refresh_tokens_id_seq\')');
+        $this->addSql("ALTER TABLE refresh_tokens ALTER COLUMN id SET DEFAULT nextval('refresh_tokens_id_seq')");
     }
 }

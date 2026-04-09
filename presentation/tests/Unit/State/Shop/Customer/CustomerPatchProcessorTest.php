@@ -24,7 +24,9 @@ use PHPUnit\Framework\TestCase;
 final class CustomerPatchProcessorTest extends TestCase
 {
     private CommandBusInterface&MockObject $commandBus;
+
     private Operation&MockObject $operation;
+
     private CustomerPatchProcessor $processor;
 
     protected function setUp(): void
@@ -54,13 +56,12 @@ final class CustomerPatchProcessorTest extends TestCase
 
         $this->commandBus->expects($this->once())
             ->method('dispatch')
-            ->with($this->callback(function ($command) use ($expectedCustomerId): bool {
+            ->willReturnCallback(function ($command) use ($expectedCustomerId, $customer): DisableCustomerOutput {
                 $this->assertInstanceOf(DisableCustomerCommand::class, $command);
                 $this->assertTrue($command->customerId->equals($expectedCustomerId));
 
-                return true;
-            }))
-            ->willReturn(new DisableCustomerOutput($customer));
+                return new DisableCustomerOutput($customer);
+            });
 
         $result = $this->processor->process($data, $this->operation, ['id' => $rawId]);
 

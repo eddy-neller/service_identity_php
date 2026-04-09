@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Presentation\User\State\Me;
 
 use ApiPlatform\Metadata\Operation;
@@ -12,7 +14,7 @@ use App\Presentation\User\Security\UserMeSecurityTrait;
 use LogicException;
 use Symfony\Bundle\SecurityBundle\Security;
 
-readonly class UserMePasswordUpdateProcessor implements ProcessorInterface
+final readonly class UserMePasswordUpdateProcessor implements ProcessorInterface
 {
     use UserMeSecurityTrait;
 

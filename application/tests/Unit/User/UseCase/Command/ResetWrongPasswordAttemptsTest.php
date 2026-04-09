@@ -93,8 +93,8 @@ final class ResetWrongPasswordAttemptsTest extends TestCase
     {
         return User::register(
             id: UserId::fromString('550e8400-e29b-41d4-a716-446655440000'),
-            username: new Username('john'),
-            email: new EmailAddress('john@example.com'),
+            username: Username::fromString('john'),
+            email: EmailAddress::fromString('john@example.com'),
             password: new HashedPassword('hash'),
             preferences: Preferences::fromArray(['lang' => 'fr']),
             now: new DateTimeImmutable(),

@@ -112,8 +112,8 @@ final class UpdatePasswordTest extends TestCase
     {
         return User::register(
             id: $userId,
-            username: new Username('testuser'),
-            email: new EmailAddress('test@example.com'),
+            username: Username::fromString('testuser'),
+            email: EmailAddress::fromString('test@example.com'),
             password: new HashedPassword('hash'),
             preferences: Preferences::fromArray(['lang' => 'fr']),
             now: new DateTimeImmutable(),

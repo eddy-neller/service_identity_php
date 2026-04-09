@@ -23,11 +23,15 @@ use PHPUnit\Framework\TestCase;
 final class DisplayCustomerTest extends TestCase
 {
     private const string CUSTOMER_ID = '550e8400-e29b-41d4-a716-446655440100';
+
     private const string USER_ACCOUNT_ID = '550e8400-e29b-41d4-a716-446655440101';
+
     private const string ADDRESS_ID = '550e8400-e29b-41d4-a716-446655440102';
 
     private CustomerRepositoryInterface&MockObject $customerRepository;
+
     private AddressRepositoryInterface&MockObject $addressRepository;
+
     private DisplayCustomerQueryHandler $handler;
 
     protected function setUp(): void

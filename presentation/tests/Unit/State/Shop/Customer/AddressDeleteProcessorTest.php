@@ -23,8 +23,11 @@ use Symfony\Bundle\SecurityBundle\Security;
 final class AddressDeleteProcessorTest extends TestCase
 {
     use CustomerUserTrait;
+
     private CommandBusInterface&MockObject $commandBus;
+
     private QueryBusInterface&MockObject $queryBus;
+
     private Operation&MockObject $operation;
 
     protected function setUp(): void
@@ -62,10 +65,12 @@ final class AddressDeleteProcessorTest extends TestCase
 
         $this->commandBus->expects($this->once())
             ->method('dispatch')
-            ->willReturnCallback(function ($command) use ($customerId) {
+            ->willReturnCallback(function ($command) use ($customerId): mixed {
                 $this->assertInstanceOf(DeleteAddressCommand::class, $command);
                 $this->assertTrue($command->ownerId->equals($customerId));
                 $this->assertSame('550e8400-e29b-41d4-a716-446655440602', $command->addressId->toString());
+
+                return null;
             });
 
         $result = $processor->process(null, $this->operation, ['id' => '550e8400-e29b-41d4-a716-446655440602']);
@@ -93,5 +98,4 @@ final class AddressDeleteProcessorTest extends TestCase
 
         $processor->process(null, $this->operation, ['id' => '']);
     }
-
 }

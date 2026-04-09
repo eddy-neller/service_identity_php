@@ -28,7 +28,7 @@ final readonly class RequestActivationEmailCommandHandler implements CommandHand
 
     public function handle(RequestActivationEmailCommand $command): void
     {
-        $email = new EmailAddress($command->email);
+        $email = EmailAddress::fromString($command->email);
         $user = $this->repository->findByEmail($email);
 
         if (null === $user) {

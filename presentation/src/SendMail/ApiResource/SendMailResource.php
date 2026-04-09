@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Presentation\SendMail\ApiResource;
 
 use ApiPlatform\Metadata\ApiResource;

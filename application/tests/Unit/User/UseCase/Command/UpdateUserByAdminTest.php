@@ -101,7 +101,7 @@ final class UpdateUserByAdminTest extends TestCase
 
         $this->assertSame($user, $output->user);
         $this->assertSame($newUsername, $user->getUsername()->toString());
-        $this->assertTrue($user->getEmail()->equals(new EmailAddress($newEmail)));
+        $this->assertTrue($user->getEmail()->equals(EmailAddress::fromString($newEmail)));
         $this->assertSame($newFirstname, $user->getFirstname()?->toString());
         $this->assertSame($newLastname, $user->getLastname()?->toString());
         $this->assertSame($newRoles, $user->getRoles()->all());
@@ -181,8 +181,8 @@ final class UpdateUserByAdminTest extends TestCase
     {
         return User::register(
             id: $userId,
-            username: new Username('testuser'),
-            email: new EmailAddress('test@example.com'),
+            username: Username::fromString('testuser'),
+            email: EmailAddress::fromString('test@example.com'),
             password: new HashedPassword('hash'),
             preferences: Preferences::fromArray(['lang' => 'fr']),
             now: new DateTimeImmutable(),

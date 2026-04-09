@@ -54,7 +54,7 @@ final class TokenProviderTest extends TestCase
     public function testEncode(): void
     {
         $token = 'test-token-123';
-        $email = new EmailAddress('test@example.com');
+        $email = EmailAddress::fromString('test@example.com');
         $expectedEncoded = 'encoded-result';
 
         $this->tokenManager
@@ -71,7 +71,7 @@ final class TokenProviderTest extends TestCase
     public function testEncodeWithComplexEmail(): void
     {
         $token = 'complex-token!@#$%';
-        $email = new EmailAddress('user+tag@subdomain.example.com');
+        $email = EmailAddress::fromString('user+tag@subdomain.example.com');
         $expectedEncoded = 'base64-encoded-string';
 
         $this->tokenManager

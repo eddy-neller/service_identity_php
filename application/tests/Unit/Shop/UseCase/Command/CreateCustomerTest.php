@@ -21,11 +21,15 @@ use PHPUnit\Framework\TestCase;
 final class CreateCustomerTest extends TestCase
 {
     private const string CUSTOMER_ID = '550e8400-e29b-41d4-a716-446655440030';
+
     private const string ACCOUNT_ID = '550e8400-e29b-41d4-a716-446655440031';
 
     private CustomerRepositoryInterface&MockObject $repository;
+
     private ClockInterface&MockObject $clock;
+
     private TransactionalInterface&MockObject $transactional;
+
     private CreateCustomerCommandHandler $handler;
 
     protected function setUp(): void

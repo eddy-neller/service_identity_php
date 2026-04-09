@@ -1,22 +1,29 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Domain\User\Identity\ValueObject;
 
-use InvalidArgumentException;
+use App\Domain\User\Exception\InvalidEmailAddressException;
 
-final class EmailAddress
+final readonly class EmailAddress
 {
     private string $value;
 
-    public function __construct(string $value)
+    private function __construct(string $value)
     {
         $normalized = strtolower(trim($value));
 
         if (!filter_var($normalized, FILTER_VALIDATE_EMAIL)) {
-            throw new InvalidArgumentException('Adresse email invalide.');
+            throw InvalidEmailAddressException::invalidFormat();
         }
 
         $this->value = $normalized;
+    }
+
+    public static function fromString(string $value): self
+    {
+        return new self($value);
     }
 
     public function equals(self $other): bool

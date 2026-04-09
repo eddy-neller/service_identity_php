@@ -32,8 +32,8 @@ final class UserUniquenessCheckerTest extends TestCase
 
     public function testEnsureEmailAndUsernameAvailableSucceedsWhenBothAvailable(): void
     {
-        $email = new EmailAddress('test@example.com');
-        $username = new Username('testuser');
+        $email = EmailAddress::fromString('test@example.com');
+        $username = Username::fromString('testuser');
 
         $this->repository->expects($this->once())
             ->method('findByEmail')
@@ -50,8 +50,8 @@ final class UserUniquenessCheckerTest extends TestCase
 
     public function testEnsureEmailAndUsernameAvailableThrowsWhenEmailAlreadyUsed(): void
     {
-        $email = new EmailAddress('existing@example.com');
-        $username = new Username('testuser');
+        $email = EmailAddress::fromString('existing@example.com');
+        $username = Username::fromString('testuser');
         $existingUser = $this->createDomainUser(email: 'existing@example.com', username: 'existinguser');
 
         $this->repository->expects($this->once())
@@ -70,8 +70,8 @@ final class UserUniquenessCheckerTest extends TestCase
 
     public function testEnsureEmailAndUsernameAvailableThrowsWhenUsernameAlreadyUsed(): void
     {
-        $email = new EmailAddress('test@example.com');
-        $username = new Username('existinguser');
+        $email = EmailAddress::fromString('test@example.com');
+        $username = Username::fromString('existinguser');
         $existingUser = $this->createDomainUser(email: 'test@example.com', username: 'existinguser');
 
         $this->repository->expects($this->once())
@@ -94,8 +94,8 @@ final class UserUniquenessCheckerTest extends TestCase
     {
         return User::register(
             UserId::fromString('00000000-0000-4000-8000-000000000000'),
-            new Username($username),
-            new EmailAddress($email),
+            Username::fromString($username),
+            EmailAddress::fromString($email),
             new HashedPassword('hashed-password'),
             new Preferences(),
             new DateTimeImmutable('2024-01-01T00:00:00Z'),

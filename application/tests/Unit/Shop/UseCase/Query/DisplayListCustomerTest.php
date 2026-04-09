@@ -19,9 +19,11 @@ use PHPUnit\Framework\TestCase;
 final class DisplayListCustomerTest extends TestCase
 {
     private const string CUSTOMER_ID = '550e8400-e29b-41d4-a716-446655440110';
+
     private const string USER_ACCOUNT_ID = '550e8400-e29b-41d4-a716-446655440111';
 
     private CustomerRepositoryInterface&MockObject $repository;
+
     private DisplayListCustomerQueryHandler $handler;
 
     protected function setUp(): void

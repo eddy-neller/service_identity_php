@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Presentation\User\State;
 
 use ApiPlatform\Metadata\Operation;
@@ -11,7 +13,7 @@ use App\Presentation\User\Dto\PasswordResetCheckInput;
 use LogicException;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 
-readonly class PasswordResetCheckProcessor implements ProcessorInterface
+final readonly class PasswordResetCheckProcessor implements ProcessorInterface
 {
     public function __construct(
         private QueryBusInterface $queryBus,

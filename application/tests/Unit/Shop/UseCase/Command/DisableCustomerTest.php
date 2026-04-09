@@ -22,11 +22,15 @@ use PHPUnit\Framework\TestCase;
 final class DisableCustomerTest extends TestCase
 {
     private const string CUSTOMER_ID = '550e8400-e29b-41d4-a716-446655440040';
+
     private const string ACCOUNT_ID = '550e8400-e29b-41d4-a716-446655440041';
 
     private CustomerRepositoryInterface&MockObject $repository;
+
     private ClockInterface&MockObject $clock;
+
     private TransactionalInterface&MockObject $transactional;
+
     private DisableCustomerCommandHandler $handler;
 
     protected function setUp(): void

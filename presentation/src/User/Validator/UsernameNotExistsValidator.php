@@ -30,7 +30,7 @@ final class UsernameNotExistsValidator extends ConstraintValidator
         }
 
         /* @var string $value */
-        $username = new Username($value);
+        $username = Username::fromString($value);
         $existingUser = $this->userRepository->findByUsername($username);
 
         if (null === $existingUser) {

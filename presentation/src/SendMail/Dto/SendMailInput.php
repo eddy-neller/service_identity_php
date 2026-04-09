@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Presentation\SendMail\Dto;
 
 use Symfony\Component\Serializer\Annotation\Groups;

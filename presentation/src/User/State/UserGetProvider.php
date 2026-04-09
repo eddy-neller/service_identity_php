@@ -14,7 +14,7 @@ use App\Presentation\User\ApiResource\UserResource;
 use App\Presentation\User\Presenter\UserResourcePresenter;
 use LogicException;
 
-readonly class UserGetProvider implements ProviderInterface
+final readonly class UserGetProvider implements ProviderInterface
 {
     public function __construct(
         private QueryBusInterface $queryBus,

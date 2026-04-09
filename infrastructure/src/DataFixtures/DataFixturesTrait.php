@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Infrastructure\DataFixtures;
 
 use App\Infrastructure\DataFixtures\dev\User\UserFixtures;

@@ -77,7 +77,7 @@ down:
 	@$(DOCKER) down --remove-orphans
 
 ## Stop et détruits les containers
-.PHONY: down-rmi
+.PHONY: down-hard
 down-hard:
 	@$(DOCKER) down --rmi all -v --remove-orphans
 
@@ -92,7 +92,7 @@ binc:
 	@$(DOCKER) build --no-cache
 
 ## Connection au ssh du container db
-.PHONY: bash-dd
+.PHONY: bash-db
 bash-db:
 	@$(DOCKER) exec database bash
 

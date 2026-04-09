@@ -14,6 +14,7 @@ use PHPUnit\Framework\TestCase;
 final class AddressTest extends TestCase
 {
     private const string ADDRESS_ID = '550e8400-e29b-41d4-a716-446655440020';
+
     private const string CUSTOMER_ID = '550e8400-e29b-41d4-a716-446655440021';
 
     public function testCreateSetsValuesAndTimestamps(): void
@@ -78,7 +79,6 @@ final class AddressTest extends TestCase
             country: 'France',
             phone: '+33 6 12 34 56 78',
             now: $updatedAt,
-            company: null,
         );
 
         $this->assertSame('Office', $address->getLabel());

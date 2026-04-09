@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Presentation\Shared\State;
 
 use ApiPlatform\Metadata\Operation;
@@ -7,7 +9,7 @@ use ApiPlatform\State\Pagination\PaginatorInterface;
 use ApiPlatform\State\ProviderInterface;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
 
-readonly class PaginatedCollectionProvider implements ProviderInterface
+final readonly class PaginatedCollectionProvider implements ProviderInterface
 {
     public function __construct(
         #[Autowire(service: 'api_platform.doctrine.orm.state.collection_provider')]

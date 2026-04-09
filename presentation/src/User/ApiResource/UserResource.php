@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Presentation\User\ApiResource;
 
 use ApiPlatform\Doctrine\Orm\State\Options;
@@ -11,6 +13,7 @@ use ApiPlatform\Metadata\Patch;
 use ApiPlatform\Metadata\Post;
 use ApiPlatform\OpenApi\Model;
 use ApiPlatform\OpenApi\Model\RequestBody;
+use App\Domain\User\Security\ValueObject\RoleSet;
 use App\Infrastructure\Entity\User\User;
 use App\Presentation\RouteRequirements;
 use App\Presentation\User\Dto\Me\UserMeAvatarInput;
@@ -54,7 +57,7 @@ use Symfony\Component\Serializer\Annotation\Groups;
                 description: 'Display a user. This endpoint is accessible only by administrators.',
                 security: [['JWT' => []]]
             ),
-            security: "is_granted('ROLE_ADMIN')",
+            security: "is_granted('" . RoleSet::ROLE_ADMIN . "')",
             name: self::PREFIX_NAME . 'get',
             provider: UserGetProvider::class,
         ),
@@ -75,7 +78,7 @@ use Symfony\Component\Serializer\Annotation\Groups;
                 description: 'Update a user. All fields are optional. This endpoint is accessible only by administrators.',
                 security: [['JWT' => []]]
             ),
-            security: "is_granted('ROLE_ADMIN')",
+            security: "is_granted('" . RoleSet::ROLE_ADMIN . "')",
             input: UserPatchInput::class,
             name: self::PREFIX_NAME . 'patch',
             processor: UserPatchProcessor::class,
@@ -89,7 +92,7 @@ use Symfony\Component\Serializer\Annotation\Groups;
                 description: 'Delete a user. This endpoint is accessible only by administrators.',
                 security: [['JWT' => []]]
             ),
-            security: "is_granted('ROLE_ADMIN')",
+            security: "is_granted('" . RoleSet::ROLE_ADMIN . "')",
             name: self::PREFIX_NAME . 'delete',
             processor: UserDeleteProcessor::class,
         ),
@@ -145,7 +148,7 @@ use Symfony\Component\Serializer\Annotation\Groups;
                 ),
                 security: [['JWT' => []]]
             ),
-            security: "is_granted('ROLE_ADMIN')",
+            security: "is_granted('" . RoleSet::ROLE_ADMIN . "')",
             input: UserAvatarInput::class,
             name: self::PREFIX_NAME . 'avatar',
             processor: UserAvatarProcessor::class,
@@ -176,7 +179,7 @@ use Symfony\Component\Serializer\Annotation\Groups;
                 security: [['JWT' => []]],
             ),
             paginationClientItemsPerPage: true,
-            security: "is_granted('ROLE_ADMIN')",
+            security: "is_granted('" . RoleSet::ROLE_ADMIN . "')",
             name: self::PREFIX_NAME . 'admin-col',
             provider: UserAdminCollectionProvider::class,
         ),
@@ -191,7 +194,7 @@ use Symfony\Component\Serializer\Annotation\Groups;
                 ),
                 security: [['JWT' => []]]
             ),
-            security: "is_granted('ROLE_ADMIN')",
+            security: "is_granted('" . RoleSet::ROLE_ADMIN . "')",
             input: UserPostInput::class,
             name: self::PREFIX_NAME . 'admin-create',
             processor: UserPostProcessor::class,

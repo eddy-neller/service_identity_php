@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Domain\User\Model;
 
 use App\Domain\SharedKernel\Event\DomainEventTrait;
@@ -83,7 +85,7 @@ final class User
             lastname: $lastname,
             email: $email,
             password: $password,
-            roles: new RoleSet(['ROLE_USER']),
+            roles: RoleSet::fromArray(['ROLE_USER']),
             status: UserStatus::inactive(),
             security: new Security(),
             activeEmail: new ActiveEmail(),

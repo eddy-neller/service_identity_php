@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Presentation\User\Dto;
 
 use Symfony\Component\HttpFoundation\File\UploadedFile;
@@ -8,7 +10,7 @@ use Symfony\Component\Validator\Constraints as Assert;
 use Vich\UploaderBundle\Mapping\Annotation as Vich;
 
 #[Vich\Uploadable]
-class UserAvatarInput
+final class UserAvatarInput
 {
     #[Groups(['user:write'])]
     #[Assert\NotNull(message: 'Please upload an avatar.')]

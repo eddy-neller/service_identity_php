@@ -12,6 +12,7 @@ use App\Application\Shop\UseCase\Command\Customer\CreateAddress\CreateAddressCom
 use App\Application\Shop\UseCase\Query\Customer\DisplayMyCustomer\DisplayMyCustomerQuery;
 use App\Domain\Shop\Customer\ValueObject\UserAccountId;
 use App\Presentation\Shared\State\PresentationErrorCode;
+use App\Presentation\Shop\ApiResource\Customer\AddressResource;
 use App\Presentation\Shop\Dto\Customer\Address\AddressPostInput;
 use App\Presentation\Shop\Presenter\Customer\AddressResourcePresenter;
 use App\Presentation\User\Security\UserMeSecurityTrait;
@@ -35,7 +36,7 @@ final readonly class AddressPostProcessor implements ProcessorInterface
         return $this->security;
     }
 
-    public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): array|object|null
+    public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): AddressResource
     {
         if (!$data instanceof AddressPostInput) {
             throw new LogicException(PresentationErrorCode::INVALID_INPUT->value);

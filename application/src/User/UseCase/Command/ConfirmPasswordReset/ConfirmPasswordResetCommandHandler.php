@@ -27,7 +27,7 @@ final readonly class ConfirmPasswordResetCommandHandler implements CommandHandle
     public function handle(ConfirmPasswordResetCommand $command): void
     {
         $split = $this->tokenProvider->split($command->token);
-        $email = new EmailAddress($split['email'] ?? '');
+        $email = EmailAddress::fromString($split['email'] ?? '');
         $rawToken = $split['token'] ?? '';
 
         $user = $this->repository->findByResetPasswordToken($rawToken);

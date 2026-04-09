@@ -30,7 +30,7 @@ final class EmailNotExistsValidator extends ConstraintValidator
         }
 
         /* @var string $value */
-        $email = new EmailAddress($value);
+        $email = EmailAddress::fromString($value);
         $existingUser = $this->userRepository->findByEmail($email);
 
         if (null === $existingUser) {

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Infrastructure\DataFixtures\test\User;
 
 use App\Domain\User\Security\ValueObject\ActiveEmail;

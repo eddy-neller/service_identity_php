@@ -16,7 +16,7 @@ use App\Presentation\User\Security\UserMeSecurityTrait;
 use LogicException;
 use Symfony\Bundle\SecurityBundle\Security;
 
-readonly class UserMeAvatarProcessor implements ProcessorInterface
+final readonly class UserMeAvatarProcessor implements ProcessorInterface
 {
     use UserMeSecurityTrait;
 

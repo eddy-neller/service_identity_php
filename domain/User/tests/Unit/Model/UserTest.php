@@ -51,8 +51,8 @@ final class UserTest extends TestCase
         $userId = UserId::fromString('550e8400-e29b-41d4-a716-446655440000');
         $user = User::register(
             id: $userId,
-            username: new Username('john'),
-            email: new EmailAddress('john@example.com'),
+            username: Username::fromString('john'),
+            email: EmailAddress::fromString('john@example.com'),
             password: new HashedPassword('hash'),
             preferences: Preferences::fromArray(['lang' => 'fr']),
             now: new DateTimeImmutable(),
@@ -68,10 +68,10 @@ final class UserTest extends TestCase
         $roles = ['ROLE_ADMIN', 'ROLE_USER'];
         $user = User::createByAdmin(
             id: UserId::fromString('550e8400-e29b-41d4-a716-446655440000'),
-            username: new Username('admin'),
-            email: new EmailAddress('admin@example.com'),
+            username: Username::fromString('admin'),
+            email: EmailAddress::fromString('admin@example.com'),
             password: new HashedPassword('hash'),
-            roles: new RoleSet($roles),
+            roles: RoleSet::fromArray($roles),
             status: UserStatus::fromInt(UserStatus::ACTIVE),
             now: new DateTimeImmutable(),
         );
@@ -101,7 +101,6 @@ final class UserTest extends TestCase
         $this->assertCount(1, $events);
         $this->assertInstanceOf(ActivationEmailRequestedEvent::class, $events[0]);
 
-        /** @var ActivationEmailRequestedEvent $event */
         $event = $events[0];
         $this->assertTrue($user->getId()->equals($event->getUserId()));
         $this->assertSame($user->getEmail(), $event->getEmail());
@@ -156,10 +155,10 @@ final class UserTest extends TestCase
     public function testRequestPasswordResetStoresTokenAndIncrementsMailSent(): void
     {
         $userId = UserId::fromString('550e8400-e29b-41d4-a716-446655440000');
-        $email = new EmailAddress('john@example.com');
+        $email = EmailAddress::fromString('john@example.com');
         $user = User::register(
             id: $userId,
-            username: new Username('john'),
+            username: Username::fromString('john'),
             email: $email,
             password: new HashedPassword('hash'),
             preferences: Preferences::fromArray(['lang' => 'fr']),
@@ -182,7 +181,6 @@ final class UserTest extends TestCase
         $this->assertCount(1, $events);
         $this->assertInstanceOf(PasswordResetRequestedEvent::class, $events[0]);
 
-        /** @var PasswordResetRequestedEvent $event */
         $event = $events[0];
         $this->assertTrue($userId->equals($event->getUserId()));
         $this->assertSame($email, $event->getEmail());
@@ -249,7 +247,6 @@ final class UserTest extends TestCase
         $this->assertCount(1, $events);
         $this->assertInstanceOf(PasswordResetCompletedEvent::class, $events[0]);
 
-        /** @var PasswordResetCompletedEvent $event */
         $event = $events[0];
         $this->assertTrue($user->getId()->equals($event->getUserId()));
         $this->assertSame($now, $event->occurredOn());
@@ -272,7 +269,6 @@ final class UserTest extends TestCase
         $this->assertCount(1, $events);
         $this->assertInstanceOf(UserPasswordUpdatedEvent::class, $events[0]);
 
-        /** @var UserPasswordUpdatedEvent $event */
         $event = $events[0];
         $this->assertTrue($user->getId()->equals($event->getUserId()));
         $this->assertSame($now, $event->occurredOn());
@@ -293,7 +289,6 @@ final class UserTest extends TestCase
         $this->assertCount(1, $events);
         $this->assertInstanceOf(UserAvatarUpdatedEvent::class, $events[0]);
 
-        /** @var UserAvatarUpdatedEvent $event */
         $event = $events[0];
         $this->assertTrue($user->getId()->equals($event->getUserId()));
         $this->assertSame($now, $event->occurredOn());
@@ -311,7 +306,6 @@ final class UserTest extends TestCase
         $this->assertCount(1, $events);
         $this->assertInstanceOf(UserDeletedEvent::class, $events[0]);
 
-        /** @var UserDeletedEvent $event */
         $event = $events[0];
         $this->assertTrue($user->getId()->equals($event->getUserId()));
         $this->assertSame($now, $event->occurredOn());
@@ -323,8 +317,8 @@ final class UserTest extends TestCase
         $userId = UserId::fromString('550e8400-e29b-41d4-a716-446655440000');
         $user = User::register(
             id: $userId,
-            username: new Username('john'),
-            email: new EmailAddress('john@example.com'),
+            username: Username::fromString('john'),
+            email: EmailAddress::fromString('john@example.com'),
             password: new HashedPassword('hash'),
             preferences: Preferences::fromArray(['lang' => 'fr']),
             now: new DateTimeImmutable(),
@@ -333,7 +327,7 @@ final class UserTest extends TestCase
         $user->clearDomainEvents();
 
         $originalEmail = $user->getEmail();
-        $newUsername = new Username('updated-username');
+        $newUsername = Username::fromString('updated-username');
         $now = new DateTimeImmutable();
 
         $user->updateByAdmin(
@@ -348,7 +342,6 @@ final class UserTest extends TestCase
         $this->assertCount(1, $events);
         $this->assertInstanceOf(UserUpdatedByAdminEvent::class, $events[0]);
 
-        /** @var UserUpdatedByAdminEvent $event */
         $event = $events[0];
         $this->assertTrue($userId->equals($event->getUserId()));
         $this->assertSame($now, $event->occurredOn());
@@ -386,16 +379,16 @@ final class UserTest extends TestCase
         $userId = UserId::fromString('550e8400-e29b-41d4-a716-446655440000');
         $user1 = User::register(
             id: $userId,
-            username: new Username('john'),
-            email: new EmailAddress('john@example.com'),
+            username: Username::fromString('john'),
+            email: EmailAddress::fromString('john@example.com'),
             password: new HashedPassword('hash'),
             preferences: Preferences::fromArray(['lang' => 'fr']),
             now: new DateTimeImmutable(),
         );
         $user2 = User::register(
             id: $userId,
-            username: new Username('jane'),
-            email: new EmailAddress('jane@example.com'),
+            username: Username::fromString('jane'),
+            email: EmailAddress::fromString('jane@example.com'),
             password: new HashedPassword('hash'),
             preferences: Preferences::fromArray(['lang' => 'en']),
             now: new DateTimeImmutable(),
@@ -408,16 +401,16 @@ final class UserTest extends TestCase
     {
         $user1 = User::register(
             id: UserId::fromString('550e8400-e29b-41d4-a716-446655440000'),
-            username: new Username('john'),
-            email: new EmailAddress('john@example.com'),
+            username: Username::fromString('john'),
+            email: EmailAddress::fromString('john@example.com'),
             password: new HashedPassword('hash'),
             preferences: Preferences::fromArray(['lang' => 'fr']),
             now: new DateTimeImmutable(),
         );
         $user2 = User::register(
             id: UserId::fromString('550e8400-e29b-41d4-a716-446655440001'),
-            username: new Username('jane'),
-            email: new EmailAddress('jane@example.com'),
+            username: Username::fromString('jane'),
+            email: EmailAddress::fromString('jane@example.com'),
             password: new HashedPassword('hash'),
             preferences: Preferences::fromArray(['lang' => 'en']),
             now: new DateTimeImmutable(),
@@ -430,8 +423,8 @@ final class UserTest extends TestCase
     {
         return User::register(
             id: UserId::fromString('550e8400-e29b-41d4-a716-446655440000'),
-            username: new Username('john'),
-            email: new EmailAddress('john@example.com'),
+            username: Username::fromString('john'),
+            email: EmailAddress::fromString('john@example.com'),
             password: new HashedPassword('hash'),
             preferences: Preferences::fromArray(['lang' => 'fr']),
             now: new DateTimeImmutable(),
@@ -464,7 +457,6 @@ final class UserTest extends TestCase
         $this->assertCount(2, $events);
         $this->assertInstanceOf(UserWrongPasswordAttemptRegisteredEvent::class, $events[1]);
 
-        /** @var UserWrongPasswordAttemptRegisteredEvent $event */
         $event = $events[1];
         $this->assertTrue($user->getId()->equals($event->getUserId()));
         $this->assertSame($now, $event->occurredOn());
@@ -487,7 +479,6 @@ final class UserTest extends TestCase
         $this->assertCount(1, $events);
         $this->assertInstanceOf(UserWrongPasswordAttemptsResetEvent::class, $events[0]);
 
-        /** @var UserWrongPasswordAttemptsResetEvent $event */
         $event = $events[0];
         $this->assertTrue($user->getId()->equals($event->getUserId()));
         $this->assertSame($now, $event->occurredOn());
@@ -515,7 +506,6 @@ final class UserTest extends TestCase
         $this->assertCount(1, $events);
         $this->assertInstanceOf(UserWrongPasswordAttemptsResetEvent::class, $events[0]);
 
-        /** @var UserWrongPasswordAttemptsResetEvent $event */
         $event = $events[0];
         $this->assertTrue($user->getId()->equals($event->getUserId()));
         $this->assertSame($resetNow, $event->occurredOn());

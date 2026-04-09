@@ -39,8 +39,8 @@ final readonly class RegisterUserCommandHandler implements CommandHandlerInterfa
             $now = $this->clock->now();
             $userId = $this->repository->nextIdentity();
 
-            $username = new Username($command->username);
-            $email = new EmailAddress($command->email);
+            $username = Username::fromString($command->username);
+            $email = EmailAddress::fromString($command->email);
 
             $this->uniquenessChecker->ensureEmailAndUsernameAvailable($email, $username);
 

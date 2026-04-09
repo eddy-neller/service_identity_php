@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Infrastructure\DataFixtures\dev\Shop;
 
 use App\Infrastructure\DataFixtures\DataFixturesTrait;
