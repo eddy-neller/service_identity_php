@@ -252,6 +252,68 @@ final class UpdateProductByAdminTest extends TestCase
         $this->assertSame($now, $product->getUpdatedAt());
     }
 
+    public function testHandleThrowsWhenCurrentCategoryIsMissingDuringMove(): void
+    {
+        $now = new DateTimeImmutable('2024-02-01 12:00:00');
+        $productId = ProductId::fromString(self::PRODUCT_ID);
+        $oldCategoryId = CategoryId::fromString(self::CATEGORY_ID);
+        $newCategoryId = CategoryId::fromString(self::NEW_CATEGORY_ID);
+        $product = $this->createProduct($productId, $oldCategoryId);
+        $newCategory = $this->createCategory($newCategoryId, 'New category', 'new-category');
+
+        $command = new UpdateProductByAdminCommand(
+            productId: $productId,
+            title: null,
+            subtitle: null,
+            description: null,
+            price: null,
+            categoryId: $newCategoryId,
+        );
+
+        $this->productRepository->expects($this->once())
+            ->method('findById')
+            ->with($productId)
+            ->willReturn($product);
+
+        $this->clock->expects($this->once())
+            ->method('now')
+            ->willReturn($now);
+
+        $this->slugGenerator->expects($this->never())
+            ->method('generate');
+
+        $this->categoryRepository->expects($this->exactly(2))
+            ->method('findById')
+            ->willReturnCallback(function (CategoryId $id) use ($oldCategoryId, $newCategoryId, $newCategory): ?Category {
+                if ($id->equals($oldCategoryId)) {
+                    return null;
+                }
+
+                if ($id->equals($newCategoryId)) {
+                    return $newCategory;
+                }
+
+                return null;
+            });
+
+        $this->categoryRepository->expects($this->never())
+            ->method('save');
+
+        $this->productRepository->expects($this->never())
+            ->method('save');
+
+        $this->transactional->expects($this->once())
+            ->method('transactional')
+            ->willReturnCallback(function (callable $callback) {
+                return $callback();
+            });
+
+        $this->expectException(CategoryNotFoundException::class);
+        $this->expectExceptionMessage('Current category not found.');
+
+        $this->handler->handle($command);
+    }
+
     public function testHandleThrowsWhenProductNotFound(): void
     {
         $this->categoryRepository->expects($this->never())
@@ -338,7 +400,7 @@ final class UpdateProductByAdminTest extends TestCase
             });
 
         $this->expectException(CategoryNotFoundException::class);
-        $this->expectExceptionMessage('Category not found.');
+        $this->expectExceptionMessage('New category not found.');
 
         $this->handler->handle($command);
     }

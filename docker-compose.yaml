@@ -1,4 +1,6 @@
 
+name: en_shop_api
+
 services:
 ###> doctrine/doctrine-bundle ###
   database:
@@ -26,6 +28,7 @@ services:
   ###> symfony/messenger with rabbitmq ###
   rabbitmq:
     container_name: en_shop_api_rabbitmq
+    restart: unless-stopped
     build:
       context: ./docker/rabbitmq
       dockerfile: ./Dockerfile
@@ -45,6 +48,7 @@ services:
 
   varnish:
     container_name: en_shop_api_varnish
+    restart: unless-stopped
     build:
       context: ./docker/varnish
       dockerfile: ./Dockerfile
@@ -55,6 +59,7 @@ services:
 
   redis:
     container_name: en_shop_api_redis
+    restart: unless-stopped
     build:
       context: ./docker/redis
       dockerfile: ./Dockerfile

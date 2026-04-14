@@ -69,17 +69,18 @@ final readonly class UpdateProductByAdminCommandHandler implements CommandHandle
                 $oldCategory = $this->categoryRepository->findById($product->getCategoryId());
                 $newCategory = $this->categoryRepository->findById($command->categoryId);
 
+                if (null === $oldCategory) {
+                    throw new CategoryNotFoundException('Current category not found.');
+                }
+
                 if (null === $newCategory) {
-                    throw new CategoryNotFoundException();
+                    throw new CategoryNotFoundException('New category not found.');
                 }
 
                 $product->moveToCategory($command->categoryId, $now);
 
-                if (null !== $oldCategory) {
-                    $oldCategory->decreaseProductCount($now);
-                    $this->categoryRepository->save($oldCategory);
-                }
-
+                $oldCategory->decreaseProductCount($now);
+                $this->categoryRepository->save($oldCategory);
                 $newCategory->increaseProductCount($now);
                 $this->categoryRepository->save($newCategory);
             }

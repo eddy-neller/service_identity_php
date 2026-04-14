@@ -124,6 +124,33 @@ final class ProductTest extends BaseTest
         );
     }
 
+    public function testColShopProductFiltersByCategory(): void
+    {
+        $response = $this->request(
+            Request::METHOD_GET,
+            self::URL_API_OPE,
+            [
+                'headers' => [
+                    'Authorization' => 'Bearer ' . $this->getToken($this->userAdmin),
+                ],
+                'query' => [
+                    'category' => $this->categoryIri,
+                ],
+            ],
+        );
+
+        self::assertNotNull($response);
+        self::assertResponseIsSuccessful();
+        self::assertResponseStatusCodeSame(Response::HTTP_OK);
+
+        $items = $response->toArray();
+        self::assertNotEmpty($items);
+
+        foreach ($items as $item) {
+            self::assertSame($this->categoryIri, self::URL_API_CATEGORY_OPE . '/' . $item['category']['id']);
+        }
+    }
+
     public static function provideCreateShopProductSuccess(): Generator
     {
         $fakeData = self::getFakeDataShopProduct();

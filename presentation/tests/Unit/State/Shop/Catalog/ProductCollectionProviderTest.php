@@ -51,6 +51,7 @@ final class ProductCollectionProviderTest extends TestCase
                 $this->assertSame('Product', $query->filters['title'] ?? null);
                 $this->assertSame('Subtitle', $query->filters['subtitle'] ?? null);
                 $this->assertSame('Nice', $query->filters['description'] ?? null);
+                $this->assertSame('/api/shop/categories/550e8400-e29b-41d4-a716-446655440000', $query->filters['category'] ?? null);
                 $this->assertSame(['createdAt' => 'asc'], $query->orderBy);
 
                 return $output;
@@ -81,6 +82,7 @@ final class ProductCollectionProviderTest extends TestCase
                     'title' => 'Product',
                     'subtitle' => 'Subtitle',
                     'description' => 'Nice',
+                    'category' => '/api/shop/categories/550e8400-e29b-41d4-a716-446655440000',
                     'order' => [
                         'createdAt' => 'asc',
                     ],

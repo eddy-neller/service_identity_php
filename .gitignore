@@ -14,6 +14,7 @@
 /.idea
 /coverage
 .codex
+.claude
 
 # Assets and user uploads
 /assets/*

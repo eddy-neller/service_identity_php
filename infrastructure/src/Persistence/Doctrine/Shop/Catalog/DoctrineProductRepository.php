@@ -18,6 +18,7 @@ use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\QueryBuilder;
 use Doctrine\ORM\Tools\Pagination\Paginator;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
+use Throwable;
 
 /**
  * @codeCoverageIgnore
@@ -155,6 +156,12 @@ final readonly class DoctrineProductRepository implements ProductRepositoryInter
             $qb->andWhere('p.description LIKE :description')
                 ->setParameter('description', '%' . trim($description) . '%');
         }
+
+        $categoryId = $this->normalizeCategoryFilter($filters['category'] ?? null);
+        if (null !== $categoryId) {
+            $qb->andWhere('c.id = :categoryId')
+                ->setParameter('categoryId', $categoryId);
+        }
     }
 
     private function applyOrdering(QueryBuilder $qb, array $orderBy): void
@@ -185,5 +192,31 @@ final readonly class DoctrineProductRepository implements ProductRepositoryInter
         $entity = $this->em->getRepository(DoctrineCategory::class)->find($id->toString());
 
         return $entity instanceof DoctrineCategory ? $entity : null;
+    }
+
+    private function normalizeCategoryFilter(mixed $value): ?string
+    {
+        if (!is_string($value)) {
+            return null;
+        }
+
+        $candidate = trim($value);
+        if ('' === $candidate) {
+            return null;
+        }
+
+        $path = parse_url($candidate, PHP_URL_PATH);
+        if (is_string($path) && '' !== $path) {
+            $segments = array_values(array_filter(explode('/', trim($path, '/'))));
+            if ([] !== $segments) {
+                $candidate = (string) end($segments);
+            }
+        }
+
+        try {
+            return CategoryId::fromString($candidate)->toString();
+        } catch (Throwable) {
+            return null;
+        }
     }
 }
