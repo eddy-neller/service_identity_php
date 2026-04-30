@@ -24,7 +24,7 @@ final class ActiveEmailTest extends TestCase
 
     public function testConstructWithSpecificValues(): void
     {
-        $lastAttempt = new DateTimeImmutable('2024-01-01 12:00:00');
+        $lastAttempt = new DateTimeImmutable('2024-01-01T12:00:00+00:00');
         $activeEmail = new ActiveEmail(
             mailSent: 2,
             token: 'activation-token',
@@ -72,7 +72,7 @@ final class ActiveEmailTest extends TestCase
 
     public function testFromArrayAcceptsDateTimeInterface(): void
     {
-        $date = new DateTimeImmutable('2024-01-01 12:00:00');
+        $date = new DateTimeImmutable('2024-01-01T12:00:00+00:00');
         $activeEmail = ActiveEmail::fromArray(['lastAttempt' => $date]);
 
         $this->assertSame($date, $activeEmail->getLastAttempt());
@@ -88,7 +88,7 @@ final class ActiveEmailTest extends TestCase
 
     public function testJsonSerializeReturnsArray(): void
     {
-        $lastAttempt = new DateTimeImmutable('2024-01-01 12:00:00');
+        $lastAttempt = new DateTimeImmutable('2024-01-01T12:00:00+00:00');
         $activeEmail = new ActiveEmail(
             mailSent: 2,
             token: 'activation-token',
@@ -113,7 +113,7 @@ final class ActiveEmailTest extends TestCase
 
     public function testToArrayReturnsArray(): void
     {
-        $lastAttempt = new DateTimeImmutable('2024-01-01 12:00:00');
+        $lastAttempt = new DateTimeImmutable('2024-01-01T12:00:00+00:00');
         $activeEmail = new ActiveEmail(
             mailSent: 2,
             token: 'activation-token',
@@ -197,8 +197,8 @@ final class ActiveEmailTest extends TestCase
 
     public function testWithLastAttemptCreatesNewInstance(): void
     {
-        $oldDate = new DateTimeImmutable('2024-01-01 12:00:00');
-        $newDate = new DateTimeImmutable('2024-01-02 12:00:00');
+        $oldDate = new DateTimeImmutable('2024-01-01T12:00:00+00:00');
+        $newDate = new DateTimeImmutable('2024-01-02T12:00:00+00:00');
         $activeEmail = new ActiveEmail(lastAttempt: $oldDate);
         $newActiveEmail = $activeEmail->withLastAttempt($newDate);
 
@@ -208,7 +208,7 @@ final class ActiveEmailTest extends TestCase
 
     public function testWithLastAttemptIsImmutable(): void
     {
-        $date = new DateTimeImmutable('2024-01-01 12:00:00');
+        $date = new DateTimeImmutable('2024-01-01T12:00:00+00:00');
         $activeEmail = new ActiveEmail(lastAttempt: $date);
         $newActiveEmail = $activeEmail->withLastAttempt(new DateTimeImmutable('2024-01-02'));
 
@@ -225,7 +225,7 @@ final class ActiveEmailTest extends TestCase
 
     public function testWithMethodsPreserveOtherValues(): void
     {
-        $lastAttempt = new DateTimeImmutable('2024-01-01 12:00:00');
+        $lastAttempt = new DateTimeImmutable('2024-01-01T12:00:00+00:00');
         $activeEmail = new ActiveEmail(
             mailSent: 1,
             token: 'token',

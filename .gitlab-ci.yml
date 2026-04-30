@@ -1,0 +1,38 @@
+image: registry.gitlab.com/en-shop/api:php8.4
+
+stages:
+  - test
+
+services:
+  - name: postgres:18-alpine
+    alias: database
+
+variables:
+  POSTGRES_DB: $POSTGRES_DB
+  POSTGRES_USER: $POSTGRES_USER
+  POSTGRES_PASSWORD: $POSTGRES_PASSWORD
+  APP_MAX_LOGIN_ATTEMPTS: 5
+  REGISTER_TOKEN_TTL: P2D
+  MAILER_DSN: null://null
+  MESSENGER_TRANSPORT_DSN: sync://
+
+before_script:
+  - composer install --no-scripts
+  - mkdir -p config/jwt
+  - echo "$JWT_PRIVATE_KEY" > config/jwt/private.pem
+  - echo "$JWT_PUBLIC_KEY" > config/jwt/public.pem
+  - echo "JWT_PASSPHRASE=\"$JWT_PASSPHRASE\"" >> .env.test
+  - echo "DATABASE_URL=\"$DATABASE_URL\"" >> .env.test
+  - echo "APP_MAX_LOGIN_ATTEMPTS=$APP_MAX_LOGIN_ATTEMPTS" >> .env.test
+  - echo "MAILER_DSN=$MAILER_DSN" >> .env.test
+  - echo "MESSENGER_TRANSPORT_DSN=$MESSENGER_TRANSPORT_DSN" >> .env.test
+  - echo "STRIPE_SHOP_SECRET_KEY=\"$STRIPE_SHOP_SECRET_KEY\"" >> .env.test
+  - bin/console doctrine:database:create -e test --if-not-exists
+  - bin/console doctrine:migrations:migrate -e test --no-interaction
+  - bin/console doctrine:fixtures:load -e test --no-interaction --group=test
+
+unit-tests:
+  stage: test
+  script:
+    - cp phpunit.dist.xml phpunit.xml
+    - vendor/bin/phpunit --testdox
