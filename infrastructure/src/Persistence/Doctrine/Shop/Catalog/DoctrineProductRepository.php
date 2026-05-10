@@ -209,7 +209,7 @@ final readonly class DoctrineProductRepository implements ProductRepositoryInter
         if (is_string($path) && '' !== $path) {
             $segments = array_values(array_filter(explode('/', trim($path, '/'))));
             if ([] !== $segments) {
-                $candidate = (string) end($segments);
+                $candidate = end($segments);
             }
         }
 

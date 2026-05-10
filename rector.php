@@ -14,6 +14,7 @@ use Rector\Config\RectorConfig;
 use Rector\DeadCode\Rector\FunctionLike\NarrowWideUnionReturnTypeRector;
 use Rector\Doctrine\Bundle230\Rector\Class_\AddAnnotationToRepositoryRector;
 use Rector\Doctrine\Set\DoctrineSetList;
+use Rector\PHPUnit\CodeQuality\Rector\Class_\PreferPHPUnitThisCallRector;
 use Rector\PHPUnit\CodeQuality\Rector\ClassMethod\AddInstanceofAssertForNullableInstanceRector;
 use Rector\PHPUnit\CodeQuality\Rector\MethodCall\AssertEmptyNullableObjectToAssertInstanceofRector;
 use Rector\PHPUnit\CodeQuality\Rector\MethodCall\WithCallbackIdenticalToStandaloneAssertsRector;
@@ -68,5 +69,6 @@ return static function (RectorConfig $rectorConfig): void {
             __DIR__ . '/src/Kernel.php',
             __DIR__ . '/tests/bootstrap.php',
         ],
+        PreferPHPUnitThisCallRector::class,
     ]);
 };
