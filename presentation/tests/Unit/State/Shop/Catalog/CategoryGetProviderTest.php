@@ -59,6 +59,7 @@ final class CategoryGetProviderTest extends TestCase
 
         $this->assertInstanceOf(CategoryResource::class, $result);
         $this->assertSame('Category title', $result->title);
+        $this->assertFalse($result->hasChildren);
     }
 
     public function testProvideThrowsLogicExceptionWhenIdIsMissing(): void

@@ -155,6 +155,11 @@ class Category
         return $this;
     }
 
+    public function hasChildren(): bool
+    {
+        return $this->right > $this->left + 1;
+    }
+
     /**
      * @return Category[]
      */

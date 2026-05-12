@@ -21,6 +21,7 @@ final class Category
         private ?CategoryId $parentId,
         private int $productCount,
         private int $level,
+        private bool $hasChildren,
         private DateTimeImmutable $createdAt,
         private DateTimeImmutable $updatedAt,
     ) {
@@ -42,6 +43,7 @@ final class Category
             parentId: $parentId,
             productCount: 0,
             level: 0,
+            hasChildren: false,
             createdAt: $now,
             updatedAt: $now,
         );
@@ -57,6 +59,7 @@ final class Category
         ?CategoryDescription $description = null,
         int $productCount = 0,
         int $level = 0,
+        bool $hasChildren = false,
     ): self {
         self::assertLevel($level);
 
@@ -72,6 +75,7 @@ final class Category
             parentId: $parentId,
             productCount: $productCount,
             level: $level,
+            hasChildren: $hasChildren,
             createdAt: $createdAt,
             updatedAt: $updatedAt,
         );
@@ -150,6 +154,11 @@ final class Category
     public function getLevel(): int
     {
         return $this->level;
+    }
+
+    public function hasChildren(): bool
+    {
+        return $this->hasChildren;
     }
 
     public function getCreatedAt(): DateTimeImmutable

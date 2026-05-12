@@ -160,6 +160,152 @@ final class RefreshTokenRepositoryTest extends KernelTestCase
         $this->em->flush();
     }
 
+    public function testFindInvalidBatchLimitsBatchSize(): void
+    {
+        $tokens = [];
+        for ($i = 1; $i <= 4; ++$i) {
+            $token = $this->createRefreshToken([
+                'refreshToken' => "batch-limit-token-{$i}",
+                'username' => "batch-limit-user{$i}@example.com",
+                'valid' => new DateTimeImmutable('-1 day')->format('Y-m-d H:i:s'),
+            ]);
+            $this->em->persist($token);
+            $tokens[] = $token;
+        }
+        $this->em->flush();
+
+        $result = $this->repo->findInvalidBatch(null, 2);
+
+        $this->assertCount(2, $result);
+
+        foreach ($tokens as $token) {
+            $this->em->remove($token);
+        }
+        $this->em->flush();
+    }
+
+    public function testFindInvalidBatchAppliesOffset(): void
+    {
+        $token1 = $this->createRefreshToken([
+            'refreshToken' => 'batch-offset-token-1',
+            'username' => 'batch-offset-user1@example.com',
+            'valid' => new DateTimeImmutable('-3 days')->format('Y-m-d H:i:s'),
+        ]);
+        $token2 = $this->createRefreshToken([
+            'refreshToken' => 'batch-offset-token-2',
+            'username' => 'batch-offset-user2@example.com',
+            'valid' => new DateTimeImmutable('-2 days')->format('Y-m-d H:i:s'),
+        ]);
+        $token3 = $this->createRefreshToken([
+            'refreshToken' => 'batch-offset-token-3',
+            'username' => 'batch-offset-user3@example.com',
+            'valid' => new DateTimeImmutable('-1 day')->format('Y-m-d H:i:s'),
+        ]);
+        $this->em->persist($token1);
+        $this->em->persist($token2);
+        $this->em->persist($token3);
+        $this->em->flush();
+
+        $all = $this->repo->findInvalidBatch(null, null, 0);
+        $withOffset = $this->repo->findInvalidBatch(null, null, 2);
+
+        $this->assertCount(\count($all) - 2, $withOffset);
+
+        $this->em->remove($token1);
+        $this->em->remove($token2);
+        $this->em->remove($token3);
+        $this->em->flush();
+    }
+
+    public function testFindInvalidBatchWithBatchSizeAndOffset(): void
+    {
+        $tokens = [];
+        for ($i = 1; $i <= 5; ++$i) {
+            $token = $this->createRefreshToken([
+                'refreshToken' => "batch-combo-token-{$i}",
+                'username' => "batch-combo-user{$i}@example.com",
+                'valid' => new DateTimeImmutable('-1 day')->format('Y-m-d H:i:s'),
+            ]);
+            $this->em->persist($token);
+            $tokens[] = $token;
+        }
+        $this->em->flush();
+
+        $total = $this->repo->findInvalidBatch(null, null, 0);
+        $page = $this->repo->findInvalidBatch(null, 2, 2);
+
+        $this->assertCount(2, $page);
+        $this->assertLessThanOrEqual(\count($total), \count($page) + 2);
+
+        foreach ($tokens as $token) {
+            $this->em->remove($token);
+        }
+        $this->em->flush();
+    }
+
+    public function testFindInvalidBatchWithCustomDate(): void
+    {
+        $tokenExpiring2Hours = $this->createRefreshToken([
+            'refreshToken' => 'batch-date-token-2h',
+            'username' => 'batch-date-user1@example.com',
+            'valid' => new DateTimeImmutable('+2 hours')->format('Y-m-d H:i:s'),
+        ]);
+        $tokenExpiring5Hours = $this->createRefreshToken([
+            'refreshToken' => 'batch-date-token-5h',
+            'username' => 'batch-date-user2@example.com',
+            'valid' => new DateTimeImmutable('+5 hours')->format('Y-m-d H:i:s'),
+        ]);
+        $this->em->persist($tokenExpiring2Hours);
+        $this->em->persist($tokenExpiring5Hours);
+        $this->em->flush();
+
+        $customDate = new DateTime('+3 hours');
+        $result = $this->repo->findInvalidBatch($customDate, null, 0);
+
+        $refreshTokenValues = array_map(
+            static fn (RefreshToken $t): ?string => $t->getRefreshToken(),
+            $result instanceof \Traversable ? iterator_to_array($result) : (array) $result,
+        );
+
+        $this->assertContains('batch-date-token-2h', $refreshTokenValues);
+        $this->assertNotContains('batch-date-token-5h', $refreshTokenValues);
+
+        $this->em->remove($tokenExpiring2Hours);
+        $this->em->remove($tokenExpiring5Hours);
+        $this->em->flush();
+    }
+
+    public function testFindInvalidBatchWithNullBatchSizeReturnsAllExpired(): void
+    {
+        $tokens = [];
+        for ($i = 1; $i <= 3; ++$i) {
+            $token = $this->createRefreshToken([
+                'refreshToken' => "batch-null-token-{$i}",
+                'username' => "batch-null-user{$i}@example.com",
+                'valid' => new DateTimeImmutable('-1 day')->format('Y-m-d H:i:s'),
+            ]);
+            $this->em->persist($token);
+            $tokens[] = $token;
+        }
+        $this->em->flush();
+
+        $result = $this->repo->findInvalidBatch(null, null, 0);
+
+        $refreshTokenValues = array_map(
+            static fn (RefreshToken $t): ?string => $t->getRefreshToken(),
+            $result instanceof \Traversable ? iterator_to_array($result) : (array) $result,
+        );
+
+        foreach ($tokens as $token) {
+            $this->assertContains($token->getRefreshToken(), $refreshTokenValues);
+        }
+
+        foreach ($tokens as $token) {
+            $this->em->remove($token);
+        }
+        $this->em->flush();
+    }
+
     protected function tearDown(): void
     {
         parent::tearDown();

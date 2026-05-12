@@ -8,9 +8,6 @@ use App\Domain\Shop\Catalog\Model\Category;
 
 final readonly class CategoryItem
 {
-    /**
-     * @param Category[] $children
-     */
     public function __construct(
         public Category $category,
         public ?Category $parent,

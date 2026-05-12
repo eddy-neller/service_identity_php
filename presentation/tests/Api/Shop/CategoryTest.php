@@ -41,13 +41,14 @@ final class CategoryTest extends BaseTest
                     'nbProduct',
                     'slug',
                     'level',
+                    'hasChildren',
                     'createdAt',
-                    'updatedAt',
                 ],
                 'hasNotKey' => [
                     'description',
                     'parent',
                     'children',
+                    'updatedAt',
                 ],
             ],
         ];
@@ -131,8 +132,8 @@ final class CategoryTest extends BaseTest
                 'nbProduct',
                 'slug',
                 'level',
+                'hasChildren',
                 'createdAt',
-                'updatedAt',
             ],
             'hasNotKey' => [
                 'parent', // pas de parent donc level 0
@@ -298,6 +299,7 @@ final class CategoryTest extends BaseTest
                 'nbProduct',
                 'slug',
                 'level',
+                'hasChildren',
                 'parent',
                 'children',
                 'createdAt',
@@ -331,6 +333,7 @@ final class CategoryTest extends BaseTest
                 'nbProduct',
                 'slug',
                 'level',
+                'hasChildren',
                 'parent',
                 'children',
                 'createdAt',

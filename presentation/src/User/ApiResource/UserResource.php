@@ -44,7 +44,7 @@ use App\Presentation\User\State\UserPostProcessor;
 use App\Presentation\User\State\UserRegisterProcessor;
 use ArrayObject;
 use DateTimeImmutable;
-use Symfony\Component\Serializer\Annotation\Groups;
+use Symfony\Component\Serializer\Attribute\Groups;
 
 #[ApiResource(
     shortName: 'User',

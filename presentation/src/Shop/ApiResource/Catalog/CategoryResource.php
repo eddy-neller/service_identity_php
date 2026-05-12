@@ -26,8 +26,9 @@ use App\Presentation\Shop\State\Catalog\Category\CategoryGetProvider;
 use App\Presentation\Shop\State\Catalog\Category\CategoryPatchProcessor;
 use App\Presentation\Shop\State\Catalog\Category\CategoryPostProcessor;
 use DateTimeImmutable;
-use Symfony\Component\Serializer\Annotation\Groups;
-use Symfony\Component\Serializer\Annotation\MaxDepth;
+use Symfony\Component\Serializer\Attribute\Groups;
+use Symfony\Component\Serializer\Attribute\MaxDepth;
+use Symfony\Component\Serializer\Normalizer\AbstractObjectNormalizer;
 
 #[ApiResource(
     shortName: 'ShopCategory',
@@ -81,6 +82,15 @@ use Symfony\Component\Serializer\Annotation\MaxDepth;
                             'type' => 'integer',
                         ],
                     ),
+                    new Model\Parameter(
+                        name: 'parent',
+                        in: 'query',
+                        required: false,
+                        schema: [
+                            'type' => 'string',
+                            'format' => 'uuid',
+                        ],
+                    ),
                 ]
             ),
             paginationClientItemsPerPage: true,
@@ -99,9 +109,10 @@ use Symfony\Component\Serializer\Annotation\MaxDepth;
         ),
     ],
     routePrefix: '/shop',
+    normalizationContext: [AbstractObjectNormalizer::ENABLE_MAX_DEPTH => true],
     stateOptions: new Options(entityClass: Category::class),
 )]
-#[ApiFilter(SearchFilter::class, properties: ['level' => 'exact'])]
+#[ApiFilter(SearchFilter::class, properties: ['level' => 'exact', 'parent' => 'exact'])]
 #[ApiFilter(OrderFilter::class, properties: ['title', 'level', 'nbProduct', 'createdAt'])]
 final class CategoryResource
 {
@@ -134,8 +145,11 @@ final class CategoryResource
     public int $level = 0;
 
     #[Groups(['shop_category:read'])]
-    public DateTimeImmutable $createdAt;
+    public bool $hasChildren = false;
 
     #[Groups(['shop_category:read'])]
+    public DateTimeImmutable $createdAt;
+
+    #[Groups(['shop_category:item:read'])]
     public DateTimeImmutable $updatedAt;
 }

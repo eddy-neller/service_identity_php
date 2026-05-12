@@ -28,6 +28,7 @@ final readonly class CategoryMapper
             description: CategoryDescription::fromNullableString($entity->getDescription()),
             productCount: $entity->getNbProduct(),
             level: $entity->getLevel(),
+            hasChildren: $entity->hasChildren(),
         );
     }
 

@@ -31,7 +31,7 @@ use App\Presentation\Shop\State\Catalog\Product\ProductPatchProcessor;
 use App\Presentation\Shop\State\Catalog\Product\ProductPostProcessor;
 use ArrayObject;
 use DateTimeImmutable;
-use Symfony\Component\Serializer\Annotation\Groups;
+use Symfony\Component\Serializer\Attribute\Groups;
 
 #[ApiResource(
     shortName: 'ShopProduct',
@@ -158,6 +158,6 @@ final class ProductResource
     #[Groups(['shop_product:read'])]
     public DateTimeImmutable $createdAt;
 
-    #[Groups(['shop_product:read'])]
+    #[Groups(['shop_product:item:read'])]
     public DateTimeImmutable $updatedAt;
 }

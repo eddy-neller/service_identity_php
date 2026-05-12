@@ -15,6 +15,7 @@ use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\QueryBuilder;
 use Doctrine\ORM\Tools\Pagination\Paginator;
 use Gedmo\Tree\Entity\Repository\NestedTreeRepository;
+use Ramsey\Uuid\Uuid;
 
 /**
  * @codeCoverageIgnore
@@ -143,6 +144,12 @@ final readonly class DoctrineCategoryRepository implements CategoryRepositoryInt
         if (null !== $level) {
             $qb->andWhere('c.level = :level')
                 ->setParameter('level', $level);
+        }
+
+        $parent = $filters['parent'] ?? null;
+        if (is_string($parent) && Uuid::isValid($parent)) {
+            $qb->andWhere('IDENTITY(c.parent) = :parent')
+                ->setParameter('parent', $parent);
         }
     }
 

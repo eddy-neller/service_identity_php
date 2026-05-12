@@ -56,12 +56,12 @@ final class ProductTest extends BaseTest
                     'imageUrl',
                     ['category' => ['id', 'title']],
                     'createdAt',
-                    'updatedAt',
                 ],
                 'hasNotKey' => [
                     'subtitle',
                     'description',
                     'imageFile',
+                    'updatedAt',
                 ],
             ],
         ];

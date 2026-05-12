@@ -41,6 +41,7 @@ final readonly class CategoryResourcePresenter
         $resource->nbProduct = $category->getProductCount();
         $resource->slug = $category->getSlug()->toString();
         $resource->level = $category->getLevel();
+        $resource->hasChildren = $category->hasChildren();
         $resource->createdAt = $category->getCreatedAt();
         $resource->updatedAt = $category->getUpdatedAt();
 

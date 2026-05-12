@@ -62,6 +62,7 @@ final class CategoryCollectionProviderTest extends TestCase
         $this->assertInstanceOf(CategoryResource::class, $result[0]);
         $this->assertSame('Category title', $result[0]->title);
         $this->assertSame(1, $result[0]->level);
+        $this->assertFalse($result[0]->hasChildren);
         $this->assertSame(3, $request->attributes->get('_total_items'));
         $this->assertSame(2, $request->attributes->get('_total_pages'));
     }
