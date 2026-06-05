@@ -15,11 +15,16 @@
         <exclude name="PSR12.Classes.AnonClassDeclaration.SpaceAfterKeyword"/>
     </rule>
 
+    <file>bin/</file>
+    <file>config/</file>
+    <file>public/</file>
     <file>application/</file>
     <file>domain/</file>
     <file>infrastructure/</file>
     <file>presentation/</file>
     <file>src/</file>
     <file>tests/</file>
-    <exclude-pattern>config/reference.php</exclude-pattern>
+
+    <exclude-pattern>config/reference\.php$</exclude-pattern>
+
 </ruleset>

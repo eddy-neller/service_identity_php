@@ -47,7 +47,7 @@ class AddressFixtures extends Fixture implements DependentFixtureInterface, Fixt
             ],
         ];
 
-        foreach ($addressesData as $addressData) {
+        foreach ($addressesData as $index => $addressData) {
             $address = new Address();
             $address->setId(Uuid::uuid4());
             $address->setName($addressData['name']);
@@ -60,6 +60,7 @@ class AddressFixtures extends Fixture implements DependentFixtureInterface, Fixt
             $address->setCountry($addressData['country']);
             $address->setPhone($addressData['phone']);
             $address->setCustomer($customer);
+            $address->setIsDefault(0 === $index);
 
             $timestamps = $this->generateTimestamps();
             $address->setCreatedAt($timestamps['createdAt']);

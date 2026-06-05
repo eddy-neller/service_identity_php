@@ -20,6 +20,7 @@ use App\Presentation\RouteRequirements;
 use App\Presentation\Shop\Dto\Customer\Address\AddressPatchInput;
 use App\Presentation\Shop\Dto\Customer\Address\AddressPostInput;
 use App\Presentation\Shop\State\Customer\Address\AddressCollectionProvider;
+use App\Presentation\Shop\State\Customer\Address\AddressDefaultProcessor;
 use App\Presentation\Shop\State\Customer\Address\AddressDeleteProcessor;
 use App\Presentation\Shop\State\Customer\Address\AddressGetProvider;
 use App\Presentation\Shop\State\Customer\Address\AddressPatchProcessor;
@@ -62,6 +63,18 @@ use Symfony\Component\Serializer\Attribute\Groups;
             output: false,
             name: self::PREFIX_NAME . 'me-delete',
             processor: AddressDeleteProcessor::class,
+        ),
+        new Post(
+            uriTemplate: '/addresses/{id}/default',
+            requirements: ['id' => RouteRequirements::UUID],
+            status: 200,
+            openapi: new Model\Operation(
+                security: [['JWT' => []]]
+            ),
+            security: "is_granted('IS_AUTHENTICATED_FULLY')",
+            input: false,
+            name: self::PREFIX_NAME . 'me-default',
+            processor: AddressDefaultProcessor::class,
         ),
         new Post(
             uriTemplate: '/addresses',
@@ -123,6 +136,9 @@ final class AddressResource
 
     #[Groups(['shop_address:read', 'shop_address:write', 'shop_customer:item:read'])]
     public string $phone;
+
+    #[Groups(['shop_address:read', 'shop_customer:item:read'])]
+    public bool $isDefault = false;
 
     #[Groups(['shop_address:read', 'shop_customer:item:read'])]
     public DateTimeImmutable $createdAt;

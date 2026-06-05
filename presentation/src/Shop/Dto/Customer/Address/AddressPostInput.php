@@ -39,6 +39,7 @@ final class AddressPostInput
     )]
     public string $lastname;
 
+    #[Groups(['shop_address:write'])]
     #[Assert\Length(
         min: 2,
         max: 50,

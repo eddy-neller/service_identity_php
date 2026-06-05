@@ -24,6 +24,7 @@ final readonly class CreateAddressCommandHandler implements CommandHandlerInterf
     {
         return $this->transactional->transactional(function () use ($command): CreateAddressOutput {
             $now = $this->clock->now();
+            $isDefault = !$this->repository->hasDefaultForOwner($command->ownerId);
 
             $address = Address::create(
                 id: $this->repository->nextIdentity(),
@@ -38,6 +39,7 @@ final readonly class CreateAddressCommandHandler implements CommandHandlerInterf
                 phone: $command->phone,
                 now: $now,
                 company: $command->company,
+                isDefault: $isDefault,
             );
 
             $this->repository->save($address);

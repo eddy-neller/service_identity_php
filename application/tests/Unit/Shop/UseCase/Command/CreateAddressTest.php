@@ -70,6 +70,11 @@ final class CreateAddressTest extends TestCase
             ->willReturn($addressId);
 
         $this->repository->expects($this->once())
+            ->method('hasDefaultForOwner')
+            ->with($customerId)
+            ->willReturn(false);
+
+        $this->repository->expects($this->once())
             ->method('save')
             ->with($this->callback(function (Address $address) use ($addressId, $customerId, $now): bool {
                 return $address->getId()->equals($addressId)
@@ -83,6 +88,7 @@ final class CreateAddressTest extends TestCase
                     && 'Paris' === $address->getCity()
                     && 'France' === $address->getCountry()
                     && '+33 1 23 45 67 89' === $address->getPhone()
+                    && $address->isDefault()
                     && $address->getCreatedAt() === $now
                     && $address->getUpdatedAt() === $now;
             }));
@@ -96,5 +102,50 @@ final class CreateAddressTest extends TestCase
         $output = $this->handler->handle($command);
 
         $this->assertTrue($output->addressItem->address->getId()->equals($addressId));
+    }
+
+    public function testHandleCreatesAddressWithoutDefaultWhenOwnerAlreadyHasOne(): void
+    {
+        $now = new DateTimeImmutable('2025-01-01 10:00:00');
+        $addressId = AddressId::fromString(self::ADDRESS_ID);
+        $customerId = CustomerId::fromString(self::CUSTOMER_ID);
+
+        $command = new CreateAddressCommand(
+            ownerId: $customerId,
+            label: 'Office',
+            firstname: 'John',
+            lastname: 'Doe',
+            company: null,
+            street: '12 Main St',
+            zipCode: '12345',
+            city: 'Paris',
+            country: 'France',
+            phone: '+33 1 23 45 67 89',
+        );
+
+        $this->clock->expects($this->once())
+            ->method('now')
+            ->willReturn($now);
+
+        $this->repository->expects($this->once())
+            ->method('nextIdentity')
+            ->willReturn($addressId);
+
+        $this->repository->expects($this->once())
+            ->method('hasDefaultForOwner')
+            ->with($customerId)
+            ->willReturn(true);
+
+        $this->repository->expects($this->once())
+            ->method('save')
+            ->with($this->callback(static fn (Address $address): bool => !$address->isDefault()));
+
+        $this->transactional->expects($this->once())
+            ->method('transactional')
+            ->willReturnCallback(function (callable $callback) {
+                return $callback();
+            });
+
+        $this->handler->handle($command);
     }
 }

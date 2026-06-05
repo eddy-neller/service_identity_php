@@ -28,6 +28,7 @@ final readonly class AddressMapper
             createdAt: $entity->getCreatedAt(),
             updatedAt: $entity->getUpdatedAt(),
             company: $entity->getCompany(),
+            isDefault: $entity->getIsDefault(),
         );
     }
 
@@ -45,6 +46,7 @@ final readonly class AddressMapper
         $entity->setCity($address->getCity());
         $entity->setCountry($address->getCountry());
         $entity->setPhone($address->getPhone());
+        $entity->setIsDefault($address->isDefault());
 
         return $entity;
     }

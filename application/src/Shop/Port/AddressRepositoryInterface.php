@@ -20,5 +20,11 @@ interface AddressRepositoryInterface
 
     public function findById(AddressId $id): ?Address;
 
+    public function hasDefaultForOwner(CustomerId $ownerId): bool;
+
+    public function unsetDefaultForOwner(CustomerId $ownerId): void;
+
+    public function findDefaultReplacementForOwner(CustomerId $ownerId, AddressId $excludedId): ?Address;
+
     public function listByOwner(CustomerId $ownerId, Pagination $pagination, array $orderBy, array $filters): AddressList;
 }

@@ -15,6 +15,7 @@ use Ramsey\Uuid\UuidInterface;
 #[ORM\Index(name: 'ShopAddressNameIdx', columns: ['name'])]
 #[ORM\Index(name: 'ShopAddressCityIdx', columns: ['city'])]
 #[ORM\Index(name: 'ShopAddressCountryIdx', columns: ['country'])]
+#[ORM\Index(name: 'ShopAddressIsDefaultIdx', columns: ['customer_id', 'is_default'])]
 #[ORM\Entity]
 class Address
 {
@@ -52,6 +53,9 @@ class Address
 
     #[ORM\Column(type: Types::STRING, length: 255)]
     private string $phone;
+
+    #[ORM\Column(type: Types::BOOLEAN, options: ['default' => false])]
+    private bool $isDefault = false;
 
     #[ORM\Column(type: Types::DATETIME_IMMUTABLE)]
     #[Gedmo\Timestampable(on: 'create')]
@@ -174,6 +178,16 @@ class Address
     public function setPhone(string $phone): void
     {
         $this->phone = $phone;
+    }
+
+    public function getIsDefault(): bool
+    {
+        return $this->isDefault;
+    }
+
+    public function setIsDefault(bool $isDefault): void
+    {
+        $this->isDefault = $isDefault;
     }
 
     public function getCreatedAt(): DateTimeImmutable

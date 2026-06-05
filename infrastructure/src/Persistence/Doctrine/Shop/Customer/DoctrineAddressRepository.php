@@ -92,6 +92,50 @@ final readonly class DoctrineAddressRepository implements AddressRepositoryInter
         return null === $entity ? null : $this->mapper->toDomain($entity);
     }
 
+    public function hasDefaultForOwner(CustomerId $ownerId): bool
+    {
+        $count = $this->createQueryBuilder()
+            ->select('COUNT(a.id)')
+            ->andWhere('a.customer = :customer')
+            ->andWhere('a.isDefault = :isDefault')
+            ->setParameter('customer', $this->getCustomerReference($ownerId))
+            ->setParameter('isDefault', true)
+            ->getQuery()
+            ->getSingleScalarResult();
+
+        return (int) $count > 0;
+    }
+
+    public function unsetDefaultForOwner(CustomerId $ownerId): void
+    {
+        $this->em->createQueryBuilder()
+            ->update(DoctrineAddress::class, 'a')
+            ->set('a.isDefault', ':isDefault')
+            ->andWhere('a.customer = :customer')
+            ->andWhere('a.isDefault = :currentDefault')
+            ->setParameter('isDefault', false)
+            ->setParameter('currentDefault', true)
+            ->setParameter('customer', $this->getCustomerReference($ownerId))
+            ->getQuery()
+            ->execute();
+    }
+
+    public function findDefaultReplacementForOwner(CustomerId $ownerId, AddressId $excludedId): ?DomainAddress
+    {
+        $entity = $this->createQueryBuilder()
+            ->andWhere('a.customer = :customer')
+            ->andWhere('a.id != :excludedId')
+            ->setParameter('customer', $this->getCustomerReference($ownerId))
+            ->setParameter('excludedId', $excludedId->toString())
+            ->addOrderBy('a.createdAt', 'ASC')
+            ->addOrderBy('a.id', 'ASC')
+            ->setMaxResults(1)
+            ->getQuery()
+            ->getOneOrNullResult();
+
+        return $entity instanceof DoctrineAddress ? $this->mapper->toDomain($entity) : null;
+    }
+
     private function findEntity(AddressId $id): ?DoctrineAddress
     {
         $entity = $this->em->find(DoctrineAddress::class, $id->toString());

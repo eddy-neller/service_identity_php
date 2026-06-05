@@ -23,6 +23,7 @@ final readonly class AddressResourcePresenter
         $resource->city = $address->getCity();
         $resource->country = $address->getCountry();
         $resource->phone = $address->getPhone();
+        $resource->isDefault = $address->isDefault();
         $resource->createdAt = $address->getCreatedAt();
         $resource->updatedAt = $address->getUpdatedAt();
 

@@ -17,61 +17,41 @@ final class AddressFixtures extends Fixture implements DependentFixtureInterface
 {
     use DataFixturesTrait;
 
+    private const array ADDRESSES = [
+        'customer_venom' => [
+            ['name' => 'Maison', 'firstname' => 'Eddy', 'lastname' => 'Neller', 'company' => 'EN Develop', 'address' => '10 rue de la Paix', 'zip' => '75001', 'city' => 'Paris', 'country' => 'France', 'phone' => '+33 1 23 45 67 89'],
+            ['name' => 'Bureau', 'firstname' => 'Eddy', 'lastname' => 'Neller', 'company' => 'EN Develop', 'address' => '42 avenue des Champs-Élysées', 'zip' => '75008', 'city' => 'Paris', 'country' => 'France', 'phone' => '+33 1 98 76 54 32'],
+            ['name' => 'Parents', 'firstname' => 'Eddy', 'lastname' => 'Neller', 'company' => null, 'address' => '3 impasse des Lilas', 'zip' => '59000', 'city' => 'Lille', 'country' => 'France', 'phone' => '+33 3 20 11 22 33'],
+        ],
+        'customer_marine' => [
+            ['name' => 'Bureau', 'firstname' => 'Marine', 'lastname' => 'Durand', 'company' => null, 'address' => '25 avenue Victor Hugo', 'zip' => '69001', 'city' => 'Lyon', 'country' => 'France', 'phone' => '+33 4 12 34 56 78'],
+            ['name' => 'Domicile', 'firstname' => 'Marine', 'lastname' => 'Durand', 'company' => null, 'address' => '8 rue Bellecour', 'zip' => '69002', 'city' => 'Lyon', 'country' => 'France', 'phone' => '+33 6 11 22 33 44'],
+            ['name' => 'Famille', 'firstname' => 'Marine', 'lastname' => 'Durand', 'company' => null, 'address' => '17 rue du Rhône', 'zip' => '01000', 'city' => 'Bourg-en-Bresse', 'country' => 'France', 'phone' => '+33 4 74 55 66 77'],
+        ],
+        'customer_anna' => [
+            ['name' => 'Appartement', 'firstname' => 'Anna', 'lastname' => 'Martin', 'company' => null, 'address' => '5 boulevard des Alpes', 'zip' => '38000', 'city' => 'Grenoble', 'country' => 'France', 'phone' => '+33 6 98 76 54 32'],
+            ['name' => 'Travail', 'firstname' => 'Anna', 'lastname' => 'Martin', 'company' => 'Schneider Electric', 'address' => '35 rue Joseph Monier', 'zip' => '92500', 'city' => 'Rueil-Malmaison', 'country' => 'France', 'phone' => '+33 1 41 29 70 00'],
+            ['name' => 'Résidence secondaire', 'firstname' => 'Anna', 'lastname' => 'Martin', 'company' => null, 'address' => '12 chemin du Vercors', 'zip' => '38250', 'city' => 'Villard-de-Lans', 'country' => 'France', 'phone' => '+33 4 76 95 10 38'],
+        ],
+    ];
+
     public function load(ObjectManager $manager): void
     {
-        /** @var Customer $customerVenom */
-        $customerVenom = $this->getReference('customer_venom', Customer::class);
+        foreach (self::ADDRESSES as $reference => $addresses) {
+            /** @var Customer $customer */
+            $customer = $this->getReference($reference, Customer::class);
 
-        /** @var Customer $customerMarine */
-        $customerMarine = $this->getReference('customer_marine', Customer::class);
-
-        /** @var Customer $customerAnna */
-        $customerAnna = $this->getReference('customer_anna', Customer::class);
-
-        $this->createAddress($manager, $customerVenom, [
-            'name' => 'Maison',
-            'firstname' => 'Eddy',
-            'lastname' => 'Neller',
-            'company' => 'EN Develop',
-            'address' => '10 rue de la Paix',
-            'zip' => '75001',
-            'city' => 'Paris',
-            'country' => 'France',
-            'phone' => '+33 1 23 45 67 89',
-        ]);
-
-        $this->createAddress($manager, $customerMarine, [
-            'name' => 'Bureau',
-            'firstname' => 'Marine',
-            'lastname' => 'Durand',
-            'company' => null,
-            'address' => '25 avenue Victor Hugo',
-            'zip' => '69001',
-            'city' => 'Lyon',
-            'country' => 'France',
-            'phone' => '+33 4 12 34 56 78',
-        ]);
-
-        $this->createAddress($manager, $customerAnna, [
-            'name' => 'Appartement',
-            'firstname' => 'Anna',
-            'lastname' => 'Martin',
-            'company' => null,
-            'address' => '5 boulevard des Alpes',
-            'zip' => '38000',
-            'city' => 'Grenoble',
-            'country' => 'France',
-            'phone' => '+33 6 98 76 54 32',
-        ]);
+            foreach ($addresses as $index => $data) {
+                $this->createAddress($manager, $customer, $data, 0 === $index);
+            }
+        }
 
         $manager->flush();
     }
 
     public function getDependencies(): array
     {
-        return [
-            CustomerFixtures::class,
-        ];
+        return [CustomerFixtures::class];
     }
 
     public static function getGroups(): array
@@ -79,10 +59,11 @@ final class AddressFixtures extends Fixture implements DependentFixtureInterface
         return ['dev'];
     }
 
-    private function createAddress(ObjectManager $manager, Customer $customer, array $data): void
+    private function createAddress(ObjectManager $manager, Customer $customer, array $data, bool $isDefault): void
     {
         $address = new Address();
         $address->setId(Uuid::uuid4());
+        $address->setCustomer($customer);
         $address->setName($data['name']);
         $address->setFirstname($data['firstname']);
         $address->setLastname($data['lastname']);
@@ -92,7 +73,7 @@ final class AddressFixtures extends Fixture implements DependentFixtureInterface
         $address->setCity($data['city']);
         $address->setCountry($data['country']);
         $address->setPhone($data['phone']);
-        $address->setCustomer($customer);
+        $address->setIsDefault($isDefault);
 
         $timestamps = $this->generateTimestamps();
         $address->setCreatedAt($timestamps['createdAt']);

@@ -34,6 +34,7 @@ final class AddressTest extends TestCase
             phone: '+33 1 23 45 67 89',
             now: $now,
             company: 'ACME',
+            isDefault: true,
         );
 
         $this->assertTrue($address->getId()->equals(AddressId::fromString(self::ADDRESS_ID)));
@@ -47,6 +48,7 @@ final class AddressTest extends TestCase
         $this->assertSame('Paris', $address->getCity());
         $this->assertSame('France', $address->getCountry());
         $this->assertSame('+33 1 23 45 67 89', $address->getPhone());
+        $this->assertTrue($address->isDefault());
         $this->assertSame($now, $address->getCreatedAt());
         $this->assertSame($now, $address->getUpdatedAt());
     }
@@ -91,6 +93,55 @@ final class AddressTest extends TestCase
         $this->assertSame('France', $address->getCountry());
         $this->assertSame('+33 6 12 34 56 78', $address->getPhone());
         $this->assertSame($createdAt, $address->getCreatedAt());
+        $this->assertSame($updatedAt, $address->getUpdatedAt());
+    }
+
+    public function testMarkAsDefaultTouchesUpdatedAt(): void
+    {
+        $createdAt = new DateTimeImmutable('2025-01-01 10:00:00');
+        $address = Address::create(
+            id: AddressId::fromString(self::ADDRESS_ID),
+            ownerId: CustomerId::fromString(self::CUSTOMER_ID),
+            label: 'Home',
+            firstname: 'John',
+            lastname: 'Doe',
+            street: '12 Main St',
+            zipCode: '12345',
+            city: 'Paris',
+            country: 'France',
+            phone: '+33 1 23 45 67 89',
+            now: $createdAt,
+        );
+
+        $updatedAt = new DateTimeImmutable('2025-01-02 10:00:00');
+        $address->markAsDefault($updatedAt);
+
+        $this->assertTrue($address->isDefault());
+        $this->assertSame($updatedAt, $address->getUpdatedAt());
+    }
+
+    public function testUnsetDefaultTouchesUpdatedAt(): void
+    {
+        $createdAt = new DateTimeImmutable('2025-01-01 10:00:00');
+        $address = Address::create(
+            id: AddressId::fromString(self::ADDRESS_ID),
+            ownerId: CustomerId::fromString(self::CUSTOMER_ID),
+            label: 'Home',
+            firstname: 'John',
+            lastname: 'Doe',
+            street: '12 Main St',
+            zipCode: '12345',
+            city: 'Paris',
+            country: 'France',
+            phone: '+33 1 23 45 67 89',
+            now: $createdAt,
+            isDefault: true,
+        );
+
+        $updatedAt = new DateTimeImmutable('2025-01-02 10:00:00');
+        $address->unsetDefault($updatedAt);
+
+        $this->assertFalse($address->isDefault());
         $this->assertSame($updatedAt, $address->getUpdatedAt());
     }
 

@@ -36,6 +36,7 @@ final class AddressPatchInput
     )]
     public ?string $lastname = null;
 
+    #[Groups(['shop_address:write'])]
     #[Assert\Length(
         min: 2,
         max: 50,

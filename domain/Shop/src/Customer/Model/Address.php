@@ -23,6 +23,7 @@ final class Address
         private string $city,
         private string $country,
         private string $phone,
+        private bool $isDefault,
         private DateTimeImmutable $createdAt,
         private DateTimeImmutable $updatedAt,
     ) {
@@ -41,6 +42,7 @@ final class Address
         string $phone,
         DateTimeImmutable $now,
         ?string $company = null,
+        bool $isDefault = false,
     ): self {
         return new self(
             id: $id,
@@ -54,6 +56,7 @@ final class Address
             city: self::assertLength($city, 2, 50, 'City'),
             country: self::assertLength($country, 2, 50, 'Country'),
             phone: self::assertLength($phone, 2, 30, 'Phone'),
+            isDefault: $isDefault,
             createdAt: $now,
             updatedAt: $now,
         );
@@ -73,6 +76,7 @@ final class Address
         DateTimeImmutable $createdAt,
         DateTimeImmutable $updatedAt,
         ?string $company = null,
+        bool $isDefault = false,
     ): self {
         return new self(
             id: $id,
@@ -86,6 +90,7 @@ final class Address
             city: self::assertLength($city, 2, 50, 'City'),
             country: self::assertLength($country, 2, 50, 'Country'),
             phone: self::assertLength($phone, 2, 30, 'Phone'),
+            isDefault: $isDefault,
             createdAt: $createdAt,
             updatedAt: $updatedAt,
         );
@@ -113,6 +118,18 @@ final class Address
         $this->country = self::assertLength($country, 2, 50, 'Country');
         $this->phone = self::assertLength($phone, 2, 30, 'Phone');
 
+        $this->touch($now);
+    }
+
+    public function markAsDefault(DateTimeImmutable $now): void
+    {
+        $this->isDefault = true;
+        $this->touch($now);
+    }
+
+    public function unsetDefault(DateTimeImmutable $now): void
+    {
+        $this->isDefault = false;
         $this->touch($now);
     }
 
@@ -174,6 +191,11 @@ final class Address
     public function getPhone(): string
     {
         return $this->phone;
+    }
+
+    public function isDefault(): bool
+    {
+        return $this->isDefault;
     }
 
     public function getCreatedAt(): DateTimeImmutable

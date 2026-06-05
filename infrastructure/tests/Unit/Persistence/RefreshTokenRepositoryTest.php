@@ -165,13 +165,14 @@ final class RefreshTokenRepositoryTest extends KernelTestCase
         $tokens = [];
         for ($i = 1; $i <= 4; ++$i) {
             $token = $this->createRefreshToken([
-                'refreshToken' => "batch-limit-token-{$i}",
-                'username' => "batch-limit-user{$i}@example.com",
+                'refreshToken' => 'batch-limit-token-' . $i,
+                'username' => sprintf('batch-limit-user%d@example.com', $i),
                 'valid' => new DateTimeImmutable('-1 day')->format('Y-m-d H:i:s'),
             ]);
             $this->em->persist($token);
             $tokens[] = $token;
         }
+
         $this->em->flush();
 
         $result = $this->repo->findInvalidBatch(null, 2);
@@ -181,6 +182,7 @@ final class RefreshTokenRepositoryTest extends KernelTestCase
         foreach ($tokens as $token) {
             $this->em->remove($token);
         }
+
         $this->em->flush();
     }
 
@@ -222,13 +224,14 @@ final class RefreshTokenRepositoryTest extends KernelTestCase
         $tokens = [];
         for ($i = 1; $i <= 5; ++$i) {
             $token = $this->createRefreshToken([
-                'refreshToken' => "batch-combo-token-{$i}",
-                'username' => "batch-combo-user{$i}@example.com",
+                'refreshToken' => 'batch-combo-token-' . $i,
+                'username' => sprintf('batch-combo-user%d@example.com', $i),
                 'valid' => new DateTimeImmutable('-1 day')->format('Y-m-d H:i:s'),
             ]);
             $this->em->persist($token);
             $tokens[] = $token;
         }
+
         $this->em->flush();
 
         $total = $this->repo->findInvalidBatch(null, null, 0);
@@ -240,6 +243,7 @@ final class RefreshTokenRepositoryTest extends KernelTestCase
         foreach ($tokens as $token) {
             $this->em->remove($token);
         }
+
         $this->em->flush();
     }
 
@@ -264,7 +268,7 @@ final class RefreshTokenRepositoryTest extends KernelTestCase
 
         $refreshTokenValues = array_map(
             static fn (RefreshToken $t): ?string => $t->getRefreshToken(),
-            $result instanceof \Traversable ? iterator_to_array($result) : (array) $result,
+            $result instanceof \Traversable ? iterator_to_array($result) : $result,
         );
 
         $this->assertContains('batch-date-token-2h', $refreshTokenValues);
@@ -280,20 +284,21 @@ final class RefreshTokenRepositoryTest extends KernelTestCase
         $tokens = [];
         for ($i = 1; $i <= 3; ++$i) {
             $token = $this->createRefreshToken([
-                'refreshToken' => "batch-null-token-{$i}",
-                'username' => "batch-null-user{$i}@example.com",
+                'refreshToken' => 'batch-null-token-' . $i,
+                'username' => sprintf('batch-null-user%d@example.com', $i),
                 'valid' => new DateTimeImmutable('-1 day')->format('Y-m-d H:i:s'),
             ]);
             $this->em->persist($token);
             $tokens[] = $token;
         }
+
         $this->em->flush();
 
         $result = $this->repo->findInvalidBatch(null, null, 0);
 
         $refreshTokenValues = array_map(
             static fn (RefreshToken $t): ?string => $t->getRefreshToken(),
-            $result instanceof \Traversable ? iterator_to_array($result) : (array) $result,
+            $result instanceof \Traversable ? iterator_to_array($result) : $result,
         );
 
         foreach ($tokens as $token) {
@@ -303,6 +308,7 @@ final class RefreshTokenRepositoryTest extends KernelTestCase
         foreach ($tokens as $token) {
             $this->em->remove($token);
         }
+
         $this->em->flush();
     }
 

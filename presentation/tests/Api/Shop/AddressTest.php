@@ -43,6 +43,7 @@ final class AddressTest extends BaseTest
                     'city',
                     'country',
                     'phone',
+                    'isDefault',
                     'createdAt',
                     'updatedAt',
                 ],
@@ -107,6 +108,7 @@ final class AddressTest extends BaseTest
                 'city',
                 'country',
                 'phone',
+                'isDefault',
                 'createdAt',
                 'updatedAt',
             ],
@@ -230,6 +232,7 @@ phone: This value should not be blank.',
                 'city',
                 'country',
                 'phone',
+                'isDefault',
                 'createdAt',
                 'updatedAt',
             ],
@@ -264,6 +267,7 @@ phone: This value should not be blank.',
                 'city',
                 'country',
                 'phone',
+                'isDefault',
                 'createdAt',
                 'updatedAt',
             ],
@@ -321,6 +325,39 @@ phone: This value should not be blank.',
             $options,
             Response::HTTP_OK,
             $asserts,
+        );
+    }
+
+    public function testSetDefaultShopAddressSuccess(): void
+    {
+        $this->testSuccess(
+            Request::METHOD_POST,
+            $this->iri . '/default',
+            [
+                'auth_bearer' => $this->getToken($this->userMember),
+            ],
+            Response::HTTP_OK,
+            [
+                BaseTest::ASSERTION_TYPE['SERIALIZATION'] => [
+                    'hasKey' => [
+                        'id',
+                        'name',
+                        'firstname',
+                        'lastname',
+                        'address',
+                        'zip',
+                        'city',
+                        'country',
+                        'phone',
+                        'isDefault',
+                        'createdAt',
+                        'updatedAt',
+                    ],
+                ],
+                BaseTest::ASSERTION_TYPE['EQUAL'] => [
+                    'isDefault' => true,
+                ],
+            ],
         );
     }
 
