@@ -20,6 +20,8 @@ interface AddressRepositoryInterface
 
     public function findById(AddressId $id): ?Address;
 
+    public function countByOwnerForUpdate(CustomerId $ownerId): int;
+
     public function hasDefaultForOwner(CustomerId $ownerId): bool;
 
     public function unsetDefaultForOwner(CustomerId $ownerId): void;

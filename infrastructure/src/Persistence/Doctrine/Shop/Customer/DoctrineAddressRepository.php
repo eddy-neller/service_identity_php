@@ -13,6 +13,7 @@ use App\Domain\Shop\Customer\ValueObject\AddressId;
 use App\Domain\Shop\Customer\ValueObject\CustomerId;
 use App\Infrastructure\Entity\Shop\Address as DoctrineAddress;
 use App\Infrastructure\Entity\Shop\Customer as DoctrineCustomer;
+use Doctrine\DBAL\LockMode;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\QueryBuilder;
 use Doctrine\ORM\Tools\Pagination\Paginator;
@@ -90,6 +91,20 @@ final readonly class DoctrineAddressRepository implements AddressRepositoryInter
         $entity = $this->findEntity($id);
 
         return null === $entity ? null : $this->mapper->toDomain($entity);
+    }
+
+    public function countByOwnerForUpdate(CustomerId $ownerId): int
+    {
+        $this->em->find(DoctrineCustomer::class, $ownerId->toString(), LockMode::PESSIMISTIC_WRITE);
+
+        $count = $this->createQueryBuilder()
+            ->select('COUNT(a.id)')
+            ->andWhere('a.customer = :customer')
+            ->setParameter('customer', $this->getCustomerReference($ownerId))
+            ->getQuery()
+            ->getSingleScalarResult();
+
+        return (int) $count;
     }
 
     public function hasDefaultForOwner(CustomerId $ownerId): bool

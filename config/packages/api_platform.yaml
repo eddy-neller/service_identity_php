@@ -23,6 +23,7 @@ api_platform:
     exception_to_status:
         App\Domain\Shop\Catalog\Exception\CategoryNotFoundException: 404
         App\Domain\Shop\Catalog\Exception\ProductNotFoundException: 404
+        App\Domain\Shop\Customer\Exception\AddressLimitReachedException: 409
         App\Domain\Shop\Customer\Exception\AddressNotFoundException: 404
         App\Domain\Shop\Customer\Exception\CustomerAlreadyExistsException: 409
         App\Domain\Shop\Customer\Exception\CustomerNotFoundException: 404

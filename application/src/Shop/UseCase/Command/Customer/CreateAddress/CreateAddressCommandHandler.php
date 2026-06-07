@@ -9,7 +9,9 @@ use App\Application\Shared\Port\ClockInterface;
 use App\Application\Shared\Port\TransactionalInterface;
 use App\Application\Shop\Port\AddressRepositoryInterface;
 use App\Application\Shop\ReadModel\AddressItem;
+use App\Domain\Shop\Customer\Exception\AddressLimitReachedException;
 use App\Domain\Shop\Customer\Model\Address;
+use App\Domain\Shop\Customer\Model\Customer;
 
 final readonly class CreateAddressCommandHandler implements CommandHandlerInterface
 {
@@ -23,6 +25,10 @@ final readonly class CreateAddressCommandHandler implements CommandHandlerInterf
     public function handle(CreateAddressCommand $command): CreateAddressOutput
     {
         return $this->transactional->transactional(function () use ($command): CreateAddressOutput {
+            if ($this->repository->countByOwnerForUpdate($command->ownerId) >= Customer::MAX_ADDRESSES) {
+                throw new AddressLimitReachedException();
+            }
+
             $now = $this->clock->now();
             $isDefault = !$this->repository->hasDefaultForOwner($command->ownerId);
 

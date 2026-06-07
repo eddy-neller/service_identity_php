@@ -4,10 +4,15 @@ declare(strict_types=1);
 
 namespace App\Presentation\Tests\Api\Shop;
 
+use App\Infrastructure\Entity\Shop\Address;
+use App\Infrastructure\Entity\Shop\Customer;
+use App\Infrastructure\Entity\User\User;
 use App\Presentation\Tests\Api\BaseTest;
+use DateTimeImmutable;
 use Faker\Factory;
 use Generator;
 use PHPUnit\Framework\Attributes\DataProvider;
+use Ramsey\Uuid\Uuid;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Contracts\HttpClient\Exception\ClientExceptionInterface;
@@ -219,6 +224,51 @@ phone: This value should not be blank.',
         $this->testException(Request::METHOD_POST, self::URL_API_OPE, $options, $exception);
     }
 
+    public function testCreateShopAddressReturnsConflictWhenCustomerAlreadyHasFiveAddresses(): void
+    {
+        $user = $this->em->getRepository(User::class)->findOneBy(['email' => $this->userMember . '@en-develop.fr']);
+        $this->assertInstanceOf(User::class, $user);
+
+        $customer = $this->em->getRepository(Customer::class)->findOneBy(['userAccountId' => $user->getId()]);
+        $this->assertInstanceOf(Customer::class, $customer);
+
+        $addressRepository = $this->em->getRepository(Address::class);
+        $addressCount = $addressRepository->count(['customer' => $customer]);
+        $this->assertLessThanOrEqual(5, $addressCount);
+
+        for ($index = $addressCount; $index < 5; ++$index) {
+            $this->em->persist($this->createPersistedAddress($customer, $index));
+        }
+
+        $this->em->flush();
+
+        $fakeData = self::getFakeDataShopAddress();
+        $response = $this->client->request(Request::METHOD_POST, self::URL_API_OPE, [
+            'auth_bearer' => $this->getToken($this->userMember),
+            'headers' => [
+                'Accept' => 'application/json',
+            ],
+            'json' => [
+                'name' => $fakeData['name'],
+                'firstname' => $fakeData['firstname'],
+                'lastname' => $fakeData['lastname'],
+                'company' => $fakeData['company'],
+                'address' => $fakeData['address'],
+                'zip' => $fakeData['zip'],
+                'city' => $fakeData['city'],
+                'country' => $fakeData['country'],
+                'phone' => $fakeData['phone'],
+            ],
+        ]);
+
+        self::assertResponseStatusCodeSame(Response::HTTP_CONFLICT);
+        $this->assertStringContainsString(
+            'A customer cannot have more than 5 addresses.',
+            $response->getContent(false),
+        );
+        $this->assertSame(5, $addressRepository->count(['customer' => $customer]));
+    }
+
     public function testGetShopAddress(): void
     {
         $assertSerialization = [
@@ -249,6 +299,28 @@ phone: This value should not be blank.',
                 BaseTest::ASSERTION_TYPE['SERIALIZATION'] => $assertSerialization,
             ],
         );
+    }
+
+    private function createPersistedAddress(Customer $customer, int $index): Address
+    {
+        $now = new DateTimeImmutable('2026-01-01 10:00:00');
+        $address = new Address();
+        $address->setId(Uuid::uuid4());
+        $address->setCustomer($customer);
+        $address->setName('Limit address ' . $index);
+        $address->setFirstname('John');
+        $address->setLastname('Doe');
+        $address->setCompany(null);
+        $address->setAddress('12 Main St');
+        $address->setZip('75001');
+        $address->setCity('Paris');
+        $address->setCountry('France');
+        $address->setPhone('+33 1 23 45 67 89');
+        $address->setIsDefault(false);
+        $address->setCreatedAt($now);
+        $address->setUpdatedAt($now);
+
+        return $address;
     }
 
     public static function provideUpdateShopAddressSuccess(): Generator

@@ -162,6 +162,57 @@ final class DeleteAddressTest extends TestCase
         $this->handler->handle($command);
     }
 
+    public function testHandleDeletesDefaultAddressWithNoReplacement(): void
+    {
+        $createdAt = new DateTimeImmutable('2025-01-01 10:00:00');
+        $addressId = AddressId::fromString(self::ADDRESS_ID);
+        $customerId = CustomerId::fromString(self::CUSTOMER_ID);
+        $address = Address::create(
+            id: $addressId,
+            ownerId: $customerId,
+            label: 'Home',
+            firstname: 'John',
+            lastname: 'Doe',
+            street: '12 Main St',
+            zipCode: '12345',
+            city: 'Paris',
+            country: 'France',
+            phone: '+33 1 23 45 67 89',
+            now: $createdAt,
+            isDefault: true,
+        );
+
+        $command = new DeleteAddressCommand($addressId, $customerId);
+
+        $this->repository->expects($this->once())
+            ->method('findById')
+            ->with($addressId)
+            ->willReturn($address);
+
+        $this->repository->expects($this->once())
+            ->method('delete')
+            ->with($address);
+
+        $this->repository->expects($this->once())
+            ->method('findDefaultReplacementForOwner')
+            ->with($customerId, $addressId)
+            ->willReturn(null);
+
+        $this->clock->expects($this->never())
+            ->method('now');
+
+        $this->repository->expects($this->never())
+            ->method('save');
+
+        $this->transactional->expects($this->once())
+            ->method('transactional')
+            ->willReturnCallback(function (callable $callback) {
+                return $callback();
+            });
+
+        $this->handler->handle($command);
+    }
+
     public function testHandleThrowsWhenAddressMissing(): void
     {
         $addressId = AddressId::fromString(self::ADDRESS_ID);

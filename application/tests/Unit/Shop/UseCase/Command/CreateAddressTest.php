@@ -9,7 +9,9 @@ use App\Application\Shared\Port\TransactionalInterface;
 use App\Application\Shop\Port\AddressRepositoryInterface;
 use App\Application\Shop\UseCase\Command\Customer\CreateAddress\CreateAddressCommand;
 use App\Application\Shop\UseCase\Command\Customer\CreateAddress\CreateAddressCommandHandler;
+use App\Domain\Shop\Customer\Exception\AddressLimitReachedException;
 use App\Domain\Shop\Customer\Model\Address;
+use App\Domain\Shop\Customer\Model\Customer;
 use App\Domain\Shop\Customer\ValueObject\AddressId;
 use App\Domain\Shop\Customer\ValueObject\CustomerId;
 use DateTimeImmutable;
@@ -64,6 +66,11 @@ final class CreateAddressTest extends TestCase
         $this->clock->expects($this->once())
             ->method('now')
             ->willReturn($now);
+
+        $this->repository->expects($this->once())
+            ->method('countByOwnerForUpdate')
+            ->with($customerId)
+            ->willReturn(4);
 
         $this->repository->expects($this->once())
             ->method('nextIdentity')
@@ -128,6 +135,11 @@ final class CreateAddressTest extends TestCase
             ->willReturn($now);
 
         $this->repository->expects($this->once())
+            ->method('countByOwnerForUpdate')
+            ->with($customerId)
+            ->willReturn(1);
+
+        $this->repository->expects($this->once())
             ->method('nextIdentity')
             ->willReturn($addressId);
 
@@ -145,6 +157,41 @@ final class CreateAddressTest extends TestCase
             ->willReturnCallback(function (callable $callback) {
                 return $callback();
             });
+
+        $this->handler->handle($command);
+    }
+
+    public function testHandleThrowsWhenOwnerAlreadyHasFiveAddresses(): void
+    {
+        $customerId = CustomerId::fromString(self::CUSTOMER_ID);
+        $command = new CreateAddressCommand(
+            ownerId: $customerId,
+            label: 'Office',
+            firstname: 'John',
+            lastname: 'Doe',
+            company: null,
+            street: '12 Main St',
+            zipCode: '12345',
+            city: 'Paris',
+            country: 'France',
+            phone: '+33 1 23 45 67 89',
+        );
+
+        $this->repository->expects($this->once())
+            ->method('countByOwnerForUpdate')
+            ->with($customerId)
+            ->willReturn(Customer::MAX_ADDRESSES);
+
+        $this->clock->expects($this->never())->method('now');
+        $this->repository->expects($this->never())->method('nextIdentity');
+        $this->repository->expects($this->never())->method('hasDefaultForOwner');
+        $this->repository->expects($this->never())->method('save');
+        $this->transactional->expects($this->once())
+            ->method('transactional')
+            ->willReturnCallback(static fn (callable $callback) => $callback());
+
+        $this->expectException(AddressLimitReachedException::class);
+        $this->expectExceptionMessage('A customer cannot have more than 5 addresses.');
 
         $this->handler->handle($command);
     }

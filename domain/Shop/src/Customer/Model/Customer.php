@@ -11,6 +11,8 @@ use DateTimeImmutable;
 
 final class Customer
 {
+    public const int MAX_ADDRESSES = 5;
+
     private function __construct(
         private CustomerId $id,
         private ?UserAccountId $userAccountId,
