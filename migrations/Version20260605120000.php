@@ -26,9 +26,6 @@ final class Version20260605120000 extends AbstractMigration
 
     public function down(Schema $schema): void
     {
-        $this->addSql('DROP INDEX UNIQ_SHOP_ADDRESS_DEFAULT_PER_CUSTOMER');
-        $this->addSql('DROP INDEX ShopAddressIsDefaultIdx');
-
         $this->addSql('ALTER TABLE shop_address DROP is_default');
     }
 }

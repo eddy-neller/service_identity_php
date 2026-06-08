@@ -6,7 +6,7 @@ namespace App\Infrastructure\Persistence\Doctrine\Shop\Customer;
 
 use App\Application\Shared\Port\UuidGeneratorInterface;
 use App\Application\Shop\Port\CustomerRepositoryInterface;
-use App\Application\Shop\ReadModel\CustomerList;
+use App\Application\Shop\ReadModel\Customer\CustomerList;
 use App\Domain\Shop\Customer\Model\Customer as DomainCustomer;
 use App\Domain\Shop\Customer\ValueObject\CustomerId;
 use App\Domain\Shop\Customer\ValueObject\CustomerStatus;

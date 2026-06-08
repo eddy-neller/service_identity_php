@@ -6,7 +6,7 @@ namespace App\Presentation\Tests\Unit\State\Shop\Customer;
 
 use ApiPlatform\Metadata\Get;
 use App\Application\Shared\CQRS\Query\QueryBusInterface;
-use App\Application\Shop\ReadModel\CustomerItem;
+use App\Application\Shop\ReadModel\Customer\CustomerItem;
 use App\Application\Shop\UseCase\Query\Customer\DisplayCustomer\DisplayCustomerOutput;
 use App\Application\Shop\UseCase\Query\Customer\DisplayCustomer\DisplayCustomerQuery;
 use App\Domain\Shop\Customer\Model\Address as DomainAddress;

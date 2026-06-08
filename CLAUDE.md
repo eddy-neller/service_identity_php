@@ -132,7 +132,14 @@ src/                     Legacy (ne pas étendre)
 
 - Jamais `new \DateTimeImmutable()` dans Domain — recevoir `DateTimeImmutable $now` en paramètre
 - `createdAt` : immuable, défini dans les factory methods (pas de `setCreatedAt()`)
-- `updatedAt` : mis à jour dans chaque méthode métier, via setter privé
+- `updatedAt` : mis à jour dans chaque méthode métier via l'appel `$this->touch($now);` (jamais d'assignation directe ni de `setUpdatedAt()`)
+
+```php
+private function touch(\DateTimeImmutable $now): void
+{
+    $this->updatedAt = $now;
+}
+```
 
 ### Domain Events
 
@@ -239,6 +246,17 @@ Tous les bindings dans `config/services.yaml`.
 - Le mapper utilise `DomainUser::reconstitute()` pour reconstruire l'agrégat sans events
 - Préserver les timestamps Domain dans le mapping
 
+### Index & contraintes Doctrine
+
+- Déclarer les index et contraintes uniques **dans l'entité Doctrine** via attributs `#[ORM\Index]` / `#[ORM\UniqueConstraint]` (source de vérité), jamais uniquement dans la migration
+- Nommage explicite et obligatoire, en PascalCase :
+  - Index : `{Entité}{Colonnes}Idx` (ex. `ShopCustomerUserAccountIdx`, `ShopCartLineCartIdx`)
+  - Contraintes uniques : `{Entité}{Colonnes}Uniq` (ex. `ShopCartCustomerUniq`, `ShopCartLineProductUniq`)
+- Les index implicites des clés étrangères (`ManyToOne` / `OneToOne`) doivent être **déclarés explicitement** pour figer leur nom — sinon Doctrine génère un nom hashé (`IDX_…`/`UNIQ_…`) et `doctrine:schema:update` produit un diff de renommage permanent
+- La migration doit utiliser **exactement** les mêmes noms que les attributs d'entité
+- Exceptions restant uniquement dans la migration (pas d'attribut Doctrine équivalent) : `CHECK` constraints et index fonctionnels (GIN/`trgm`, expressions)
+- Vérifier l'absence de diff avec `php bin/console doctrine:schema:update --dump-sql` après toute modification d'index
+
 ### Dépendances
 
 - Infrastructure peut dépendre de : Ports Application, Domain, frameworks
@@ -309,6 +327,7 @@ HTTP Request → Provider → Query → QueryBus → Handler → Read model → 
 
 - `shortName` sur `#[ApiResource]`, `name` stable sur chaque `Operation`
 - UUID : `App\Presentation\RouteRequirements::UUID` pour les paramètres `{id}`
+- **Variable d'URI ≠ identifiant de la ressource** : si une opération a un `uriTemplate` dont la variable ne correspond pas à l'identifiant de la ressource (ex. `/cart/items/{productId}` sur `ShopCart` identifié par `id`), API Platform génère par défaut une `uriVariable` nommée `id` → `InvalidIdentifierException` → 404 « Invalid uri variables ». Déclarer alors explicitement la variable : `uriVariables: ['productId' => new Link(fromClass: SelfResource::class, identifiers: ['productId'])]`. La propriété (`productId`) n'existant pas sur la ressource, aucune transformation n'est tentée et la valeur brute arrive dans le Processor/Provider. Ajouter aussi `read: false` quand l'opération n'a ni `provider` ni `stateOptions` (la cible est résolue par le Processor, ex. via le client courant) pour éviter une lecture par défaut vouée à l'échec.
 - Endpoints sécurisés : `security` + OpenAPI `security: [['ApiKeyAuth' => []]]`
 - Pagination : `PaginatedCollectionProvider` → attributs Request `_total_items` / `_total_pages` → `PaginationHeaderListener` produit `X-Total-Count` / `X-Total-Pages`. Ne pas recalculer/poser manuellement ces headers
 - Pas d'endpoints hors API Platform si `ApiResource` + `Provider/Processor` suffit
@@ -365,7 +384,7 @@ HTTP Request → Provider → Query → QueryBus → Handler → Read model → 
 - [ ] Value Objects immuables avec validation d'invariants
 - [ ] Pas de `setXxx()` public sur les agrégats
 - [ ] Méthodes métier reçoivent `DateTimeImmutable $now`
-- [ ] `createdAt` immuable, `updatedAt` mis à jour explicitement
+- [ ] `createdAt` immuable, `updatedAt` mis à jour via `$this->touch($now);` (méthode privée `touch()`)
 - [ ] Domain Events pour les changements importants
 
 ### Application

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Presentation\Tests\Unit\Presenter\Shop\Customer;
 
-use App\Application\Shop\ReadModel\CustomerItem;
+use App\Application\Shop\ReadModel\Customer\CustomerItem;
 use App\Domain\Shop\Customer\Model\Address as DomainAddress;
 use App\Domain\Shop\Customer\Model\Customer;
 use App\Domain\Shop\Customer\ValueObject\AddressId;

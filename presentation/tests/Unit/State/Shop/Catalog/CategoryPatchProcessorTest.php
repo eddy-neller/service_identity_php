@@ -6,7 +6,7 @@ namespace App\Presentation\Tests\Unit\State\Shop\Catalog;
 
 use ApiPlatform\Metadata\Operation;
 use App\Application\Shared\CQRS\Command\CommandBusInterface;
-use App\Application\Shop\ReadModel\CategoryItem;
+use App\Application\Shop\ReadModel\Catalog\CategoryItem;
 use App\Application\Shop\UseCase\Command\Catalog\UpdateCategoryByAdmin\UpdateCategoryByAdminCommand;
 use App\Application\Shop\UseCase\Command\Catalog\UpdateCategoryByAdmin\UpdateCategoryByAdminOutput;
 use App\Domain\SharedKernel\ValueObject\Slug;

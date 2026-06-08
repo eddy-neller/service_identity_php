@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Presentation\Shop\Presenter\Catalog;
 
 use App\Application\Shop\Port\ProductImageUrlResolverInterface;
-use App\Application\Shop\ReadModel\ProductItem;
+use App\Application\Shop\ReadModel\Catalog\ProductItem;
 use App\Domain\Shop\Catalog\Model\Product;
 use App\Presentation\Shop\ApiResource\Catalog\CategoryResource;
 use App\Presentation\Shop\ApiResource\Catalog\ProductResource;

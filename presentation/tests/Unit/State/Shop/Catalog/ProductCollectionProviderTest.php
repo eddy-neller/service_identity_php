@@ -7,7 +7,7 @@ namespace App\Presentation\Tests\Unit\State\Shop\Catalog;
 use ApiPlatform\Metadata\GetCollection;
 use App\Application\Shared\CQRS\Query\QueryBusInterface;
 use App\Application\Shop\Port\ProductImageUrlResolverInterface;
-use App\Application\Shop\ReadModel\ProductItem;
+use App\Application\Shop\ReadModel\Catalog\ProductItem;
 use App\Application\Shop\UseCase\Query\Catalog\DisplayListProduct\DisplayListProductOutput;
 use App\Application\Shop\UseCase\Query\Catalog\DisplayListProduct\DisplayListProductQuery;
 use App\Domain\SharedKernel\ValueObject\Slug;

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Application\Shop\Port;
 
-use App\Application\Shop\ReadModel\CustomerList;
+use App\Application\Shop\ReadModel\Customer\CustomerList;
 use App\Domain\Shop\Customer\Model\Customer;
 use App\Domain\Shop\Customer\ValueObject\CustomerId;
 use App\Domain\Shop\Customer\ValueObject\UserAccountId;

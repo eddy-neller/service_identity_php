@@ -7,7 +7,7 @@ namespace App\Application\Shop\UseCase\Query\Catalog\DisplayProduct;
 use App\Application\Shared\CQRS\Query\QueryHandlerInterface;
 use App\Application\Shop\Port\CategoryRepositoryInterface;
 use App\Application\Shop\Port\ProductRepositoryInterface;
-use App\Application\Shop\ReadModel\ProductItem;
+use App\Application\Shop\ReadModel\Catalog\ProductItem;
 use App\Domain\Shop\Catalog\Exception\CategoryNotFoundException;
 use App\Domain\Shop\Catalog\Exception\ProductNotFoundException;
 

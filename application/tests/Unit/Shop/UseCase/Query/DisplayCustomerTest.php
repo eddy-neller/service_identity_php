@@ -7,7 +7,7 @@ namespace App\Application\Tests\Unit\Shop\UseCase\Query;
 use App\Application\Shared\ReadModel\Pagination;
 use App\Application\Shop\Port\AddressRepositoryInterface;
 use App\Application\Shop\Port\CustomerRepositoryInterface;
-use App\Application\Shop\ReadModel\AddressList;
+use App\Application\Shop\ReadModel\Customer\AddressList;
 use App\Application\Shop\UseCase\Query\Customer\DisplayCustomer\DisplayCustomerQuery;
 use App\Application\Shop\UseCase\Query\Customer\DisplayCustomer\DisplayCustomerQueryHandler;
 use App\Domain\Shop\Customer\Exception\CustomerNotFoundException;

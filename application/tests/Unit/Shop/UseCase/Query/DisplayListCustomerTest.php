@@ -6,7 +6,7 @@ namespace App\Application\Tests\Unit\Shop\UseCase\Query;
 
 use App\Application\Shared\ReadModel\Pagination;
 use App\Application\Shop\Port\CustomerRepositoryInterface;
-use App\Application\Shop\ReadModel\CustomerList;
+use App\Application\Shop\ReadModel\Customer\CustomerList;
 use App\Application\Shop\UseCase\Query\Customer\DisplayListCustomer\DisplayListCustomerQuery;
 use App\Application\Shop\UseCase\Query\Customer\DisplayListCustomer\DisplayListCustomerQueryHandler;
 use App\Domain\Shop\Customer\Model\Customer;

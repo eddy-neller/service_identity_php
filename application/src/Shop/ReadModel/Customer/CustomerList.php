@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Application\Shop\ReadModel;
+namespace App\Application\Shop\ReadModel\Customer;
 
 use App\Domain\Shop\Customer\Model\Customer;
 

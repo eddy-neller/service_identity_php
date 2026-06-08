@@ -11,7 +11,7 @@ use Gedmo\Mapping\Annotation as Gedmo;
 use Ramsey\Uuid\UuidInterface;
 
 #[ORM\Table(name: 'shop_customer')]
-#[ORM\Index(name: 'ShopCustomerUserAccountIdx', columns: ['user_account_id'])]
+#[ORM\UniqueConstraint(name: 'ShopCustomerUserAccountUniq', columns: ['user_account_id'])]
 #[ORM\Entity]
 class Customer
 {
@@ -19,7 +19,7 @@ class Customer
     #[ORM\Column(type: 'uuid', unique: true)]
     private UuidInterface $id;
 
-    #[ORM\Column(name: 'user_account_id', type: 'uuid', unique: true)]
+    #[ORM\Column(name: 'user_account_id', type: 'uuid')]
     private UuidInterface $userAccountId;
 
     #[ORM\Column(type: Types::INTEGER)]

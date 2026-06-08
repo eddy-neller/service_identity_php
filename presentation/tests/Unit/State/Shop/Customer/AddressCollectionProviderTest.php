@@ -18,6 +18,7 @@ use App\Domain\Shop\Customer\ValueObject\UserAccountId;
 use App\Presentation\Shop\ApiResource\Customer\AddressResource;
 use App\Presentation\Shop\Presenter\Customer\AddressResourcePresenter;
 use App\Presentation\Shop\State\Customer\Address\AddressCollectionProvider;
+use App\Presentation\Shop\State\Shared\CurrentCustomerResolver;
 use DateTimeImmutable;
 use PHPUnit\Framework\TestCase;
 use Symfony\Bundle\SecurityBundle\Security;
@@ -72,7 +73,7 @@ final class AddressCollectionProviderTest extends TestCase
                 $this->fail('Unexpected query dispatched.');
             });
 
-        $provider = new AddressCollectionProvider($queryBus, new AddressResourcePresenter(), $security);
+        $provider = new AddressCollectionProvider($queryBus, new CurrentCustomerResolver($queryBus, $security), new AddressResourcePresenter());
 
         $result = $provider->provide(
             new GetCollection(name: 'shop-addresses-me-col'),
@@ -115,7 +116,7 @@ final class AddressCollectionProviderTest extends TestCase
             ->method('dispatch')
             ->willReturnOnConsecutiveCalls($customerOutput, $listOutput);
 
-        $provider = new AddressCollectionProvider($queryBus, new AddressResourcePresenter(), $security);
+        $provider = new AddressCollectionProvider($queryBus, new CurrentCustomerResolver($queryBus, $security), new AddressResourcePresenter());
 
         $result = $provider->provide(
             new GetCollection(name: 'shop-addresses-me-col'),

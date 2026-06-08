@@ -7,7 +7,7 @@ namespace App\Presentation\Tests\Unit\State\Shop\Customer;
 use ApiPlatform\Metadata\Operation;
 use App\Application\Shared\CQRS\Command\CommandBusInterface;
 use App\Application\Shared\CQRS\Query\QueryBusInterface;
-use App\Application\Shop\ReadModel\AddressItem;
+use App\Application\Shop\ReadModel\Customer\AddressItem;
 use App\Application\Shop\UseCase\Command\Customer\SetDefaultAddress\SetDefaultAddressCommand;
 use App\Application\Shop\UseCase\Command\Customer\SetDefaultAddress\SetDefaultAddressOutput;
 use App\Application\Shop\UseCase\Query\Customer\DisplayMyCustomer\DisplayMyCustomerOutput;
@@ -21,6 +21,7 @@ use App\Presentation\Shared\State\PresentationErrorCode;
 use App\Presentation\Shop\ApiResource\Customer\AddressResource;
 use App\Presentation\Shop\Presenter\Customer\AddressResourcePresenter;
 use App\Presentation\Shop\State\Customer\Address\AddressDefaultProcessor;
+use App\Presentation\Shop\State\Shared\CurrentCustomerResolver;
 use DateTimeImmutable;
 use LogicException;
 use PHPUnit\Framework\MockObject\MockObject;
@@ -54,9 +55,8 @@ final class AddressDefaultProcessorTest extends TestCase
 
         $processor = new AddressDefaultProcessor(
             $this->commandBus,
-            $this->queryBus,
+            new CurrentCustomerResolver($this->queryBus, $security),
             new AddressResourcePresenter(),
-            $security,
         );
 
         $customerId = CustomerId::fromString('550e8400-e29b-41d4-a716-446655440601');
@@ -111,9 +111,8 @@ final class AddressDefaultProcessorTest extends TestCase
 
         $processor = new AddressDefaultProcessor(
             $this->commandBus,
-            $this->queryBus,
+            new CurrentCustomerResolver($this->queryBus, $security),
             new AddressResourcePresenter(),
-            $security,
         );
 
         $this->commandBus->expects($this->never())->method('dispatch');

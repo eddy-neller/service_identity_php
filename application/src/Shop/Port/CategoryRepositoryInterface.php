@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Application\Shop\Port;
 
-use App\Application\Shop\ReadModel\CategoryItem;
-use App\Application\Shop\ReadModel\CategoryList;
+use App\Application\Shop\ReadModel\Catalog\CategoryItem;
+use App\Application\Shop\ReadModel\Catalog\CategoryList;
 use App\Domain\Shop\Catalog\Model\Category;
 use App\Domain\Shop\Catalog\ValueObject\CategoryId;
 

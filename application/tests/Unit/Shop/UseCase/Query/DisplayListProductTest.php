@@ -6,8 +6,8 @@ namespace App\Application\Tests\Unit\Shop\UseCase\Query;
 
 use App\Application\Shared\ReadModel\Pagination;
 use App\Application\Shop\Port\ProductRepositoryInterface;
-use App\Application\Shop\ReadModel\ProductItem;
-use App\Application\Shop\ReadModel\ProductList;
+use App\Application\Shop\ReadModel\Catalog\ProductItem;
+use App\Application\Shop\ReadModel\Catalog\ProductList;
 use App\Application\Shop\UseCase\Query\Catalog\DisplayListProduct\DisplayListProductQuery;
 use App\Application\Shop\UseCase\Query\Catalog\DisplayListProduct\DisplayListProductQueryHandler;
 use App\Domain\SharedKernel\ValueObject\Slug;

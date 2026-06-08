@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Presentation\Shop\Presenter\Customer;
 
-use App\Application\Shop\ReadModel\CustomerItem;
+use App\Application\Shop\ReadModel\Customer\CustomerItem;
 use App\Domain\Shop\Customer\Model\Customer as DomainCustomer;
 use App\Presentation\Shop\ApiResource\Customer\CustomerResource;
 

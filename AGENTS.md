@@ -51,6 +51,8 @@
 
 -   Définir `shortName` au niveau `#[ApiResource]` et un `name` stable sur chaque `Operation` (utile pour les groupes auto et l’OpenAPI).
 -   Utiliser `App\Presentation\RouteRequirements::UUID` pour les paramètres `{id}` UUID.
+-   Quand la variable d'`uriTemplate` **ne correspond pas à l'identifiant** de la ressource (ex. `/cart/items/{productId}` sur `ShopCart` identifié par `id`), déclarer explicitement `uriVariables: ['productId' => new Link(fromClass: SelfResource::class, identifiers: ['productId'])]`. Sinon API Platform génère une `uriVariable` nommée `id` et lève `InvalidIdentifierException` → **404 « Invalid uri variables »**. La propriété pointée n'existe pas sur la ressource : la valeur brute (string) arrive telle quelle dans le Processor/Provider.
+-   Ajouter `read: false` sur ces opérations lorsqu'elles n'ont ni `provider` ni `stateOptions` (la cible étant résolue par le Processor, ex. via le client courant), pour ne pas déclencher une lecture par défaut qui échouerait.
 -   Pour les endpoints sécurisés, déclarer `security` et compléter l’OpenAPI avec `security: [['ApiKeyAuth' => []]]`.
 -   Pour les collections paginées, utiliser `App\Presentation\Shared\State\PaginatedCollectionProvider` afin d’exposer `X-Total-Count` / `X-Total-Pages`.
 
@@ -444,7 +446,7 @@ domain/
     -   qui gèrent :
 
         -   invariants,
-        -   `updatedAt`,
+        -   `updatedAt` (via `$this->touch($now);`),
         -   Domain Events.
 
 ### 3.4. Value Objects
@@ -500,7 +502,14 @@ domain/
 -   `updatedAt` :
 
     -   mis à jour dans chaque méthode métier qui modifie l’état,
-    -   via un setter privé (`setUpdatedAt()`).
+    -   **toujours** via l’appel `$this->touch($now);` (jamais d’assignation directe ni de `setUpdatedAt()`).
+
+```php
+private function touch(\DateTimeImmutable $now): void
+{
+    $this->updatedAt = $now;
+}
+```
 
 ### 3.8. Testabilité Domain
 
@@ -525,7 +534,7 @@ Avant de valider du code Domain :
 -   [ ] Les agrégats sont créés via des factory methods (`create`, `register`, `place`, `reconstitute`).
 -   [ ] Les Value Objects sont immuables et valident leurs invariants.
 -   [ ] Toute méthode métier sensible reçoit un `DateTimeImmutable $now`.
--   [ ] `createdAt` immuable, `updatedAt` mis à jour explicitement.
+-   [ ] `createdAt` immuable, `updatedAt` mis à jour via `$this->touch($now);` (méthode privée `touch()`).
 -   [ ] Aucun `setXxx()` public sur les agrégats.
 -   [ ] Les Domain Events existent pour les changements importants.
 -   [ ] Les tests Domain tournent sans framework.
@@ -819,7 +828,24 @@ Ports métier :
     -   appelle `DomainUser::reconstitute()` pour reconstruire l’agrégat sans events,
     -   préserve les timestamps Domain.
 
-### 6.5. Gestion du temps
+### 6.5. Index & contraintes Doctrine
+
+**Do**
+
+-   Déclarer les index et contraintes uniques **dans l’entité Doctrine** via les attributs `#[ORM\Index]` / `#[ORM\UniqueConstraint]` (source de vérité), pas seulement dans la migration.
+-   Nommer explicitement en PascalCase :
+    -   index → `{Entité}{Colonnes}Idx` (ex. `ShopCustomerUserAccountIdx`, `ShopCartLineCartIdx`),
+    -   contraintes uniques → `{Entité}{Colonnes}Uniq` (ex. `ShopCartCustomerUniq`, `ShopCartLineProductUniq`).
+-   Déclarer **explicitement** les index implicites des clés étrangères (`ManyToOne` / `OneToOne`) pour figer leur nom.
+-   Garder des noms **identiques** entre les attributs d’entité et la migration.
+-   Vérifier l’absence de diff via `php bin/console doctrine:schema:update --dump-sql` après toute modification d’index.
+
+**Don't**
+
+-   Laisser Doctrine générer un nom hashé (`IDX_…` / `UNIQ_…`) : cela crée un diff de renommage permanent au `schema:update`.
+-   Mettre un index récupérable en attribut uniquement dans la migration. Exceptions tolérées (sans équivalent attribut) : `CHECK` constraints et index fonctionnels (GIN/`trgm`, expressions).
+
+### 6.6. Gestion du temps
 
 -   `SystemClock` implémente `ClockInterface` :
 
@@ -836,13 +862,14 @@ services:
     -   Event subscribers, console commands
 -   Domain et Application **ne doivent jamais** l'instancier directement — ils reçoivent `$now` en paramètre (Domain) ou injectent `ClockInterface` (Application).
 
-### 6.6. Checklist Infrastructure
+### 6.7. Checklist Infrastructure
 
 -   [ ] Chaque Port Application a une implémentation claire.
 -   [ ] Les implémentations vivent dans `infrastructure/...`, pas ailleurs.
 -   [ ] Le mapping Domain ↔ Doctrine est géré par des mappers dédiés.
 -   [ ] Aucun code Infra ne dépend de `presentation/`.
 -   [ ] Tous les bindings Ports → Implémentations sont dans `services.yaml`.
+-   [ ] Index/contraintes déclarés dans l'entité (`#[ORM\Index]`/`#[ORM\UniqueConstraint]`), nommés `…Idx`/`…Uniq`, identiques à la migration, sans diff `schema:update`.
 
 ---
 

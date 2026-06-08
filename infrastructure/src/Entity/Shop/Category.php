@@ -20,6 +20,7 @@ use Ramsey\Uuid\UuidInterface;
 #[ORM\Index(name: 'ShopCategoryLevelIdx', columns: ['lvl'])]
 #[ORM\Index(name: 'ShopCategoryParentIdx', columns: ['parent_id'])]
 #[ORM\Index(name: 'ShopCategoryCreatedAtIdx', columns: ['created_at'])]
+#[ORM\UniqueConstraint(name: 'ShopCategorySlugUniq', columns: ['slug'])]
 #[ORM\Entity(repositoryClass: NestedTreeRepository::class)]
 #[Gedmo\Tree(type: 'nested')]
 class Category
@@ -39,7 +40,7 @@ class Category
     #[ORM\Column(type: Types::INTEGER)]
     private int $nbProduct = 0;
 
-    #[ORM\Column(length: 128, unique: true)]
+    #[ORM\Column(length: 128)]
     private string $slug;
 
     #[ORM\ManyToOne(targetEntity: Category::class, inversedBy: 'children')]

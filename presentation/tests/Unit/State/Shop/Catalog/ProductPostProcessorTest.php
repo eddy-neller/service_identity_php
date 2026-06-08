@@ -7,7 +7,7 @@ namespace App\Presentation\Tests\Unit\State\Shop\Catalog;
 use ApiPlatform\Metadata\Operation;
 use App\Application\Shared\CQRS\Command\CommandBusInterface;
 use App\Application\Shop\Port\ProductImageUrlResolverInterface;
-use App\Application\Shop\ReadModel\ProductItem;
+use App\Application\Shop\ReadModel\Catalog\ProductItem;
 use App\Application\Shop\UseCase\Command\Catalog\CreateProductByAdmin\CreateProductByAdminCommand;
 use App\Application\Shop\UseCase\Command\Catalog\CreateProductByAdmin\CreateProductByAdminOutput;
 use App\Domain\SharedKernel\ValueObject\Slug;

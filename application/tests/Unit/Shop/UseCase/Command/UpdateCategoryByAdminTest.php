@@ -8,7 +8,7 @@ use App\Application\Shared\Port\ClockInterface;
 use App\Application\Shared\Port\SlugGeneratorInterface;
 use App\Application\Shared\Port\TransactionalInterface;
 use App\Application\Shop\Port\CategoryRepositoryInterface;
-use App\Application\Shop\ReadModel\CategoryItem;
+use App\Application\Shop\ReadModel\Catalog\CategoryItem;
 use App\Application\Shop\UseCase\Command\Catalog\UpdateCategoryByAdmin\UpdateCategoryByAdminCommand;
 use App\Application\Shop\UseCase\Command\Catalog\UpdateCategoryByAdmin\UpdateCategoryByAdminCommandHandler;
 use App\Domain\SharedKernel\ValueObject\Slug;

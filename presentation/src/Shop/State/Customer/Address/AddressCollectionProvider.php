@@ -9,27 +9,17 @@ use ApiPlatform\State\ProviderInterface;
 use App\Application\Shared\CQRS\Query\QueryBusInterface;
 use App\Application\Shared\ReadModel\Pagination;
 use App\Application\Shop\UseCase\Query\Customer\DisplayListAddress\DisplayListAddressQuery;
-use App\Application\Shop\UseCase\Query\Customer\DisplayMyCustomer\DisplayMyCustomerQuery;
-use App\Domain\Shop\Customer\ValueObject\UserAccountId;
 use App\Presentation\Shop\Presenter\Customer\AddressResourcePresenter;
-use App\Presentation\User\Security\UserMeSecurityTrait;
-use Symfony\Bundle\SecurityBundle\Security;
+use App\Presentation\Shop\State\Shared\CurrentCustomerResolver;
 use Symfony\Component\HttpFoundation\Request;
 
 final readonly class AddressCollectionProvider implements ProviderInterface
 {
-    use UserMeSecurityTrait;
-
     public function __construct(
         private QueryBusInterface $queryBus,
+        private CurrentCustomerResolver $customerResolver,
         private AddressResourcePresenter $presenter,
-        private Security $security,
     ) {
-    }
-
-    protected function getSecurity(): Security
-    {
-        return $this->security;
     }
 
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): array
@@ -42,14 +32,8 @@ final readonly class AddressCollectionProvider implements ProviderInterface
         $pagination = Pagination::fromRaw($filters['page'] ?? null, $filters['itemsPerPage'] ?? null);
         $orderBy = is_array($filters['order'] ?? null) ? $filters['order'] : [];
 
-        $user = $this->getCurrentUserOrThrow();
-        $userId = $this->getUserIdFromAuthenticatedUser($user);
-        $customerOutput = $this->queryBus->dispatch(new DisplayMyCustomerQuery(
-            userAccountId: UserAccountId::fromString($userId->toString()),
-        ));
-
         $output = $this->queryBus->dispatch(new DisplayListAddressQuery(
-            ownerId: $customerOutput->customerId,
+            ownerId: $this->customerResolver->resolve(),
             pagination: $pagination,
             orderBy: $orderBy,
             filters: $filters,

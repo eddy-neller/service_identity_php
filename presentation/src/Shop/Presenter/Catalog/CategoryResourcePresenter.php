@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Presentation\Shop\Presenter\Catalog;
 
-use App\Application\Shop\ReadModel\CategoryItem;
+use App\Application\Shop\ReadModel\Catalog\CategoryItem;
 use App\Domain\Shop\Catalog\Model\Category as DomainCategory;
 use App\Presentation\Shop\ApiResource\Catalog\CategoryResource;
 

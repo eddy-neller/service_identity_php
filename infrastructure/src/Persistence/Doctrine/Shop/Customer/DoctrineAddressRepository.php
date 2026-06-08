@@ -7,7 +7,7 @@ namespace App\Infrastructure\Persistence\Doctrine\Shop\Customer;
 use App\Application\Shared\Port\UuidGeneratorInterface;
 use App\Application\Shared\ReadModel\Pagination;
 use App\Application\Shop\Port\AddressRepositoryInterface;
-use App\Application\Shop\ReadModel\AddressList;
+use App\Application\Shop\ReadModel\Customer\AddressList;
 use App\Domain\Shop\Customer\Model\Address as DomainAddress;
 use App\Domain\Shop\Customer\ValueObject\AddressId;
 use App\Domain\Shop\Customer\ValueObject\CustomerId;

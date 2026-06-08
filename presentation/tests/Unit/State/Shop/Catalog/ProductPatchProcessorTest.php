@@ -7,7 +7,7 @@ namespace App\Presentation\Tests\Unit\State\Shop\Catalog;
 use ApiPlatform\Metadata\Operation;
 use App\Application\Shared\CQRS\Command\CommandBusInterface;
 use App\Application\Shop\Port\ProductImageUrlResolverInterface;
-use App\Application\Shop\ReadModel\ProductItem;
+use App\Application\Shop\ReadModel\Catalog\ProductItem;
 use App\Application\Shop\UseCase\Command\Catalog\UpdateProductByAdmin\UpdateProductByAdminCommand;
 use App\Application\Shop\UseCase\Command\Catalog\UpdateProductByAdmin\UpdateProductByAdminOutput;
 use App\Domain\SharedKernel\ValueObject\Slug;

@@ -6,7 +6,7 @@ namespace App\Presentation\Tests\Unit\State\Shop\Catalog;
 
 use ApiPlatform\Metadata\Operation;
 use App\Application\Shared\CQRS\Query\QueryBusInterface;
-use App\Application\Shop\ReadModel\CategoryItem;
+use App\Application\Shop\ReadModel\Catalog\CategoryItem;
 use App\Application\Shop\UseCase\Query\Catalog\DisplayCategory\DisplayCategoryOutput;
 use App\Application\Shop\UseCase\Query\Catalog\DisplayCategory\DisplayCategoryQuery;
 use App\Domain\SharedKernel\ValueObject\Slug;

@@ -18,6 +18,7 @@ use Vich\UploaderBundle\Mapping\Attribute as Vich;
 #[ORM\Index(name: 'ShopProductPriceIdx', columns: ['price'])]
 #[ORM\Index(name: 'ShopProductCategoryIdx', columns: ['category_id'])]
 #[ORM\Index(name: 'ShopProductCreatedAtIdx', columns: ['created_at'])]
+#[ORM\UniqueConstraint(name: 'ShopProductSlugUniq', columns: ['slug'])]
 #[ORM\Entity(repositoryClass: ProductRepository::class)]
 #[Vich\Uploadable]
 class Product
@@ -38,7 +39,7 @@ class Product
     #[ORM\Column(type: Types::FLOAT, scale: 2)]
     private float $price;
 
-    #[ORM\Column(type: Types::STRING, length: 255, unique: true)]
+    #[ORM\Column(type: Types::STRING, length: 255)]
     private string $slug;
 
     #[Vich\UploadableField(mapping: 'shop_product_image', fileNameProperty: 'imageName')]

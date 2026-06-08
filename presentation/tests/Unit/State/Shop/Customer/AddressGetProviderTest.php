@@ -6,7 +6,7 @@ namespace App\Presentation\Tests\Unit\State\Shop\Customer;
 
 use ApiPlatform\Metadata\Get;
 use App\Application\Shared\CQRS\Query\QueryBusInterface;
-use App\Application\Shop\ReadModel\AddressItem;
+use App\Application\Shop\ReadModel\Customer\AddressItem;
 use App\Application\Shop\UseCase\Query\Customer\DisplayAddress\DisplayAddressOutput;
 use App\Application\Shop\UseCase\Query\Customer\DisplayAddress\DisplayAddressQuery;
 use App\Application\Shop\UseCase\Query\Customer\DisplayMyCustomer\DisplayMyCustomerOutput;
@@ -20,6 +20,7 @@ use App\Presentation\Shared\State\PresentationErrorCode;
 use App\Presentation\Shop\ApiResource\Customer\AddressResource;
 use App\Presentation\Shop\Presenter\Customer\AddressResourcePresenter;
 use App\Presentation\Shop\State\Customer\Address\AddressGetProvider;
+use App\Presentation\Shop\State\Shared\CurrentCustomerResolver;
 use DateTimeImmutable;
 use LogicException;
 use PHPUnit\Framework\TestCase;
@@ -63,7 +64,7 @@ final class AddressGetProviderTest extends TestCase
                 $this->fail('Unexpected query dispatched.');
             });
 
-        $provider = new AddressGetProvider($queryBus, new AddressResourcePresenter(), $security);
+        $provider = new AddressGetProvider($queryBus, new CurrentCustomerResolver($queryBus, $security), new AddressResourcePresenter());
 
         $result = $provider->provide(
             new Get(name: 'shop-addresses-me-get'),
@@ -79,7 +80,7 @@ final class AddressGetProviderTest extends TestCase
         $queryBus = $this->createStub(QueryBusInterface::class);
         $security = $this->createStub(Security::class);
 
-        $provider = new AddressGetProvider($queryBus, new AddressResourcePresenter(), $security);
+        $provider = new AddressGetProvider($queryBus, new CurrentCustomerResolver($queryBus, $security), new AddressResourcePresenter());
 
         $this->expectException(LogicException::class);
         $this->expectExceptionMessage(PresentationErrorCode::INVALID_INPUT->value);

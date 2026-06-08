@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Application\Tests\Unit\Shop\UseCase\Query;
 
 use App\Application\Shop\Port\CategoryRepositoryInterface;
-use App\Application\Shop\ReadModel\CategoryItem;
+use App\Application\Shop\ReadModel\Catalog\CategoryItem;
 use App\Application\Shop\UseCase\Query\Catalog\DisplayCategory\DisplayCategoryQuery;
 use App\Application\Shop\UseCase\Query\Catalog\DisplayCategory\DisplayCategoryQueryHandler;
 use App\Domain\SharedKernel\ValueObject\Slug;

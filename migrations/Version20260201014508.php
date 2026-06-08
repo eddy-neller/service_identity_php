@@ -22,8 +22,7 @@ final class Version20260201014508 extends AbstractMigration
         // this up() migration is auto-generated, please modify it to your needs
         $this->addSql('CREATE TABLE shop_customer (id UUID NOT NULL, user_account_id UUID NOT NULL, status INT NOT NULL, created_at TIMESTAMP(0) WITHOUT TIME ZONE NOT NULL, updated_at TIMESTAMP(0) WITHOUT TIME ZONE NOT NULL, PRIMARY KEY (id))');
 
-        $this->addSql('CREATE UNIQUE INDEX UNIQ_5A81749F3C0C9956 ON shop_customer (user_account_id)');
-        $this->addSql('CREATE INDEX ShopCustomerUserAccountIdx ON shop_customer (user_account_id)');
+        $this->addSql('CREATE UNIQUE INDEX ShopCustomerUserAccountUniq ON shop_customer (user_account_id)');
 
         $this->addSql('ALTER TABLE shop_address DROP CONSTRAINT fk_e7d2faba76ed395');
         $this->addSql('DROP INDEX shopaddressuseridx');
@@ -44,7 +43,7 @@ final class Version20260201014508 extends AbstractMigration
         // this down() migration is auto-generated, please modify it to your needs
         $this->addSql('DROP TABLE shop_customer');
 
-        $this->addSql('DROP INDEX ShopAddressCustomerIdx');
+        // ShopAddressCustomerIdx est supprimé en cascade par le DROP de la colonne customer_id (plus bas).
         $this->addSql('DROP INDEX ShopAddressNameIdx');
         $this->addSql('DROP INDEX ShopAddressCityIdx');
         $this->addSql('DROP INDEX ShopAddressCountryIdx');

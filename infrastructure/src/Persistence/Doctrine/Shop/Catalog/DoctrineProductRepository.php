@@ -7,8 +7,8 @@ namespace App\Infrastructure\Persistence\Doctrine\Shop\Catalog;
 use App\Application\Shared\Port\FileInterface;
 use App\Application\Shared\Port\UuidGeneratorInterface;
 use App\Application\Shop\Port\ProductRepositoryInterface;
-use App\Application\Shop\ReadModel\ProductItem;
-use App\Application\Shop\ReadModel\ProductList;
+use App\Application\Shop\ReadModel\Catalog\ProductItem;
+use App\Application\Shop\ReadModel\Catalog\ProductList;
 use App\Domain\Shop\Catalog\Model\Product as DomainProduct;
 use App\Domain\Shop\Catalog\ValueObject\CategoryId;
 use App\Domain\Shop\Catalog\ValueObject\ProductId;
@@ -99,6 +99,29 @@ final readonly class DoctrineProductRepository implements ProductRepositoryInter
         $entity = $this->findEntity($id);
 
         return null === $entity ? null : $this->mapper->toDomain($entity);
+    }
+
+    public function findByIds(array $ids): array
+    {
+        if ([] === $ids) {
+            return [];
+        }
+
+        $entities = $this->em->getRepository(DoctrineProduct::class)->findBy([
+            'id' => array_map(
+                static fn (ProductId $id): string => $id->toString(),
+                $ids,
+            ),
+        ]);
+
+        $products = [];
+        foreach ($entities as $entity) {
+            if ($entity instanceof DoctrineProduct) {
+                $products[] = $this->mapper->toDomain($entity);
+            }
+        }
+
+        return $products;
     }
 
     public function updateImage(ProductId $id, FileInterface $file): ?DomainProduct

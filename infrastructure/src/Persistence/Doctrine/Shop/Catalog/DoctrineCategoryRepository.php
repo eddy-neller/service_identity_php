@@ -6,8 +6,8 @@ namespace App\Infrastructure\Persistence\Doctrine\Shop\Catalog;
 
 use App\Application\Shared\Port\UuidGeneratorInterface;
 use App\Application\Shop\Port\CategoryRepositoryInterface;
-use App\Application\Shop\ReadModel\CategoryItem;
-use App\Application\Shop\ReadModel\CategoryList;
+use App\Application\Shop\ReadModel\Catalog\CategoryItem;
+use App\Application\Shop\ReadModel\Catalog\CategoryList;
 use App\Domain\Shop\Catalog\Model\Category as DomainCategory;
 use App\Domain\Shop\Catalog\ValueObject\CategoryId;
 use App\Infrastructure\Entity\Shop\Category as DoctrineCategory;

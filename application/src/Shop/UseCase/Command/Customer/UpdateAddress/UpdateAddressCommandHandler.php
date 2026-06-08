@@ -8,7 +8,7 @@ use App\Application\Shared\CQRS\Command\CommandHandlerInterface;
 use App\Application\Shared\Port\ClockInterface;
 use App\Application\Shared\Port\TransactionalInterface;
 use App\Application\Shop\Port\AddressRepositoryInterface;
-use App\Application\Shop\ReadModel\AddressItem;
+use App\Application\Shop\ReadModel\Customer\AddressItem;
 use App\Domain\Shop\Customer\Exception\AddressNotFoundException;
 
 final readonly class UpdateAddressCommandHandler implements CommandHandlerInterface

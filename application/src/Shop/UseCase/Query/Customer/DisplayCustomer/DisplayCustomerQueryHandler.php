@@ -8,7 +8,7 @@ use App\Application\Shared\CQRS\Query\QueryHandlerInterface;
 use App\Application\Shared\ReadModel\Pagination;
 use App\Application\Shop\Port\AddressRepositoryInterface;
 use App\Application\Shop\Port\CustomerRepositoryInterface;
-use App\Application\Shop\ReadModel\CustomerItem;
+use App\Application\Shop\ReadModel\Customer\CustomerItem;
 use App\Domain\Shop\Customer\Exception\CustomerNotFoundException;
 
 final readonly class DisplayCustomerQueryHandler implements QueryHandlerInterface

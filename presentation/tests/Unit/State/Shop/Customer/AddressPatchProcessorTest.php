@@ -7,7 +7,7 @@ namespace App\Presentation\Tests\Unit\State\Shop\Customer;
 use ApiPlatform\Metadata\Operation;
 use App\Application\Shared\CQRS\Command\CommandBusInterface;
 use App\Application\Shared\CQRS\Query\QueryBusInterface;
-use App\Application\Shop\ReadModel\AddressItem;
+use App\Application\Shop\ReadModel\Customer\AddressItem;
 use App\Application\Shop\UseCase\Command\Customer\UpdateAddress\UpdateAddressCommand;
 use App\Application\Shop\UseCase\Command\Customer\UpdateAddress\UpdateAddressOutput;
 use App\Application\Shop\UseCase\Query\Customer\DisplayMyCustomer\DisplayMyCustomerOutput;
@@ -22,6 +22,7 @@ use App\Presentation\Shop\ApiResource\Customer\AddressResource;
 use App\Presentation\Shop\Dto\Customer\Address\AddressPatchInput;
 use App\Presentation\Shop\Presenter\Customer\AddressResourcePresenter;
 use App\Presentation\Shop\State\Customer\Address\AddressPatchProcessor;
+use App\Presentation\Shop\State\Shared\CurrentCustomerResolver;
 use DateTimeImmutable;
 use LogicException;
 use PHPUnit\Framework\MockObject\MockObject;
@@ -55,9 +56,8 @@ final class AddressPatchProcessorTest extends TestCase
 
         $processor = new AddressPatchProcessor(
             $this->commandBus,
-            $this->queryBus,
+            new CurrentCustomerResolver($this->queryBus, $security),
             new AddressResourcePresenter(),
-            $security,
         );
 
         $input = new AddressPatchInput();
@@ -119,9 +119,8 @@ final class AddressPatchProcessorTest extends TestCase
 
         $processor = new AddressPatchProcessor(
             $this->commandBus,
-            $this->queryBus,
+            new CurrentCustomerResolver($this->queryBus, $security),
             new AddressResourcePresenter(),
-            $security,
         );
 
         $input = new AddressPatchInput();
@@ -152,9 +151,8 @@ final class AddressPatchProcessorTest extends TestCase
 
         $processor = new AddressPatchProcessor(
             $this->commandBus,
-            $this->queryBus,
+            new CurrentCustomerResolver($this->queryBus, $security),
             new AddressResourcePresenter(),
-            $security,
         );
 
         $invalidInput = new \stdClass();
@@ -177,9 +175,8 @@ final class AddressPatchProcessorTest extends TestCase
 
         $processor = new AddressPatchProcessor(
             $this->commandBus,
-            $this->queryBus,
+            new CurrentCustomerResolver($this->queryBus, $security),
             new AddressResourcePresenter(),
-            $security,
         );
 
         $input = new AddressPatchInput();

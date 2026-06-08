@@ -10,7 +10,7 @@ use App\Application\Shared\Port\SlugGeneratorInterface;
 use App\Application\Shared\Port\TransactionalInterface;
 use App\Application\Shop\Port\CategoryRepositoryInterface;
 use App\Application\Shop\Port\ProductRepositoryInterface;
-use App\Application\Shop\ReadModel\ProductItem;
+use App\Application\Shop\ReadModel\Catalog\ProductItem;
 use App\Domain\Shop\Catalog\Exception\CategoryNotFoundException;
 use App\Domain\Shop\Catalog\Exception\ProductNotFoundException;
 use App\Domain\Shop\Catalog\ValueObject\ProductDescription;

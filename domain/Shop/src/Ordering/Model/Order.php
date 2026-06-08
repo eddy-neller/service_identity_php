@@ -8,8 +8,6 @@ use App\Domain\SharedKernel\Event\DomainEventTrait;
 use App\Domain\Shop\Customer\ValueObject\CustomerId;
 use App\Domain\Shop\Ordering\Event\OrderPaidEvent;
 use App\Domain\Shop\Ordering\Event\OrderPlacedEvent;
-use App\Domain\Shop\Ordering\ValueObject\CarrierSelection;
-use App\Domain\Shop\Ordering\ValueObject\DeliveryAddress;
 use App\Domain\Shop\Ordering\ValueObject\OrderId;
 use App\Domain\Shop\Ordering\ValueObject\OrderReference;
 use App\Domain\Shop\Ordering\ValueObject\PaymentSessionId;
@@ -28,9 +26,7 @@ final class Order
         private OrderId $id,
         private CustomerId $buyerId,
         private OrderReference $reference,
-        private CarrierSelection $carrier,
         private array $lines,
-        private DeliveryAddress $delivery,
         private bool $isPaid,
         private ?PaymentSessionId $paymentSessionId,
         private DateTimeImmutable $createdAt,
@@ -45,21 +41,17 @@ final class Order
         OrderId $id,
         CustomerId $buyerId,
         OrderReference $reference,
-        CarrierSelection $carrier,
-        DeliveryAddress $delivery,
         array $lines,
         DateTimeImmutable $now,
         ?PaymentSessionId $paymentSessionId = null,
     ): self {
-        self::assertLines($lines, $carrier);
+        self::assertLines($lines);
 
         $order = new self(
             id: $id,
             buyerId: $buyerId,
             reference: $reference,
-            carrier: $carrier,
             lines: $lines,
-            delivery: $delivery,
             isPaid: false,
             paymentSessionId: $paymentSessionId,
             createdAt: $now,
@@ -83,23 +75,19 @@ final class Order
         OrderId $id,
         CustomerId $buyerId,
         OrderReference $reference,
-        CarrierSelection $carrier,
-        DeliveryAddress $delivery,
         array $lines,
         bool $isPaid,
         DateTimeImmutable $createdAt,
         DateTimeImmutable $updatedAt,
         ?PaymentSessionId $paymentSessionId = null,
     ): self {
-        self::assertLines($lines, $carrier);
+        self::assertLines($lines);
 
         return new self(
             id: $id,
             buyerId: $buyerId,
             reference: $reference,
-            carrier: $carrier,
             lines: $lines,
-            delivery: $delivery,
             isPaid: $isPaid,
             paymentSessionId: $paymentSessionId,
             createdAt: $createdAt,
@@ -153,16 +141,6 @@ final class Order
         return $this->reference;
     }
 
-    public function getCarrier(): CarrierSelection
-    {
-        return $this->carrier;
-    }
-
-    public function getDelivery(): DeliveryAddress
-    {
-        return $this->delivery;
-    }
-
     public function isPaid(): bool
     {
         return $this->isPaid;
@@ -185,15 +163,12 @@ final class Order
 
     public function total(): Money
     {
-        $linesTotal = $this->linesTotal();
-
-        return $linesTotal->add($this->carrier->getPrice());
+        return $this->linesTotal();
     }
 
     public function linesTotal(): Money
     {
-        $currency = $this->carrier->getPrice()->currency();
-        $total = Money::zero($currency);
+        $total = Money::zero($this->currency());
 
         foreach ($this->lines as $line) {
             $total = $total->add($line->total());
@@ -202,24 +177,31 @@ final class Order
         return $total;
     }
 
+    private function currency(): string
+    {
+        return $this->lines[array_key_first($this->lines)]->getUnitPrice()->currency();
+    }
+
     /**
      * @param OrderLine[] $lines
      */
-    private static function assertLines(array $lines, CarrierSelection $carrier): void
+    private static function assertLines(array $lines): void
     {
         if ([] === $lines) {
             throw new InvalidArgumentException('Order must contain at least one line.');
         }
 
-        $expectedCurrency = $carrier->getPrice()->currency();
+        $expectedCurrency = null;
 
         foreach ($lines as $line) {
             if (!$line instanceof OrderLine) {
                 throw new InvalidArgumentException('Order lines must be of type OrderLine.');
             }
 
+            $expectedCurrency ??= $line->getUnitPrice()->currency();
+
             if ($line->getUnitPrice()->currency() !== $expectedCurrency) {
-                throw new InvalidArgumentException('Order line currency must match carrier currency.');
+                throw new InvalidArgumentException('Order lines must share the same currency.');
             }
         }
     }

@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Application\Shop\Port;
 
 use App\Application\Shared\Port\FileInterface;
-use App\Application\Shop\ReadModel\ProductList;
+use App\Application\Shop\ReadModel\Catalog\ProductList;
 use App\Domain\Shop\Catalog\Model\Product;
 use App\Domain\Shop\Catalog\ValueObject\ProductId;
 
@@ -20,6 +20,13 @@ interface ProductRepositoryInterface
     public function delete(Product $product): void;
 
     public function findById(ProductId $id): ?Product;
+
+    /**
+     * @param ProductId[] $ids
+     *
+     * @return Product[]
+     */
+    public function findByIds(array $ids): array;
 
     public function updateImage(ProductId $id, FileInterface $file): ?Product;
 }

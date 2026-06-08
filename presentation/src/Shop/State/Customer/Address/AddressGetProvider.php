@@ -8,29 +8,19 @@ use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProviderInterface;
 use App\Application\Shared\CQRS\Query\QueryBusInterface;
 use App\Application\Shop\UseCase\Query\Customer\DisplayAddress\DisplayAddressQuery;
-use App\Application\Shop\UseCase\Query\Customer\DisplayMyCustomer\DisplayMyCustomerQuery;
 use App\Domain\Shop\Customer\ValueObject\AddressId;
-use App\Domain\Shop\Customer\ValueObject\UserAccountId;
 use App\Presentation\Shared\State\PresentationErrorCode;
 use App\Presentation\Shop\Presenter\Customer\AddressResourcePresenter;
-use App\Presentation\User\Security\UserMeSecurityTrait;
+use App\Presentation\Shop\State\Shared\CurrentCustomerResolver;
 use LogicException;
-use Symfony\Bundle\SecurityBundle\Security;
 
 final readonly class AddressGetProvider implements ProviderInterface
 {
-    use UserMeSecurityTrait;
-
     public function __construct(
         private QueryBusInterface $queryBus,
+        private CurrentCustomerResolver $customerResolver,
         private AddressResourcePresenter $presenter,
-        private Security $security,
     ) {
-    }
-
-    protected function getSecurity(): Security
-    {
-        return $this->security;
     }
 
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): object
@@ -40,15 +30,9 @@ final readonly class AddressGetProvider implements ProviderInterface
             throw new LogicException(PresentationErrorCode::INVALID_INPUT->value);
         }
 
-        $user = $this->getCurrentUserOrThrow();
-        $userId = $this->getUserIdFromAuthenticatedUser($user);
-        $customerOutput = $this->queryBus->dispatch(new DisplayMyCustomerQuery(
-            userAccountId: UserAccountId::fromString($userId->toString()),
-        ));
-
         $output = $this->queryBus->dispatch(new DisplayAddressQuery(
             addressId: AddressId::fromString($rawId),
-            ownerId: $customerOutput->customerId,
+            ownerId: $this->customerResolver->resolve(),
         ));
 
         return $this->presenter->toResource($output->addressItem->address);

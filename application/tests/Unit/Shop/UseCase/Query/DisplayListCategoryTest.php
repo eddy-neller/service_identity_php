@@ -6,7 +6,7 @@ namespace App\Application\Tests\Unit\Shop\UseCase\Query;
 
 use App\Application\Shared\ReadModel\Pagination;
 use App\Application\Shop\Port\CategoryRepositoryInterface;
-use App\Application\Shop\ReadModel\CategoryList;
+use App\Application\Shop\ReadModel\Catalog\CategoryList;
 use App\Application\Shop\UseCase\Query\Catalog\DisplayListCategory\DisplayListCategoryQuery;
 use App\Application\Shop\UseCase\Query\Catalog\DisplayListCategory\DisplayListCategoryQueryHandler;
 use App\Domain\SharedKernel\ValueObject\Slug;

@@ -29,9 +29,9 @@ use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Table(name: 'shop_order')]
 #[ORM\Index(name: 'ShopOrderUserIdx', columns: ['user_id'])]
-#[ORM\Index(name: 'ShopOrderReferenceIdx', columns: ['reference'])]
 #[ORM\Index(name: 'ShopOrderIsPaidIdx', columns: ['is_paid'])]
 #[ORM\Index(name: 'ShopOrderStripeSessionIdx', columns: ['stripe_session_id'])]
+#[ORM\UniqueConstraint(name: 'ShopOrderReferenceUniq', columns: ['reference'])]
 #[ORM\Entity(repositoryClass: OrderRepository::class)]
 #[ApiResource(
     shortName: 'ShopOrder',
@@ -146,7 +146,7 @@ class Order
     private bool $isPaid = false;
 
     #[Groups(['shop_order:read'])]
-    #[ORM\Column(type: Types::STRING, length: 255, unique: true)]
+    #[ORM\Column(type: Types::STRING, length: 255)]
     #[Assert\NotBlank]
     #[Assert\Length(max: 255)]
     private string $reference;

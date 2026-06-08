@@ -15,6 +15,7 @@ use App\Domain\Shop\Customer\ValueObject\CustomerStatus;
 use App\Domain\Shop\Customer\ValueObject\UserAccountId;
 use App\Presentation\Shared\State\PresentationErrorCode;
 use App\Presentation\Shop\State\Customer\Address\AddressDeleteProcessor;
+use App\Presentation\Shop\State\Shared\CurrentCustomerResolver;
 use LogicException;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
@@ -47,8 +48,7 @@ final class AddressDeleteProcessorTest extends TestCase
 
         $processor = new AddressDeleteProcessor(
             $this->commandBus,
-            $this->queryBus,
-            $security,
+            new CurrentCustomerResolver($this->queryBus, $security),
         );
 
         $customerId = CustomerId::fromString('550e8400-e29b-41d4-a716-446655440601');
@@ -86,8 +86,7 @@ final class AddressDeleteProcessorTest extends TestCase
 
         $processor = new AddressDeleteProcessor(
             $this->commandBus,
-            $this->queryBus,
-            $security,
+            new CurrentCustomerResolver($this->queryBus, $security),
         );
 
         $this->commandBus->expects($this->never())->method('dispatch');
