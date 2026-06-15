@@ -27,13 +27,14 @@ final readonly class CartLinePatchProcessor implements ProcessorInterface
 
     public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): CartResource
     {
-        if (!$data instanceof CartLinePatchInput || !is_string($uriVariables['productId'] ?? null)) {
+        $rawProductId = $uriVariables['productId'] ?? null;
+        if (!$data instanceof CartLinePatchInput || !is_string($rawProductId) || '' === $rawProductId) {
             throw new LogicException(PresentationErrorCode::INVALID_INPUT->value);
         }
 
         $output = $this->commandBus->dispatch(new UpdateCartLineCommand(
             $this->customerResolver->resolve(),
-            ProductId::fromString($uriVariables['productId']),
+            ProductId::fromString($rawProductId),
             $data->quantity,
         ));
 

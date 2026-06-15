@@ -34,6 +34,11 @@ final readonly class Money
         return new self($amount, $normalizedCurrency);
     }
 
+    public static function fromEuros(float $euros, string $currency = 'EUR'): self
+    {
+        return self::fromInt((int) round($euros * 100), $currency);
+    }
+
     public function add(self $other): self
     {
         $this->assertSameCurrency($other);
@@ -63,6 +68,11 @@ final readonly class Money
     public function amount(): int
     {
         return $this->amount;
+    }
+
+    public function toEuros(): float
+    {
+        return $this->amount / 100;
     }
 
     public function currency(): string

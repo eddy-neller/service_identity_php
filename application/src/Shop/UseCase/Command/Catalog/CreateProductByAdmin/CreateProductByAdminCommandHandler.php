@@ -37,7 +37,7 @@ final readonly class CreateProductByAdminCommandHandler implements CommandHandle
             $title = ProductTitle::fromString($command->title);
             $subtitle = ProductSubtitle::fromString($command->subtitle);
             $description = ProductDescription::fromString($command->description);
-            $price = Money::fromInt((int) round($command->price * 100));
+            $price = Money::fromEuros($command->price);
             $slug = $this->slugGenerator->generate($title->toString());
 
             $categoryId = $command->categoryId;

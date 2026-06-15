@@ -7,6 +7,7 @@ namespace App\Presentation\Tests\Api\User;
 use App\Domain\User\Security\ValueObject\RoleSet;
 use App\Domain\User\Security\ValueObject\UserStatus;
 use App\Infrastructure\DataFixtures\test\User\UserFixtures;
+use App\Infrastructure\Entity\User\User;
 use App\Infrastructure\Service\InfoCodes;
 use App\Infrastructure\Service\User\TokenManager;
 use App\Presentation\Tests\Api\BaseTest;
@@ -31,7 +32,10 @@ final class UserTest extends BaseTest
     {
         parent::setUp();
 
-        $this->iri = $this->findIriByHttp(self::URL_API_OPE, self::CRITERIA_IRI, $this->userAdmin);
+        $user = $this->getInstance(User::class, self::CRITERIA_IRI);
+        self::assertInstanceOf(User::class, $user);
+
+        $this->iri = self::URL_API_OPE . '/' . $user->getId()->toString();
     }
 
     public static function provideLoginSuccess(): Generator

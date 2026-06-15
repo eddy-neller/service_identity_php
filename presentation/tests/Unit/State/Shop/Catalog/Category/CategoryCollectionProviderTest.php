@@ -1,0 +1,116 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Presentation\Tests\Unit\State\Shop\Catalog\Category;
+
+use ApiPlatform\Metadata\GetCollection;
+use App\Application\Shared\CQRS\Query\QueryBusInterface;
+use App\Application\Shop\UseCase\Query\Catalog\DisplayListCategory\DisplayListCategoryOutput;
+use App\Application\Shop\UseCase\Query\Catalog\DisplayListCategory\DisplayListCategoryQuery;
+use App\Domain\SharedKernel\ValueObject\Slug;
+use App\Domain\Shop\Catalog\Model\Category as DomainCategory;
+use App\Domain\Shop\Catalog\ValueObject\CategoryId;
+use App\Domain\Shop\Catalog\ValueObject\CategoryTitle;
+use App\Presentation\Shop\ApiResource\Catalog\CategoryResource;
+use App\Presentation\Shop\Presenter\Catalog\CategoryResourcePresenter;
+use App\Presentation\Shop\State\Catalog\Category\CategoryCollectionProvider;
+use DateTimeImmutable;
+use PHPUnit\Framework\TestCase;
+use Symfony\Component\HttpFoundation\Request;
+
+final class CategoryCollectionProviderTest extends TestCase
+{
+    public function testItMapsCategoriesToResourcesAndSetsPagination(): void
+    {
+        $request = new Request();
+        $queryBus = $this->createMock(QueryBusInterface::class);
+        $category = $this->createCategory();
+        $output = new DisplayListCategoryOutput([$category], 3, 2);
+
+        $queryBus
+            ->expects($this->once())
+            ->method('dispatch')
+            ->willReturnCallback(function ($query) use ($output): DisplayListCategoryOutput {
+                $this->assertInstanceOf(DisplayListCategoryQuery::class, $query);
+                $this->assertSame(2, $query->pagination->page);
+                $this->assertSame(15, $query->pagination->itemsPerPage);
+                $this->assertSame('1', $query->filters['level'] ?? null);
+                $this->assertSame(['title' => 'asc'], $query->orderBy);
+
+                return $output;
+            });
+
+        $provider = new CategoryCollectionProvider($queryBus, new CategoryResourcePresenter());
+
+        $result = $provider->provide(
+            new GetCollection(name: 'shop-categories-col'),
+            context: [
+                'request' => $request,
+                'filters' => [
+                    'page' => '2',
+                    'itemsPerPage' => '15',
+                    'level' => '1',
+                    'order' => [
+                        'title' => 'asc',
+                    ],
+                ],
+            ],
+        );
+
+        $this->assertCount(1, $result);
+        $this->assertInstanceOf(CategoryResource::class, $result[0]);
+        $this->assertSame('Category title', $result[0]->title);
+        $this->assertSame(1, $result[0]->level);
+        $this->assertFalse($result[0]->hasChildren);
+        $this->assertSame(3, $request->attributes->get('_total_items'));
+        $this->assertSame(2, $request->attributes->get('_total_pages'));
+    }
+
+    public function testItHandlesInvalidFiltersWithoutRequest(): void
+    {
+        $queryBus = $this->createMock(QueryBusInterface::class);
+        $category = $this->createCategory();
+        $output = new DisplayListCategoryOutput([$category], 1, 1);
+
+        $queryBus
+            ->expects($this->once())
+            ->method('dispatch')
+            ->willReturnCallback(function ($query) use ($output): DisplayListCategoryOutput {
+                $this->assertInstanceOf(DisplayListCategoryQuery::class, $query);
+                $this->assertSame(1, $query->pagination->page);
+                $this->assertSame(30, $query->pagination->itemsPerPage);
+                $this->assertSame([], $query->filters);
+                $this->assertSame([], $query->orderBy);
+
+                return $output;
+            });
+
+        $provider = new CategoryCollectionProvider($queryBus, new CategoryResourcePresenter());
+
+        $result = $provider->provide(
+            new GetCollection(name: 'shop-categories-col'),
+            context: [
+                'filters' => 'not-an-array',
+            ],
+        );
+
+        $this->assertCount(1, $result);
+        $this->assertInstanceOf(CategoryResource::class, $result[0]);
+    }
+
+    private function createCategory(): DomainCategory
+    {
+        return DomainCategory::reconstitute(
+            id: CategoryId::fromString('550e8400-e29b-41d4-a716-446655440000'),
+            title: CategoryTitle::fromString('Category title'),
+            slug: Slug::fromString('category-title'),
+            createdAt: new DateTimeImmutable('2025-01-01 10:00:00'),
+            updatedAt: new DateTimeImmutable('2025-02-01 10:00:00'),
+            parentId: null,
+            description: null,
+            productCount: 0,
+            level: 1,
+        );
+    }
+}

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Presentation\Tests\Api\Shop;
 
+use App\Infrastructure\Entity\Shop\Category;
 use App\Presentation\Tests\Api\BaseTest;
 use Faker\Factory;
 use Generator;
@@ -28,7 +29,10 @@ final class CategoryTest extends BaseTest
     {
         parent::setUp();
 
-        $this->iri = $this->findIriByHttp(self::URL_API_OPE, self::CRITERIA_IRI, $this->userAdmin);
+        $category = $this->getInstance(Category::class, self::CRITERIA_IRI);
+        self::assertInstanceOf(Category::class, $category);
+
+        $this->iri = self::URL_API_OPE . '/' . $category->getId()->toString();
     }
 
     public static function provideColShopCategory(): Generator

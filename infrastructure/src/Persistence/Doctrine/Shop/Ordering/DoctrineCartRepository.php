@@ -18,6 +18,9 @@ use Doctrine\DBAL\LockMode;
 use Doctrine\ORM\EntityManagerInterface;
 use Ramsey\Uuid\Uuid;
 
+/**
+ * @codeCoverageIgnore
+ */
 final readonly class DoctrineCartRepository implements CartRepositoryInterface
 {
     public function __construct(

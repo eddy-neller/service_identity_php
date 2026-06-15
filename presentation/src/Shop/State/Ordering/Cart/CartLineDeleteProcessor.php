@@ -23,13 +23,14 @@ final readonly class CartLineDeleteProcessor implements ProcessorInterface
 
     public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): void
     {
-        if (!is_string($uriVariables['productId'] ?? null)) {
+        $rawProductId = $uriVariables['productId'] ?? null;
+        if (!is_string($rawProductId) || '' === $rawProductId) {
             throw new LogicException(PresentationErrorCode::INVALID_INPUT->value);
         }
 
         $this->commandBus->dispatch(new RemoveCartLineCommand(
             $this->customerResolver->resolve(),
-            ProductId::fromString($uriVariables['productId']),
+            ProductId::fromString($rawProductId),
         ));
     }
 }

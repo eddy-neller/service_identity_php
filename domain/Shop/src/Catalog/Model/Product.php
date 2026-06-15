@@ -82,44 +82,44 @@ final class Product
 
     public function delete(DateTimeImmutable $now): void
     {
-        $this->setUpdatedAt($now);
+        $this->touch($now);
     }
 
     public function rename(ProductTitle $title, ProductSubtitle $subtitle, DateTimeImmutable $now): void
     {
-        $this->setTitle($title);
-        $this->setSubtitle($subtitle);
-        $this->setUpdatedAt($now);
+        $this->title = $title;
+        $this->subtitle = $subtitle;
+        $this->touch($now);
     }
 
     public function reprice(Money $price, DateTimeImmutable $now): void
     {
-        $this->setPrice($price);
-        $this->setUpdatedAt($now);
+        $this->price = $price;
+        $this->touch($now);
     }
 
     public function rewrite(ProductDescription $description, DateTimeImmutable $now): void
     {
-        $this->setDescription($description);
-        $this->setUpdatedAt($now);
+        $this->description = $description;
+        $this->touch($now);
     }
 
     public function moveToCategory(CategoryId $categoryId, DateTimeImmutable $now): void
     {
-        $this->setCategoryId($categoryId);
-        $this->setUpdatedAt($now);
+        $this->categoryId = $categoryId;
+        $this->touch($now);
     }
 
     public function reSlug(Slug $slug, DateTimeImmutable $now): void
     {
-        $this->setSlug($slug);
-        $this->setUpdatedAt($now);
+        $this->slug = $slug;
+        $this->touch($now);
     }
 
     public function updateImage(ProductImage $image, DateTimeImmutable $now): void
     {
-        $this->setImage($image);
-        $this->setUpdatedAt($now);
+        $this->image = $image;
+        $this->touch($now);
     }
 
     public function getId(): ProductId
@@ -177,43 +177,8 @@ final class Product
         return $this->updatedAt;
     }
 
-    private function setTitle(ProductTitle $title): void
+    private function touch(DateTimeImmutable $now): void
     {
-        $this->title = $title;
-    }
-
-    private function setSubtitle(ProductSubtitle $subtitle): void
-    {
-        $this->subtitle = $subtitle;
-    }
-
-    private function setDescription(ProductDescription $description): void
-    {
-        $this->description = $description;
-    }
-
-    private function setPrice(Money $price): void
-    {
-        $this->price = $price;
-    }
-
-    private function setSlug(Slug $slug): void
-    {
-        $this->slug = $slug;
-    }
-
-    private function setCategoryId(CategoryId $categoryId): void
-    {
-        $this->categoryId = $categoryId;
-    }
-
-    private function setImage(ProductImage $image): void
-    {
-        $this->image = $image;
-    }
-
-    private function setUpdatedAt(DateTimeImmutable $updatedAt): void
-    {
-        $this->updatedAt = $updatedAt;
+        $this->updatedAt = $now;
     }
 }

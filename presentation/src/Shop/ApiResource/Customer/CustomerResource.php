@@ -101,6 +101,6 @@ final class CustomerResource
     #[Groups(['shop_customer:read'])]
     public DateTimeImmutable $createdAt;
 
-    #[Groups(['shop_customer:read'])]
+    #[Groups(['shop_customer:item:read'])]
     public DateTimeImmutable $updatedAt;
 }

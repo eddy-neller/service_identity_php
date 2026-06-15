@@ -56,6 +56,17 @@ final class Cart
         $this->touch($now);
     }
 
+    public function changeLineQuantity(ProductId $productId, int $quantity, DateTimeImmutable $now): void
+    {
+        if (0 === $quantity) {
+            $this->removeLine($productId, $now);
+
+            return;
+        }
+
+        $this->updateLine($productId, $quantity, $now);
+    }
+
     public function updateLine(ProductId $productId, int $quantity, DateTimeImmutable $now): void
     {
         $this->getLineByProduct($productId)->setQuantity($quantity);

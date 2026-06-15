@@ -247,51 +247,6 @@ abstract class BaseTest extends ApiTestCase
         json_decode($response->getContent(), true, 512, JSON_THROW_ON_ERROR);
     }
 
-    /**
-     * Find an IRI by HTTP request.
-     *
-     * A utiliser pour les entités qui ont la traduction activée.
-     */
-    protected function findIriByHttp(string $uri, array $criteria, ?string $user = null): string
-    {
-        $page = 1;
-        $headers = [];
-
-        if (null !== $user) {
-            $headers['Authorization'] = 'Bearer ' . $this->getToken($user);
-        }
-
-        while (true) {
-            $res = $this->request('GET', $uri . '?page=' . $page, [
-                'headers' => $headers,
-            ]);
-
-            try {
-                $items = $res->toArray();
-            } catch (Throwable) {
-                throw new RuntimeException('findIriByHttp: invalid response');
-            }
-
-            if ([] === $items) {
-                break;
-            }
-
-            foreach ($items as $item) {
-                foreach ($criteria as $key => $value) {
-                    if (!isset($item[$key]) || $item[$key] !== $value) {
-                        continue 2;
-                    }
-                }
-
-                return $uri . '/' . $item['id'];
-            }
-
-            ++$page;
-        }
-
-        throw new RuntimeException('No IRI found');
-    }
-
     protected function makeAssertion(
         array $res,
         array $asserts,
@@ -464,7 +419,7 @@ abstract class BaseTest extends ApiTestCase
     private function isCollectionResponse(array $res): bool
     {
         // Nouveau format paginé
-        if (isset($res['items']) && is_array($res['items'])) {
+        if (!array_key_exists('id', $res) && isset($res['items']) && is_array($res['items'])) {
             return array_is_list($res['items']) && isset($res['items'][0]['id']);
         }
 
@@ -508,15 +463,11 @@ abstract class BaseTest extends ApiTestCase
 
     private function getTestResult(array $res, bool $onlyFirst = false): ?array
     {
-        // Détection d'une collection paginée (nouveau format avec 'items')
-        if (isset($res['items']) && is_array($res['items'])) {
+        // Collection paginée (nouveau format avec 'items')
+        if ($onlyFirst && isset($res['items']) && is_array($res['items'])) {
             $items = $res['items'];
 
-            if ($onlyFirst) {
-                return $items[0] ?? null;
-            }
-
-            return $items;
+            return $items[0] ?? null;
         }
 
         // Détection d'une collection simple (ancien format)

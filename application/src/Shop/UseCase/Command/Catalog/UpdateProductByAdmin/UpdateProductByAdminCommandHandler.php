@@ -62,7 +62,7 @@ final readonly class UpdateProductByAdminCommandHandler implements CommandHandle
             }
 
             if (null !== $command->price) {
-                $product->reprice(Money::fromInt((int) round($command->price * 100)), $now);
+                $product->reprice(Money::fromEuros($command->price), $now);
             }
 
             if (null !== $command->categoryId && !$command->categoryId->equals($product->getCategoryId())) {

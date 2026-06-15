@@ -29,7 +29,19 @@ final class AddressTest extends BaseTest
     {
         parent::setUp();
 
-        $this->iri = $this->findIriByHttp(self::URL_API_OPE, self::CRITERIA_IRI, $this->userMember);
+        $user = $this->getInstance(User::class, ['username' => $this->userMember]);
+        self::assertInstanceOf(User::class, $user);
+
+        $customer = $this->getInstance(Customer::class, ['userAccountId' => $user->getId()]);
+        self::assertInstanceOf(Customer::class, $customer);
+
+        $address = $this->getInstance(Address::class, [
+            'customer' => $customer,
+            'name' => self::CRITERIA_IRI['name'],
+        ]);
+        self::assertInstanceOf(Address::class, $address);
+
+        $this->iri = self::URL_API_OPE . '/' . $address->getId()->toString();
     }
 
     public static function provideColShopAddress(): Generator

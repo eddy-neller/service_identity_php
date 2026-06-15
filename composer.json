@@ -101,6 +101,7 @@
             "App\\Tests\\": "tests/",
             "App\\Application\\Tests\\": "application/tests/",
             "App\\Domain\\Shop\\Tests\\": "domain/Shop/tests/",
+            "App\\Domain\\SharedKernel\\Tests\\": "domain/SharedKernel/tests/",
             "App\\Domain\\User\\Tests\\": "domain/User/tests/",
             "App\\Infrastructure\\Tests\\": "infrastructure/tests/",
             "App\\Presentation\\Tests\\": "presentation/tests/"

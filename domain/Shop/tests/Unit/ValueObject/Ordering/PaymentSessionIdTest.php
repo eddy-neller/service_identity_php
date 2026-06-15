@@ -32,4 +32,19 @@ final class PaymentSessionIdTest extends TestCase
 
         $this->assertTrue($id1->equals($id2));
     }
+
+    public function testEqualsReturnsFalseForDifferentValue(): void
+    {
+        $id1 = PaymentSessionId::fromString('sess_123');
+        $id2 = PaymentSessionId::fromString('sess_456');
+
+        $this->assertFalse($id1->equals($id2));
+    }
+
+    public function testToStringCastsToString(): void
+    {
+        $id = PaymentSessionId::fromString('sess_123');
+
+        $this->assertSame('sess_123', (string) $id);
+    }
 }

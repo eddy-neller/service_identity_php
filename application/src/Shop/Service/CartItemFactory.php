@@ -10,6 +10,7 @@ use App\Application\Shop\ReadModel\Ordering\CartItem;
 use App\Application\Shop\ReadModel\Ordering\CartLineItem;
 use App\Domain\Shop\Ordering\Model\Cart;
 use App\Domain\Shop\Ordering\Model\CartLine;
+use App\Domain\Shop\Shared\ValueObject\Money;
 
 final readonly class CartItemFactory
 {
@@ -21,13 +22,14 @@ final readonly class CartItemFactory
 
     public function create(?Cart $cart): CartItem
     {
+        $subtotal = Money::zero();
+
         if (null === $cart) {
-            return new CartItem(null, [], 0, 0.0, 'EUR', null, null);
+            return new CartItem(null, [], 0, $subtotal->toEuros(), $subtotal->currency(), null, null);
         }
 
         $items = [];
         $totalQuantity = 0;
-        $subtotalCents = 0;
         $products = [];
 
         $productIds = array_map(
@@ -45,10 +47,10 @@ final readonly class CartItemFactory
                 continue;
             }
 
-            $unitPrice = $product->getPrice()->amount();
-            $lineTotal = $unitPrice * $line->getQuantity();
+            $unitPrice = $product->getPrice();
+            $lineTotal = $unitPrice->multiply($line->getQuantity());
             $totalQuantity += $line->getQuantity();
-            $subtotalCents += $lineTotal;
+            $subtotal = $subtotal->add($lineTotal);
 
             $items[] = new CartLineItem(
                 id: $line->getId()->toString(),
@@ -56,9 +58,9 @@ final readonly class CartItemFactory
                 productTitle: $product->getTitle()->toString(),
                 productSlug: $product->getSlug()->toString(),
                 imageUrl: $this->imageUrlResolver->resolve($product->getImageName()),
-                unitPrice: $unitPrice / 100,
+                unitPrice: $unitPrice->toEuros(),
                 quantity: $line->getQuantity(),
-                lineTotal: $lineTotal / 100,
+                lineTotal: $lineTotal->toEuros(),
             );
         }
 
@@ -66,8 +68,8 @@ final readonly class CartItemFactory
             id: $cart->getId()->toString(),
             items: $items,
             totalQuantity: $totalQuantity,
-            subtotal: $subtotalCents / 100,
-            currency: 'EUR',
+            subtotal: $subtotal->toEuros(),
+            currency: $subtotal->currency(),
             createdAt: $cart->getCreatedAt(),
             updatedAt: $cart->getUpdatedAt(),
         );

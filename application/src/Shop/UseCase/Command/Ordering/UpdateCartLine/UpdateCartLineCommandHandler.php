@@ -27,11 +27,7 @@ final readonly class UpdateCartLineCommandHandler implements CommandHandlerInter
             $cart = $this->repository->findByOwnerForUpdate($command->customerId)
                 ?? throw new CartLineNotFoundException();
 
-            if (0 === $command->quantity) {
-                $cart->removeLine($command->productId, $this->clock->now());
-            } else {
-                $cart->updateLine($command->productId, $command->quantity, $this->clock->now());
-            }
+            $cart->changeLineQuantity($command->productId, $command->quantity, $this->clock->now());
 
             $this->repository->save($cart);
 

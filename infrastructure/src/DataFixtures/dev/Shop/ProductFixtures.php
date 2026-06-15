@@ -93,7 +93,7 @@ class ProductFixtures extends Fixture implements DependentFixtureInterface, Fixt
             ];
         }
 
-        foreach ($products as $value) {
+        foreach ($products as $index => $value) {
             $product = new Product();
             $product->setId(Uuid::uuid4());
 
@@ -115,6 +115,8 @@ class ProductFixtures extends Fixture implements DependentFixtureInterface, Fixt
             $createdAt = $timestamps['createdAt'];
             $product->setCreatedAt($createdAt);
             $product->setUpdatedAt($timestamps['updatedAt']);
+
+            $this->addReference('shop_product_' . ($index + 1), $product);
 
             $manager->persist($product);
         }

@@ -40,4 +40,19 @@ final class OrderReferenceTest extends TestCase
 
         $this->assertTrue($ref1->equals($ref2));
     }
+
+    public function testEqualsReturnsFalseForDifferentValue(): void
+    {
+        $ref1 = OrderReference::fromString('REF-123');
+        $ref2 = OrderReference::fromString('REF-456');
+
+        $this->assertFalse($ref1->equals($ref2));
+    }
+
+    public function testToStringCastsToString(): void
+    {
+        $reference = OrderReference::fromString('REF-123');
+
+        $this->assertSame('REF-123', (string) $reference);
+    }
 }

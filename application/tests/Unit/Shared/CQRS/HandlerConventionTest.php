@@ -47,6 +47,55 @@ final class HandlerConventionTest extends TestCase
         }
     }
 
+    public function testEveryCommandHasATest(): void
+    {
+        $baseDir = dirname(__DIR__, 4) . '/src';
+        $commandFiles = $this->findFiles($baseDir, '/Command\\.php$/');
+
+        foreach ($commandFiles as $file) {
+            $commandClass = $this->classFromFile($file, $baseDir, 'App\\Application\\');
+            $testClass = $this->expectedTestClass($commandClass, 'Command');
+
+            $this->assertTrue(
+                class_exists($testClass),
+                sprintf('Missing application test for command %s (expected class %s).', $commandClass, $testClass),
+            );
+        }
+    }
+
+    public function testEveryQueryHasATest(): void
+    {
+        $baseDir = dirname(__DIR__, 4) . '/src';
+        $queryFiles = $this->findFiles($baseDir, '/Query\\.php$/');
+
+        foreach ($queryFiles as $file) {
+            $queryClass = $this->classFromFile($file, $baseDir, 'App\\Application\\');
+            $testClass = $this->expectedTestClass($queryClass, 'Query');
+
+            $this->assertTrue(
+                class_exists($testClass),
+                sprintf('Missing application test for query %s (expected class %s).', $queryClass, $testClass),
+            );
+        }
+    }
+
+    /**
+     * Maps a use case class to its expected unit test class, e.g.
+     * App\Application\Shop\UseCase\Command\Catalog\CreateProductByAdmin\CreateProductByAdminCommand
+     * → App\Application\Tests\Unit\Shop\UseCase\Command\Catalog\CreateProductByAdminTest.
+     */
+    private function expectedTestClass(string $useCaseClass, string $suffix): string
+    {
+        $parts = explode('\\', $useCaseClass);
+        $shortName = array_pop($parts);
+        array_pop($parts); // drop the use case folder segment (e.g. CreateProductByAdmin)
+
+        $testName = (string) preg_replace('/' . preg_quote($suffix, '/') . '$/', 'Test', $shortName);
+        $testNamespace = str_replace('App\\Application\\', 'App\\Application\\Tests\\Unit\\', implode('\\', $parts));
+
+        return $testNamespace . '\\' . $testName;
+    }
+
     /**
      * @return array<int, string>
      */

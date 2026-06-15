@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Presentation\Tests\Api\Shop;
 
+use App\Infrastructure\Entity\Shop\Category;
+use App\Infrastructure\Entity\Shop\Product;
 use App\Presentation\Tests\Api\BaseTest;
 use Faker\Factory;
 use Generator;
@@ -34,12 +36,14 @@ final class ProductTest extends BaseTest
     {
         parent::setUp();
 
-        $this->iri = $this->findIriByHttp(self::URL_API_OPE, self::CRITERIA_IRI);
-        $this->categoryIri = $this->findIriByHttp(
-            self::URL_API_CATEGORY_OPE,
-            self::CATEGORY_CRITERIA_IRI,
-            $this->userAdmin,
-        );
+        $product = $this->getInstance(Product::class, self::CRITERIA_IRI);
+        self::assertInstanceOf(Product::class, $product);
+
+        $category = $this->getInstance(Category::class, self::CATEGORY_CRITERIA_IRI);
+        self::assertInstanceOf(Category::class, $category);
+
+        $this->iri = self::URL_API_OPE . '/' . $product->getId()->toString();
+        $this->categoryIri = self::URL_API_CATEGORY_OPE . '/' . $category->getId()->toString();
     }
 
     public static function provideColShopProduct(): Generator

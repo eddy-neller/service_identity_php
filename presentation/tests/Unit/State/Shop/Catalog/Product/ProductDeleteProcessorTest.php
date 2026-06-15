@@ -1,0 +1,74 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Presentation\Tests\Unit\State\Shop\Catalog\Product;
+
+use ApiPlatform\Metadata\Operation;
+use App\Application\Shared\CQRS\Command\CommandBusInterface;
+use App\Application\Shop\UseCase\Command\Catalog\DeleteProductByAdmin\DeleteProductByAdminCommand;
+use App\Domain\Shop\Catalog\ValueObject\ProductId;
+use App\Presentation\Shared\State\PresentationErrorCode;
+use App\Presentation\Shop\State\Catalog\Product\ProductDeleteProcessor;
+use LogicException;
+use PHPUnit\Framework\MockObject\MockObject;
+use PHPUnit\Framework\TestCase;
+
+final class ProductDeleteProcessorTest extends TestCase
+{
+    private CommandBusInterface&MockObject $commandBus;
+
+    private Operation&MockObject $operation;
+
+    private ProductDeleteProcessor $processor;
+
+    protected function setUp(): void
+    {
+        $this->commandBus = $this->createMock(CommandBusInterface::class);
+        $this->operation = $this->createMock(Operation::class);
+        $this->operation->expects($this->never())
+            ->method('getName');
+        $this->processor = new ProductDeleteProcessor($this->commandBus);
+    }
+
+    public function testProcessWithValidIdDispatchesCommand(): void
+    {
+        $productId = '550e8400-e29b-41d4-a716-446655440000';
+        $productIdVo = ProductId::fromString($productId);
+
+        $this->commandBus->expects($this->once())
+            ->method('dispatch')
+            ->with($this->callback(function ($command) use ($productIdVo): bool {
+                $this->assertInstanceOf(DeleteProductByAdminCommand::class, $command);
+                $this->assertTrue($command->productId->equals($productIdVo));
+
+                return true;
+            }));
+
+        $result = $this->processor->process(null, $this->operation, ['id' => $productId]);
+
+        $this->assertNull($result);
+    }
+
+    public function testProcessThrowsLogicExceptionWhenIdIsMissing(): void
+    {
+        $this->commandBus->expects($this->never())
+            ->method('dispatch');
+
+        $this->expectException(LogicException::class);
+        $this->expectExceptionMessage(PresentationErrorCode::INVALID_INPUT->value);
+
+        $this->processor->process(null, $this->operation, []);
+    }
+
+    public function testProcessThrowsLogicExceptionWhenIdIsNotString(): void
+    {
+        $this->commandBus->expects($this->never())
+            ->method('dispatch');
+
+        $this->expectException(LogicException::class);
+        $this->expectExceptionMessage(PresentationErrorCode::INVALID_INPUT->value);
+
+        $this->processor->process(null, $this->operation, ['id' => 123]);
+    }
+}

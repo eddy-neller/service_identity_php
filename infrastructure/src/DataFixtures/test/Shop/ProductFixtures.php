@@ -143,6 +143,8 @@ class ProductFixtures extends Fixture implements DependentFixtureInterface, Fixt
             $product->setCreatedAt($createdAt);
             $product->setUpdatedAt($timestamps['updatedAt']);
 
+            $this->addReference('shop_product_' . ($index + 1), $product);
+
             $manager->persist($product);
         }
 

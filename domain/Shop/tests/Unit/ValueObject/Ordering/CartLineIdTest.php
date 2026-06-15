@@ -10,15 +10,51 @@ use PHPUnit\Framework\TestCase;
 
 final class CartLineIdTest extends TestCase
 {
-    public function testValidIdentifier(): void
+    private const string UUID = '550e8400-e29b-41d4-a716-446655440000';
+
+    public function testFromStringCreatesValidCartLineId(): void
     {
-        $value = '550e8400-e29b-41d4-a716-446655440000';
-        self::assertSame($value, CartLineId::fromString($value)->toString());
+        $id = CartLineId::fromString(self::UUID);
+
+        $this->assertSame(self::UUID, $id->toString());
     }
 
-    public function testInvalidIdentifierThrows(): void
+    public function testFromStringThrowsWhenEmpty(): void
     {
         $this->expectException(InvalidArgumentException::class);
-        CartLineId::fromString('invalid');
+        $this->expectExceptionMessage('CartLineId cannot be empty.');
+
+        CartLineId::fromString('');
+    }
+
+    public function testFromStringThrowsWhenInvalidUuid(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('CartLineId must be a valid UUID.');
+
+        CartLineId::fromString('not-a-uuid');
+    }
+
+    public function testEqualsReturnsTrueForSameValue(): void
+    {
+        $id1 = CartLineId::fromString(self::UUID);
+        $id2 = CartLineId::fromString(self::UUID);
+
+        $this->assertTrue($id1->equals($id2));
+    }
+
+    public function testEqualsReturnsFalseForDifferentValue(): void
+    {
+        $id1 = CartLineId::fromString(self::UUID);
+        $id2 = CartLineId::fromString('550e8400-e29b-41d4-a716-446655440001');
+
+        $this->assertFalse($id1->equals($id2));
+    }
+
+    public function testToStringCastsToString(): void
+    {
+        $id = CartLineId::fromString(self::UUID);
+
+        $this->assertSame(self::UUID, (string) $id);
     }
 }

@@ -197,12 +197,12 @@ final class User
             throw new ActivationLimitReachedException();
         }
 
-        $this->setActiveEmail(new ActiveEmail(
+        $this->activeEmail = new ActiveEmail(
             mailSent: $this->getActiveEmail()->getMailSent() + 1,
             token: $token,
             tokenTtl: $expiresAt->getTimestamp(),
             lastAttempt: $now,
-        ));
+        );
 
         $this->recordEvent(new ActivationEmailRequestedEvent(
             userId: $this->id,
@@ -213,16 +213,16 @@ final class User
 
     public function clearActivation(): void
     {
-        $this->setActiveEmail(new ActiveEmail());
+        $this->activeEmail = new ActiveEmail();
     }
 
     public function activate(string $token, DateTimeImmutable $now): void
     {
         $this->assertNotLocked();
         $this->assertActivationTokenValid($token, $now);
-        $this->setStatus(UserStatus::active());
+        $this->status = UserStatus::active();
         $this->clearActivation();
-        $this->setUpdatedAt($now);
+        $this->touch($now);
 
         $this->recordEvent(new UserActivatedEvent(
             userId: $this->id,
@@ -239,11 +239,11 @@ final class User
             throw new ResetPasswordLimitReachedException();
         }
 
-        $this->setResetPassword(new ResetPassword(
+        $this->resetPassword = new ResetPassword(
             mailSent: $this->getResetPassword()->getMailSent() + 1,
             token: $token,
             tokenTtl: $expiresAt->getTimestamp(),
-        ));
+        );
 
         $this->recordEvent(new PasswordResetRequestedEvent(
             userId: $this->id,
@@ -255,9 +255,9 @@ final class User
     public function completePasswordReset(string $token, HashedPassword $password, DateTimeImmutable $now): void
     {
         $this->assertResetPasswordTokenValid($token, $now);
-        $this->setPassword($password);
-        $this->setResetPassword(new ResetPassword());
-        $this->setUpdatedAt($now);
+        $this->password = $password;
+        $this->resetPassword = new ResetPassword();
+        $this->touch($now);
 
         $this->recordEvent(new PasswordResetCompletedEvent(
             userId: $this->id,
@@ -275,8 +275,8 @@ final class User
 
     public function changePassword(HashedPassword $password, DateTimeImmutable $now): void
     {
-        $this->setPassword($password);
-        $this->setUpdatedAt($now);
+        $this->password = $password;
+        $this->touch($now);
 
         $this->recordEvent(new UserPasswordUpdatedEvent(
             userId: $this->id,
@@ -286,8 +286,8 @@ final class User
 
     public function updateAvatar(Avatar $avatar, DateTimeImmutable $now): void
     {
-        $this->setAvatar($avatar);
-        $this->setUpdatedAt($now);
+        $this->avatar = $avatar;
+        $this->touch($now);
 
         $this->recordEvent(new UserAvatarUpdatedEvent(
             userId: $this->id,
@@ -308,42 +308,42 @@ final class User
         $hasChanges = false;
 
         if (null !== $username) {
-            $this->setUsername($username);
+            $this->username = $username;
             $hasChanges = true;
         }
 
         if (null !== $email) {
-            $this->setEmail($email);
+            $this->email = $email;
             $hasChanges = true;
         }
 
         if (null !== $firstname) {
-            $this->setFirstname($firstname);
+            $this->firstname = $firstname;
             $hasChanges = true;
         }
 
         if (null !== $lastname) {
-            $this->setLastname($lastname);
+            $this->lastname = $lastname;
             $hasChanges = true;
         }
 
         if (null !== $roles) {
-            $this->setRoles($roles);
+            $this->roles = $roles;
             $hasChanges = true;
         }
 
         if (null !== $status) {
-            $this->setStatus($status);
+            $this->status = $status;
             $hasChanges = true;
         }
 
         if (null !== $password) {
-            $this->setPassword($password);
+            $this->password = $password;
             $hasChanges = true;
         }
 
         if ($hasChanges) {
-            $this->setUpdatedAt($now);
+            $this->touch($now);
 
             $this->recordEvent(new UserUpdatedByAdminEvent(
                 userId: $this->id,
@@ -358,10 +358,10 @@ final class User
         $this->security = $this->security->withTotalWrongPassword($attempts);
 
         if ($attempts >= $maxAttempts) {
-            $this->setStatus(UserStatus::blocked());
+            $this->status = UserStatus::blocked();
         }
 
-        $this->setUpdatedAt($now);
+        $this->touch($now);
 
         $this->recordEvent(new UserWrongPasswordAttemptRegisteredEvent(
             userId: $this->id,
@@ -377,10 +377,10 @@ final class User
 
         $this->security = $this->security->withTotalWrongPassword(0);
         if ($this->getStatus()->isBlocked()) {
-            $this->setStatus(UserStatus::active());
+            $this->status = UserStatus::active();
         }
 
-        $this->setUpdatedAt($now);
+        $this->touch($now);
 
         $this->recordEvent(new UserWrongPasswordAttemptsResetEvent(
             userId: $this->id,
@@ -483,59 +483,9 @@ final class User
         return $this->updatedAt;
     }
 
-    private function setUsername(Username $username): void
+    private function touch(DateTimeImmutable $now): void
     {
-        $this->username = $username;
-    }
-
-    private function setFirstname(?Firstname $firstname): void
-    {
-        $this->firstname = $firstname;
-    }
-
-    private function setLastname(?Lastname $lastname): void
-    {
-        $this->lastname = $lastname;
-    }
-
-    private function setEmail(EmailAddress $email): void
-    {
-        $this->email = $email;
-    }
-
-    private function setPassword(HashedPassword $password): void
-    {
-        $this->password = $password;
-    }
-
-    private function setRoles(RoleSet $roles): void
-    {
-        $this->roles = $roles;
-    }
-
-    private function setStatus(UserStatus $status): void
-    {
-        $this->status = $status;
-    }
-
-    private function setActiveEmail(ActiveEmail $activeEmail): void
-    {
-        $this->activeEmail = $activeEmail;
-    }
-
-    private function setResetPassword(ResetPassword $resetPassword): void
-    {
-        $this->resetPassword = $resetPassword;
-    }
-
-    private function setAvatar(Avatar $avatar): void
-    {
-        $this->avatar = $avatar;
-    }
-
-    private function setUpdatedAt(DateTimeImmutable $updatedAt): void
-    {
-        $this->updatedAt = $updatedAt;
+        $this->updatedAt = $now;
     }
 
     private function assertActivationTokenValid(string $token, DateTimeImmutable $now): void
@@ -572,7 +522,7 @@ final class User
         $ttl = $activeEmail->getTokenTtl();
 
         if (null !== $ttl && $ttl <= $now->getTimestamp()) {
-            $this->setActiveEmail(new ActiveEmail());
+            $this->activeEmail = new ActiveEmail();
         }
     }
 
@@ -582,7 +532,7 @@ final class User
         $ttl = $resetPassword->getTokenTtl();
 
         if (null !== $ttl && $ttl <= $now->getTimestamp()) {
-            $this->setResetPassword(new ResetPassword());
+            $this->resetPassword = new ResetPassword();
         }
     }
 
