@@ -8,8 +8,11 @@ use App\Application\Shared\Port\ClockInterface;
 use App\Application\Shared\Port\TransactionalInterface;
 use App\Application\User\Port\PasswordHasherInterface;
 use App\Application\User\Port\UserRepositoryInterface;
+use App\Application\User\Port\UserUniquenessCheckerInterface;
 use App\Application\User\UseCase\Command\UpdateUserByAdmin\UpdateUserByAdminCommand;
 use App\Application\User\UseCase\Command\UpdateUserByAdmin\UpdateUserByAdminCommandHandler;
+use App\Domain\User\Exception\Uniqueness\EmailAlreadyUsedException;
+use App\Domain\User\Exception\Uniqueness\UsernameAlreadyUsedException;
 use App\Domain\User\Exception\UserDomainException;
 use App\Domain\User\Identity\ValueObject\EmailAddress;
 use App\Domain\User\Identity\ValueObject\UserId;
@@ -32,6 +35,8 @@ final class UpdateUserByAdminTest extends TestCase
 
     private TransactionalInterface&MockObject $transactional;
 
+    private UserUniquenessCheckerInterface&MockObject $uniquenessChecker;
+
     private UpdateUserByAdminCommandHandler $handler;
 
     protected function setUp(): void
@@ -40,11 +45,13 @@ final class UpdateUserByAdminTest extends TestCase
         $this->passwordHasher = $this->createMock(PasswordHasherInterface::class);
         $this->clock = $this->createMock(ClockInterface::class);
         $this->transactional = $this->createMock(TransactionalInterface::class);
+        $this->uniquenessChecker = $this->createMock(UserUniquenessCheckerInterface::class);
         $this->handler = new UpdateUserByAdminCommandHandler(
             $this->repository,
             $this->passwordHasher,
             $this->clock,
             $this->transactional,
+            $this->uniquenessChecker,
         );
     }
 
@@ -77,6 +84,14 @@ final class UpdateUserByAdminTest extends TestCase
             ->method('findById')
             ->with($userId)
             ->willReturn($user);
+
+        $this->uniquenessChecker->expects($this->once())
+            ->method('ensureEmailAvailable')
+            ->with(EmailAddress::fromString($newEmail), $userId);
+
+        $this->uniquenessChecker->expects($this->once())
+            ->method('ensureUsernameAvailable')
+            ->with(Username::fromString($newUsername), $userId);
 
         $this->passwordHasher->expects($this->once())
             ->method('hash')
@@ -126,6 +141,13 @@ final class UpdateUserByAdminTest extends TestCase
             ->with($userId)
             ->willReturn($user);
 
+        $this->uniquenessChecker->expects($this->never())
+            ->method('ensureEmailAvailable');
+
+        $this->uniquenessChecker->expects($this->once())
+            ->method('ensureUsernameAvailable')
+            ->with(Username::fromString($newUsername), $userId);
+
         $this->passwordHasher->expects($this->never())
             ->method('hash');
 
@@ -157,6 +179,12 @@ final class UpdateUserByAdminTest extends TestCase
             userId: $userId,
         );
 
+        $this->uniquenessChecker->expects($this->never())
+            ->method('ensureEmailAvailable');
+
+        $this->uniquenessChecker->expects($this->never())
+            ->method('ensureUsernameAvailable');
+
         $this->passwordHasher->expects($this->never())
             ->method('hash');
 
@@ -173,6 +201,88 @@ final class UpdateUserByAdminTest extends TestCase
 
         $this->expectException(UserDomainException::class);
         $this->expectExceptionMessage('User not found.');
+
+        $this->handler->handle($command);
+    }
+
+    public function testHandleThrowsExceptionWhenEmailAlreadyUsed(): void
+    {
+        $userId = UserId::fromString('550e8400-e29b-41d4-a716-446655440003');
+        $user = $this->createUser($userId);
+        $conflictingEmail = 'taken@example.com';
+
+        $command = new UpdateUserByAdminCommand(
+            userId: $userId,
+            email: $conflictingEmail,
+        );
+
+        $this->repository->expects($this->once())
+            ->method('findById')
+            ->with($userId)
+            ->willReturn($user);
+
+        $this->uniquenessChecker->expects($this->once())
+            ->method('ensureEmailAvailable')
+            ->with(EmailAddress::fromString($conflictingEmail), $userId)
+            ->willThrowException(new EmailAlreadyUsedException());
+
+        $this->uniquenessChecker->expects($this->never())
+            ->method('ensureUsernameAvailable');
+
+        $this->passwordHasher->expects($this->never())
+            ->method('hash');
+
+        $this->clock->expects($this->never())
+            ->method('now');
+
+        $this->transactional->expects($this->never())
+            ->method('transactional');
+
+        $this->repository->expects($this->never())
+            ->method('save');
+
+        $this->expectException(EmailAlreadyUsedException::class);
+
+        $this->handler->handle($command);
+    }
+
+    public function testHandleThrowsExceptionWhenUsernameAlreadyUsed(): void
+    {
+        $userId = UserId::fromString('550e8400-e29b-41d4-a716-446655440004');
+        $user = $this->createUser($userId);
+        $conflictingUsername = 'taken';
+
+        $command = new UpdateUserByAdminCommand(
+            userId: $userId,
+            username: $conflictingUsername,
+        );
+
+        $this->repository->expects($this->once())
+            ->method('findById')
+            ->with($userId)
+            ->willReturn($user);
+
+        $this->uniquenessChecker->expects($this->never())
+            ->method('ensureEmailAvailable');
+
+        $this->uniquenessChecker->expects($this->once())
+            ->method('ensureUsernameAvailable')
+            ->with(Username::fromString($conflictingUsername), $userId)
+            ->willThrowException(new UsernameAlreadyUsedException());
+
+        $this->passwordHasher->expects($this->never())
+            ->method('hash');
+
+        $this->clock->expects($this->never())
+            ->method('now');
+
+        $this->transactional->expects($this->never())
+            ->method('transactional');
+
+        $this->repository->expects($this->never())
+            ->method('save');
+
+        $this->expectException(UsernameAlreadyUsedException::class);
 
         $this->handler->handle($command);
     }

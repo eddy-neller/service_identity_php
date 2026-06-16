@@ -34,7 +34,7 @@ final class EmailAddressTest extends TestCase
     public function testConstructThrowsExceptionForInvalidEmail(): void
     {
         $this->expectException(InvalidEmailAddressException::class);
-        $this->expectExceptionMessage('Adresse email invalide.');
+        $this->expectExceptionMessage('Email address is invalid.');
 
         EmailAddress::fromString('invalid-email');
     }
@@ -42,7 +42,7 @@ final class EmailAddressTest extends TestCase
     public function testConstructThrowsExceptionForEmptyEmail(): void
     {
         $this->expectException(InvalidEmailAddressException::class);
-        $this->expectExceptionMessage('Adresse email invalide.');
+        $this->expectExceptionMessage('Email address is invalid.');
 
         EmailAddress::fromString('');
     }
@@ -50,7 +50,7 @@ final class EmailAddressTest extends TestCase
     public function testConstructThrowsExceptionForEmailWithoutAt(): void
     {
         $this->expectException(InvalidEmailAddressException::class);
-        $this->expectExceptionMessage('Adresse email invalide.');
+        $this->expectExceptionMessage('Email address is invalid.');
 
         EmailAddress::fromString('johndomain.com');
     }
@@ -58,7 +58,7 @@ final class EmailAddressTest extends TestCase
     public function testConstructThrowsExceptionForEmailWithoutDomain(): void
     {
         $this->expectException(InvalidEmailAddressException::class);
-        $this->expectExceptionMessage('Adresse email invalide.');
+        $this->expectExceptionMessage('Email address is invalid.');
 
         EmailAddress::fromString('john@');
     }

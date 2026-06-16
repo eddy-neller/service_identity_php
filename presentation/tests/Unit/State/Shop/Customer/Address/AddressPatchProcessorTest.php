@@ -28,6 +28,7 @@ use DateTimeImmutable;
 use LogicException;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
+use stdClass;
 use Symfony\Bundle\SecurityBundle\Security;
 
 final class AddressPatchProcessorTest extends TestCase
@@ -156,7 +157,7 @@ final class AddressPatchProcessorTest extends TestCase
             new AddressResourcePresenter(),
         );
 
-        $invalidInput = new \stdClass();
+        $invalidInput = new stdClass();
 
         $this->commandBus->expects($this->never())->method('dispatch');
         $this->queryBus->expects($this->never())->method('dispatch');

@@ -27,7 +27,7 @@ final class LastnameTest extends TestCase
     public function testConstructThrowsExceptionWhenEmpty(): void
     {
         $this->expectException(InvalidLastnameException::class);
-        $this->expectExceptionMessage('Le nom ne peut pas être vide.');
+        $this->expectExceptionMessage('Last name cannot be empty.');
 
         Lastname::fromString('');
     }
@@ -35,7 +35,7 @@ final class LastnameTest extends TestCase
     public function testConstructThrowsExceptionWhenOnlyWhitespace(): void
     {
         $this->expectException(InvalidLastnameException::class);
-        $this->expectExceptionMessage('Le nom ne peut pas être vide.');
+        $this->expectExceptionMessage('Last name cannot be empty.');
 
         Lastname::fromString('   ');
     }
@@ -43,7 +43,7 @@ final class LastnameTest extends TestCase
     public function testConstructThrowsExceptionWhenTooShort(): void
     {
         $this->expectException(InvalidLastnameException::class);
-        $this->expectExceptionMessage('Le nom doit contenir au moins 2 caractères.');
+        $this->expectExceptionMessage('Last name must contain at least 2 characters.');
 
         Lastname::fromString('A');
     }
@@ -51,7 +51,7 @@ final class LastnameTest extends TestCase
     public function testConstructThrowsExceptionWhenTooLong(): void
     {
         $this->expectException(InvalidLastnameException::class);
-        $this->expectExceptionMessage('Le nom ne peut pas dépasser 50 caractères.');
+        $this->expectExceptionMessage('Last name cannot exceed 50 characters.');
 
         Lastname::fromString(str_repeat('a', 51));
     }

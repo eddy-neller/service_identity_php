@@ -9,6 +9,7 @@ use App\Application\Shared\Port\ClockInterface;
 use App\Application\Shared\Port\TransactionalInterface;
 use App\Application\User\Port\PasswordHasherInterface;
 use App\Application\User\Port\UserRepositoryInterface;
+use App\Domain\User\Exception\Security\InvalidCurrentPasswordException;
 use App\Domain\User\Exception\UserNotFoundException;
 
 final readonly class UpdatePasswordCommandHandler implements CommandHandlerInterface
@@ -27,6 +28,10 @@ final readonly class UpdatePasswordCommandHandler implements CommandHandlerInter
 
         if (null === $user) {
             throw new UserNotFoundException();
+        }
+
+        if (!$this->passwordHasher->verify($user->getPassword(), $command->currentPassword)) {
+            throw new InvalidCurrentPasswordException();
         }
 
         $this->transactional->transactional(function () use ($user, $command): void {

@@ -224,8 +224,8 @@ final class CategoryTest extends BaseTest
             ],
             [
                 'class' => ClientExceptionInterface::class,
-                'code' => Response::HTTP_UNPROCESSABLE_ENTITY,
-                'message' => 'title: A shop category already has this title.',
+                'code' => Response::HTTP_CONFLICT,
+                'message' => 'Category title is already used.',
             ],
         ];
         yield 'Title too short' => [

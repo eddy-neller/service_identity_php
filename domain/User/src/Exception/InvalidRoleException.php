@@ -8,11 +8,11 @@ final class InvalidRoleException extends UserDomainException
 {
     public static function invalid(): self
     {
-        return new self('Role invalide.');
+        return new self('Invalid role.');
     }
 
     public static function notAllowed(string $role): self
     {
-        return new self('Role non autorisé: ' . $role);
+        return new self('Role is not allowed: ' . $role);
     }
 }

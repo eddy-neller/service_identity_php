@@ -8,7 +8,7 @@ use App\Domain\User\Exception\UserDomainException;
 
 final class UsernameAlreadyUsedException extends UserDomainException
 {
-    public function __construct(string $message = 'Nom d\'utilisateur déjà utilisé.')
+    public function __construct(string $message = 'Username is already used.')
     {
         parent::__construct($message);
     }

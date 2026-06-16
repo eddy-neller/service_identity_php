@@ -24,7 +24,9 @@ api_platform:
         App\Domain\Shop\Ordering\Exception\CartLineNotFoundException: 404
         App\Domain\Shop\Ordering\Exception\CartQuantityExceededException: 422
         App\Domain\Shop\Catalog\Exception\CategoryNotFoundException: 404
+        App\Domain\Shop\Catalog\Exception\CategoryTitleAlreadyUsedException: 409
         App\Domain\Shop\Catalog\Exception\ProductNotFoundException: 404
+        App\Domain\Shop\Catalog\Exception\ProductTitleAlreadyUsedException: 409
         App\Domain\Shop\Customer\Exception\AddressLimitReachedException: 409
         App\Domain\Shop\Customer\Exception\AddressNotFoundException: 404
         App\Domain\Shop\Customer\Exception\CustomerAlreadyExistsException: 409
@@ -32,6 +34,7 @@ api_platform:
         App\Domain\User\Exception\UserNotFoundException: 404
         App\Domain\User\Exception\Uniqueness\EmailAlreadyUsedException: 409
         App\Domain\User\Exception\Uniqueness\UsernameAlreadyUsedException: 409
+        App\Domain\User\Exception\Security\InvalidCurrentPasswordException: 422
         App\Domain\User\Exception\Security\UserLockedException: 423
         App\Domain\User\Exception\RateLimit\ActivationLimitReachedException: 429
         App\Domain\User\Exception\RateLimit\ResetPasswordLimitReachedException: 429

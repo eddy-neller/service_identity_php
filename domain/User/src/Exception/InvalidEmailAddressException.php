@@ -8,6 +8,6 @@ final class InvalidEmailAddressException extends UserDomainException
 {
     public static function invalidFormat(): self
     {
-        return new self('Adresse email invalide.');
+        return new self('Email address is invalid.');
     }
 }

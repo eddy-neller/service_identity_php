@@ -14,6 +14,7 @@ use App\Application\Shop\UseCase\Command\Catalog\UpdateCategoryByAdmin\UpdateCat
 use App\Domain\SharedKernel\ValueObject\Slug;
 use App\Domain\Shop\Catalog\Exception\CatalogDomainException;
 use App\Domain\Shop\Catalog\Exception\CategoryNotFoundException;
+use App\Domain\Shop\Catalog\Exception\CategoryTitleAlreadyUsedException;
 use App\Domain\Shop\Catalog\Model\Category;
 use App\Domain\Shop\Catalog\ValueObject\CategoryDescription;
 use App\Domain\Shop\Catalog\ValueObject\CategoryId;
@@ -86,6 +87,11 @@ final class UpdateCategoryByAdminTest extends TestCase
         $this->clock->expects($this->once())
             ->method('now')
             ->willReturn($now);
+
+        $this->repository->expects($this->once())
+            ->method('findByTitle')
+            ->with(CategoryTitle::fromString('New title'))
+            ->willReturn(null);
 
         $this->slugGenerator->expects($this->once())
             ->method('generate')
@@ -334,6 +340,106 @@ final class UpdateCategoryByAdminTest extends TestCase
         $this->expectExceptionMessage('Category not found.');
 
         $this->handler->handle($command);
+    }
+
+    public function testHandleThrowsWhenTitleBelongsToAnotherCategory(): void
+    {
+        $now = new DateTimeImmutable('2024-02-01 12:00:00');
+        $categoryId = CategoryId::fromString(self::CATEGORY_ID);
+        $otherId = CategoryId::fromString(self::PARENT_ID);
+        $category = $this->createCategory($categoryId, 'Old title', 'old-title');
+        $other = $this->createCategory($otherId, 'New title', 'new-title');
+
+        $command = new UpdateCategoryByAdminCommand(
+            categoryId: $categoryId,
+            title: 'New title',
+            description: null,
+            parentId: null,
+        );
+
+        $this->repository->expects($this->once())
+            ->method('findById')
+            ->with($categoryId)
+            ->willReturn($category);
+
+        $this->clock->expects($this->once())
+            ->method('now')
+            ->willReturn($now);
+
+        $this->repository->expects($this->once())
+            ->method('findByTitle')
+            ->with(CategoryTitle::fromString('New title'))
+            ->willReturn($other);
+
+        $this->slugGenerator->expects($this->never())
+            ->method('generate');
+
+        $this->repository->expects($this->never())
+            ->method('save');
+
+        $this->transactional->expects($this->once())
+            ->method('transactional')
+            ->willReturnCallback(function (callable $callback) {
+                return $callback();
+            });
+
+        $this->expectException(CategoryTitleAlreadyUsedException::class);
+
+        $this->handler->handle($command);
+    }
+
+    public function testHandleSucceedsWhenTitleBelongsToSameCategory(): void
+    {
+        $now = new DateTimeImmutable('2024-02-01 12:00:00');
+        $categoryId = CategoryId::fromString(self::CATEGORY_ID);
+        $category = $this->createCategory($categoryId, 'Old title', 'old-title');
+        $categoryItem = new CategoryItem($category, null, []);
+
+        $command = new UpdateCategoryByAdminCommand(
+            categoryId: $categoryId,
+            title: 'Same title',
+            description: null,
+            parentId: null,
+        );
+
+        $this->repository->expects($this->once())
+            ->method('findById')
+            ->with($categoryId)
+            ->willReturn($category);
+
+        $this->clock->expects($this->once())
+            ->method('now')
+            ->willReturn($now);
+
+        $this->repository->expects($this->once())
+            ->method('findByTitle')
+            ->with(CategoryTitle::fromString('Same title'))
+            ->willReturn($category);
+
+        $this->slugGenerator->expects($this->once())
+            ->method('generate')
+            ->with('Same title')
+            ->willReturn(Slug::fromString('same-title'));
+
+        $this->repository->expects($this->once())
+            ->method('save')
+            ->with($category);
+
+        $this->repository->expects($this->once())
+            ->method('findItemById')
+            ->with($categoryId)
+            ->willReturn($categoryItem);
+
+        $this->transactional->expects($this->once())
+            ->method('transactional')
+            ->willReturnCallback(function (callable $callback) {
+                return $callback();
+            });
+
+        $output = $this->handler->handle($command);
+
+        $this->assertSame($categoryItem, $output->categoryItem);
+        $this->assertSame('Same title', $category->getTitle()->toString());
     }
 
     private function createCategory(

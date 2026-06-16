@@ -8,7 +8,7 @@ use App\Domain\User\Exception\UserDomainException;
 
 final class EmailAlreadyUsedException extends UserDomainException
 {
-    public function __construct(string $message = 'Adresse email déjà utilisée.')
+    public function __construct(string $message = 'Email address is already used.')
     {
         parent::__construct($message);
     }

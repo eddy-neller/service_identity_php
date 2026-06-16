@@ -44,7 +44,7 @@ final class RoleSetTest extends TestCase
     public function testConstructThrowsExceptionForNonStringRole(): void
     {
         $this->expectException(InvalidRoleException::class);
-        $this->expectExceptionMessage('Role invalide.');
+        $this->expectExceptionMessage('Invalid role.');
 
         /* @phpstan-ignore argument.type */
         RoleSet::fromArray(['ROLE_USER', 123]);
@@ -53,7 +53,7 @@ final class RoleSetTest extends TestCase
     public function testConstructThrowsExceptionForEmptyRole(): void
     {
         $this->expectException(InvalidRoleException::class);
-        $this->expectExceptionMessage('Role invalide.');
+        $this->expectExceptionMessage('Invalid role.');
 
         RoleSet::fromArray(['ROLE_USER', '']);
     }
@@ -61,7 +61,7 @@ final class RoleSetTest extends TestCase
     public function testConstructThrowsExceptionForWhitespaceRole(): void
     {
         $this->expectException(InvalidRoleException::class);
-        $this->expectExceptionMessage('Role invalide.');
+        $this->expectExceptionMessage('Invalid role.');
 
         RoleSet::fromArray(['ROLE_USER', '   ']);
     }
@@ -69,7 +69,7 @@ final class RoleSetTest extends TestCase
     public function testConstructThrowsExceptionForUnauthorizedRole(): void
     {
         $this->expectException(InvalidRoleException::class);
-        $this->expectExceptionMessage('Role non autorisé: ROLE_UNKNOWN');
+        $this->expectExceptionMessage('Role is not allowed: ROLE_UNKNOWN');
 
         RoleSet::fromArray(['ROLE_USER', 'ROLE_UNKNOWN']);
     }

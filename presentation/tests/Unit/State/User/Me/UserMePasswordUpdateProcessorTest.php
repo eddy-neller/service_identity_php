@@ -62,6 +62,7 @@ final class UserMePasswordUpdateProcessorTest extends KernelTestCase
             ->method('dispatch')
             ->with($this->callback(function ($command) use ($input) {
                 $this->assertInstanceOf(UpdatePasswordCommand::class, $command);
+                $this->assertSame($input->currentPassword, $command->currentPassword);
                 $this->assertSame($input->newPassword, $command->newPassword);
 
                 return true;

@@ -13,6 +13,7 @@ use App\Application\Shop\UseCase\Command\Catalog\CreateCategoryByAdmin\CreateCat
 use App\Application\Shop\UseCase\Command\Catalog\CreateCategoryByAdmin\CreateCategoryByAdminCommandHandler;
 use App\Domain\SharedKernel\ValueObject\Slug;
 use App\Domain\Shop\Catalog\Exception\CategoryNotFoundException;
+use App\Domain\Shop\Catalog\Exception\CategoryTitleAlreadyUsedException;
 use App\Domain\Shop\Catalog\Model\Category;
 use App\Domain\Shop\Catalog\ValueObject\CategoryDescription;
 use App\Domain\Shop\Catalog\ValueObject\CategoryId;
@@ -80,6 +81,11 @@ final class CreateCategoryByAdminTest extends TestCase
         $this->repository->expects($this->once())
             ->method('nextIdentity')
             ->willReturn($categoryId);
+
+        $this->repository->expects($this->once())
+            ->method('findByTitle')
+            ->with(CategoryTitle::fromString($title))
+            ->willReturn(null);
 
         $this->slugGenerator->expects($this->once())
             ->method('generate')
@@ -207,6 +213,48 @@ final class CreateCategoryByAdminTest extends TestCase
 
         $this->expectException(CategoryNotFoundException::class);
         $this->expectExceptionMessage('Category not found.');
+
+        $this->handler->handle($command);
+    }
+
+    public function testHandleThrowsWhenTitleAlreadyUsed(): void
+    {
+        $now = new DateTimeImmutable('2024-01-01 10:00:00');
+        $categoryId = CategoryId::fromString(self::CATEGORY_ID);
+        $title = 'Existing category';
+
+        $command = new CreateCategoryByAdminCommand(
+            title: $title,
+            description: null,
+            parentId: null,
+        );
+
+        $this->clock->expects($this->once())
+            ->method('now')
+            ->willReturn($now);
+
+        $this->repository->expects($this->once())
+            ->method('nextIdentity')
+            ->willReturn($categoryId);
+
+        $this->repository->expects($this->once())
+            ->method('findByTitle')
+            ->with(CategoryTitle::fromString($title))
+            ->willReturn($this->createCategory(CategoryId::fromString(self::PARENT_ID), $title, 'existing-category'));
+
+        $this->slugGenerator->expects($this->never())
+            ->method('generate');
+
+        $this->repository->expects($this->never())
+            ->method('save');
+
+        $this->transactional->expects($this->once())
+            ->method('transactional')
+            ->willReturnCallback(function (callable $callback) {
+                return $callback();
+            });
+
+        $this->expectException(CategoryTitleAlreadyUsedException::class);
 
         $this->handler->handle($command);
     }

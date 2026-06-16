@@ -12,6 +12,7 @@ use App\Application\Shop\Port\CategoryRepositoryInterface;
 use App\Application\Shop\Port\ProductRepositoryInterface;
 use App\Application\Shop\ReadModel\Catalog\ProductItem;
 use App\Domain\Shop\Catalog\Exception\CategoryNotFoundException;
+use App\Domain\Shop\Catalog\Exception\ProductTitleAlreadyUsedException;
 use App\Domain\Shop\Catalog\Model\Product;
 use App\Domain\Shop\Catalog\ValueObject\ProductDescription;
 use App\Domain\Shop\Catalog\ValueObject\ProductSubtitle;
@@ -35,6 +36,10 @@ final readonly class CreateProductByAdminCommandHandler implements CommandHandle
             $now = $this->clock->now();
             $id = $this->productRepository->nextIdentity();
             $title = ProductTitle::fromString($command->title);
+            if (null !== $this->productRepository->findByTitle($title)) {
+                throw new ProductTitleAlreadyUsedException();
+            }
+
             $subtitle = ProductSubtitle::fromString($command->subtitle);
             $description = ProductDescription::fromString($command->description);
             $price = Money::fromEuros($command->price);

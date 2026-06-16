@@ -11,6 +11,7 @@ use App\Application\Shared\Port\TransactionalInterface;
 use App\Application\Shop\Port\CategoryRepositoryInterface;
 use App\Domain\Shop\Catalog\Exception\CatalogDomainException;
 use App\Domain\Shop\Catalog\Exception\CategoryNotFoundException;
+use App\Domain\Shop\Catalog\Exception\CategoryTitleAlreadyUsedException;
 use App\Domain\Shop\Catalog\ValueObject\CategoryDescription;
 use App\Domain\Shop\Catalog\ValueObject\CategoryTitle;
 
@@ -37,6 +38,12 @@ final readonly class UpdateCategoryByAdminCommandHandler implements CommandHandl
 
             if (null !== $command->title) {
                 $title = CategoryTitle::fromString($command->title);
+
+                $existing = $this->categoryRepository->findByTitle($title);
+                if (null !== $existing && !$existing->getId()->equals($category->getId())) {
+                    throw new CategoryTitleAlreadyUsedException();
+                }
+
                 $slug = $this->slugGenerator->generate($title->toString());
                 $category->rename($title, $slug, $now);
             }

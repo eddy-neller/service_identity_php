@@ -33,7 +33,7 @@ final readonly class UserMePasswordUpdateProcessor implements ProcessorInterface
         $user = $this->getCurrentUserOrThrow();
         $userId = $this->getUserIdFromAuthenticatedUser($user);
 
-        $command = new UpdatePasswordCommand($userId, $data->newPassword);
+        $command = new UpdatePasswordCommand($userId, $data->currentPassword, $data->newPassword);
         $this->commandBus->dispatch($command);
 
         return null;

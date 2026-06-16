@@ -10,6 +10,7 @@ use App\Application\Shop\ReadModel\Catalog\CategoryItem;
 use App\Application\Shop\ReadModel\Catalog\CategoryList;
 use App\Domain\Shop\Catalog\Model\Category as DomainCategory;
 use App\Domain\Shop\Catalog\ValueObject\CategoryId;
+use App\Domain\Shop\Catalog\ValueObject\CategoryTitle;
 use App\Infrastructure\Entity\Shop\Category as DoctrineCategory;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\QueryBuilder;
@@ -90,6 +91,14 @@ final readonly class DoctrineCategoryRepository implements CategoryRepositoryInt
         $entity = $this->findEntity($id);
 
         return null === $entity ? null : $this->mapper->toDomain($entity);
+    }
+
+    public function findByTitle(CategoryTitle $title): ?DomainCategory
+    {
+        $repository = $this->em->getRepository(DoctrineCategory::class);
+        $entity = $repository->findOneBy(['title' => $title->toString()]);
+
+        return $entity instanceof DoctrineCategory ? $this->mapper->toDomain($entity) : null;
     }
 
     public function findItemById(CategoryId $id): ?CategoryItem

@@ -10,6 +10,7 @@ use App\Application\Shared\Port\SlugGeneratorInterface;
 use App\Application\Shared\Port\TransactionalInterface;
 use App\Application\Shop\Port\CategoryRepositoryInterface;
 use App\Domain\Shop\Catalog\Exception\CategoryNotFoundException;
+use App\Domain\Shop\Catalog\Exception\CategoryTitleAlreadyUsedException;
 use App\Domain\Shop\Catalog\Model\Category;
 use App\Domain\Shop\Catalog\ValueObject\CategoryDescription;
 use App\Domain\Shop\Catalog\ValueObject\CategoryTitle;
@@ -30,6 +31,11 @@ final readonly class CreateCategoryByAdminCommandHandler implements CommandHandl
             $now = $this->clock->now();
             $id = $this->repository->nextIdentity();
             $title = CategoryTitle::fromString($command->title);
+
+            if (null !== $this->repository->findByTitle($title)) {
+                throw new CategoryTitleAlreadyUsedException();
+            }
+
             $slug = $this->slugGenerator->generate($title->toString());
             $description = CategoryDescription::fromNullableString($command->description);
 

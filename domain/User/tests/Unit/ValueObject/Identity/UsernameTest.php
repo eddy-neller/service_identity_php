@@ -27,7 +27,7 @@ final class UsernameTest extends TestCase
     public function testConstructThrowsExceptionWhenEmpty(): void
     {
         $this->expectException(InvalidUsernameException::class);
-        $this->expectExceptionMessage('Le nom d\'utilisateur ne peut pas être vide.');
+        $this->expectExceptionMessage('Username cannot be empty.');
 
         Username::fromString('');
     }
@@ -35,7 +35,7 @@ final class UsernameTest extends TestCase
     public function testConstructThrowsExceptionWhenOnlyWhitespace(): void
     {
         $this->expectException(InvalidUsernameException::class);
-        $this->expectExceptionMessage('Le nom d\'utilisateur ne peut pas être vide.');
+        $this->expectExceptionMessage('Username cannot be empty.');
 
         Username::fromString('   ');
     }
@@ -43,7 +43,7 @@ final class UsernameTest extends TestCase
     public function testConstructThrowsExceptionWhenTooShort(): void
     {
         $this->expectException(InvalidUsernameException::class);
-        $this->expectExceptionMessage('Le nom d\'utilisateur doit contenir au moins 2 caractères.');
+        $this->expectExceptionMessage('Username must contain at least 2 characters.');
 
         Username::fromString('a');
     }
@@ -51,7 +51,7 @@ final class UsernameTest extends TestCase
     public function testConstructThrowsExceptionWhenTooLong(): void
     {
         $this->expectException(InvalidUsernameException::class);
-        $this->expectExceptionMessage('Le nom d\'utilisateur ne peut pas dépasser 20 caractères.');
+        $this->expectExceptionMessage('Username cannot exceed 20 characters.');
 
         Username::fromString(str_repeat('a', 21));
     }

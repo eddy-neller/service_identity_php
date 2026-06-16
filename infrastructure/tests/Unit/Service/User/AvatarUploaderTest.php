@@ -65,7 +65,7 @@ final class AvatarUploaderTest extends KernelTestCase
 
             $this->assertSame('stored-avatar.jpg', $avatar->fileName());
         } finally {
-            @unlink($tempFile);
+            unlink($tempFile);
         }
     }
 

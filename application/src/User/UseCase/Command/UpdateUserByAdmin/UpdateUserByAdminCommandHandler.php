@@ -9,6 +9,7 @@ use App\Application\Shared\Port\ClockInterface;
 use App\Application\Shared\Port\TransactionalInterface;
 use App\Application\User\Port\PasswordHasherInterface;
 use App\Application\User\Port\UserRepositoryInterface;
+use App\Application\User\Port\UserUniquenessCheckerInterface;
 use App\Domain\User\Exception\UserNotFoundException;
 use App\Domain\User\Identity\ValueObject\EmailAddress;
 use App\Domain\User\Identity\ValueObject\Firstname;
@@ -24,6 +25,7 @@ final readonly class UpdateUserByAdminCommandHandler implements CommandHandlerIn
         private PasswordHasherInterface $passwordHasher,
         private ClockInterface $clock,
         private TransactionalInterface $transactional,
+        private UserUniquenessCheckerInterface $uniquenessChecker,
     ) {
     }
 
@@ -33,6 +35,14 @@ final readonly class UpdateUserByAdminCommandHandler implements CommandHandlerIn
 
         if (null === $user) {
             throw new UserNotFoundException();
+        }
+
+        if (null !== $command->email) {
+            $this->uniquenessChecker->ensureEmailAvailable(EmailAddress::fromString($command->email), $user->getId());
+        }
+
+        if (null !== $command->username) {
+            $this->uniquenessChecker->ensureUsernameAvailable(Username::fromString($command->username), $user->getId());
         }
 
         return $this->transactional->transactional(function () use ($user, $command): UpdateUserByAdminOutput {

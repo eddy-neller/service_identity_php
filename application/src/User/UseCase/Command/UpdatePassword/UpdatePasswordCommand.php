@@ -11,6 +11,7 @@ final readonly class UpdatePasswordCommand implements CommandInterface
 {
     public function __construct(
         public UserId $userId,
+        public string $currentPassword,
         public string $newPassword,
     ) {
     }

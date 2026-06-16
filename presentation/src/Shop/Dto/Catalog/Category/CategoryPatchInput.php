@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Presentation\Shop\Dto\Catalog\Category;
 
 use App\Presentation\Shop\ApiResource\Catalog\CategoryResource;
-use App\Presentation\Shop\Validator\Catalog\ShopCategoryNotExists;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
 
@@ -18,7 +17,6 @@ final class CategoryPatchInput
         minMessage: 'The title must be at least {{ limit }} characters long.',
         maxMessage: 'The title must be at most {{ limit }} characters long.'
     )]
-    #[ShopCategoryNotExists]
     public ?string $title = null;
 
     #[Groups(['shop_category:write'])]

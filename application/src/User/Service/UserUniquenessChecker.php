@@ -9,6 +9,7 @@ use App\Application\User\Port\UserUniquenessCheckerInterface;
 use App\Domain\User\Exception\Uniqueness\EmailAlreadyUsedException;
 use App\Domain\User\Exception\Uniqueness\UsernameAlreadyUsedException;
 use App\Domain\User\Identity\ValueObject\EmailAddress;
+use App\Domain\User\Identity\ValueObject\UserId;
 use App\Domain\User\Identity\ValueObject\Username;
 
 final readonly class UserUniquenessChecker implements UserUniquenessCheckerInterface
@@ -29,5 +30,33 @@ final readonly class UserUniquenessChecker implements UserUniquenessCheckerInter
         if (null !== $existingByUsername) {
             throw new UsernameAlreadyUsedException();
         }
+    }
+
+    public function ensureEmailAvailable(EmailAddress $email, ?UserId $excludeUserId = null): void
+    {
+        $existingByEmail = $this->repository->findByEmail($email);
+        if (null === $existingByEmail) {
+            return;
+        }
+
+        if (null !== $excludeUserId && $existingByEmail->getId()->equals($excludeUserId)) {
+            return;
+        }
+
+        throw new EmailAlreadyUsedException();
+    }
+
+    public function ensureUsernameAvailable(Username $username, ?UserId $excludeUserId = null): void
+    {
+        $existingByUsername = $this->repository->findByUsername($username);
+        if (null === $existingByUsername) {
+            return;
+        }
+
+        if (null !== $excludeUserId && $existingByUsername->getId()->equals($excludeUserId)) {
+            return;
+        }
+
+        throw new UsernameAlreadyUsedException();
     }
 }

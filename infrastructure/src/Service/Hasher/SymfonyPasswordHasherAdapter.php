@@ -24,4 +24,12 @@ final readonly class SymfonyPasswordHasherAdapter implements PasswordHasherInter
             $this->passwordHasher->hashPassword($user, $plainPassword)
         );
     }
+
+    public function verify(HashedPassword $hashedPassword, string $plainPassword): bool
+    {
+        $user = new User();
+        $user->setPassword($hashedPassword->toString());
+
+        return $this->passwordHasher->isPasswordValid($user, $plainPassword);
+    }
 }

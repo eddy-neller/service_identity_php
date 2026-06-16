@@ -13,11 +13,15 @@ use App\Application\Shop\UseCase\Command\Catalog\CreateProductByAdmin\CreateProd
 use App\Application\Shop\UseCase\Command\Catalog\CreateProductByAdmin\CreateProductByAdminCommandHandler;
 use App\Domain\SharedKernel\ValueObject\Slug;
 use App\Domain\Shop\Catalog\Exception\CategoryNotFoundException;
+use App\Domain\Shop\Catalog\Exception\ProductTitleAlreadyUsedException;
 use App\Domain\Shop\Catalog\Model\Category;
 use App\Domain\Shop\Catalog\Model\Product;
 use App\Domain\Shop\Catalog\ValueObject\CategoryId;
 use App\Domain\Shop\Catalog\ValueObject\CategoryTitle;
+use App\Domain\Shop\Catalog\ValueObject\ProductDescription;
 use App\Domain\Shop\Catalog\ValueObject\ProductId;
+use App\Domain\Shop\Catalog\ValueObject\ProductSubtitle;
+use App\Domain\Shop\Catalog\ValueObject\ProductTitle;
 use App\Domain\Shop\Shared\ValueObject\Money;
 use DateTimeImmutable;
 use PHPUnit\Framework\MockObject\MockObject;
@@ -80,6 +84,11 @@ final class CreateProductByAdminTest extends TestCase
         $this->productRepository->expects($this->once())
             ->method('nextIdentity')
             ->willReturn($productId);
+
+        $this->productRepository->expects($this->once())
+            ->method('findByTitle')
+            ->with(ProductTitle::fromString('New product'))
+            ->willReturn(null);
 
         $this->slugGenerator->expects($this->once())
             ->method('generate')
@@ -147,6 +156,11 @@ final class CreateProductByAdminTest extends TestCase
             ->method('nextIdentity')
             ->willReturn($productId);
 
+        $this->productRepository->expects($this->once())
+            ->method('findByTitle')
+            ->with(ProductTitle::fromString('New product'))
+            ->willReturn(null);
+
         $this->slugGenerator->expects($this->once())
             ->method('generate')
             ->with('New product')
@@ -170,6 +184,79 @@ final class CreateProductByAdminTest extends TestCase
         $this->expectExceptionMessage('Category not found.');
 
         $this->handler->handle($command);
+    }
+
+    public function testHandleThrowsWhenTitleAlreadyUsed(): void
+    {
+        $now = new DateTimeImmutable('2024-01-01 10:00:00');
+        $categoryId = CategoryId::fromString(self::CATEGORY_ID);
+        $productId = ProductId::fromString(self::PRODUCT_ID);
+
+        $command = new CreateProductByAdminCommand(
+            title: 'Existing product',
+            subtitle: 'Product subtitle',
+            description: 'Product description',
+            price: 10.0,
+            categoryId: $categoryId,
+        );
+
+        $this->clock->expects($this->once())
+            ->method('now')
+            ->willReturn($now);
+
+        $this->productRepository->expects($this->once())
+            ->method('nextIdentity')
+            ->willReturn($productId);
+
+        $this->productRepository->expects($this->once())
+            ->method('findByTitle')
+            ->with(ProductTitle::fromString('Existing product'))
+            ->willReturn($this->createProduct(
+                ProductId::fromString('550e8400-e29b-41d4-a716-446655440009'),
+                'Existing product',
+                $categoryId,
+                $now,
+            ));
+
+        $this->slugGenerator->expects($this->never())
+            ->method('generate');
+
+        $this->productRepository->expects($this->never())
+            ->method('save');
+
+        $this->categoryRepository->expects($this->never())
+            ->method('findById');
+
+        $this->categoryRepository->expects($this->never())
+            ->method('save');
+
+        $this->transactional->expects($this->once())
+            ->method('transactional')
+            ->willReturnCallback(function (callable $callback) {
+                return $callback();
+            });
+
+        $this->expectException(ProductTitleAlreadyUsedException::class);
+
+        $this->handler->handle($command);
+    }
+
+    private function createProduct(
+        ProductId $id,
+        string $title,
+        CategoryId $categoryId,
+        DateTimeImmutable $now,
+    ): Product {
+        return Product::create(
+            id: $id,
+            title: ProductTitle::fromString($title),
+            subtitle: ProductSubtitle::fromString('Product subtitle'),
+            description: ProductDescription::fromString('Product description'),
+            price: Money::fromEuros(10.0),
+            slug: Slug::fromString('existing-product'),
+            categoryId: $categoryId,
+            now: $now,
+        );
     }
 
     private function createCategory(CategoryId $categoryId): Category

@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace App\Presentation;
 
+/**
+ * @codeCoverageIgnore
+ */
 class RouteRequirements
 {
     private function __construct()

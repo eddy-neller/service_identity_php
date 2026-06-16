@@ -8,6 +8,7 @@ use App\Application\Shared\Port\FileInterface;
 use App\Application\Shop\ReadModel\Catalog\ProductList;
 use App\Domain\Shop\Catalog\Model\Product;
 use App\Domain\Shop\Catalog\ValueObject\ProductId;
+use App\Domain\Shop\Catalog\ValueObject\ProductTitle;
 
 interface ProductRepositoryInterface
 {
@@ -20,6 +21,8 @@ interface ProductRepositoryInterface
     public function delete(Product $product): void;
 
     public function findById(ProductId $id): ?Product;
+
+    public function findByTitle(ProductTitle $title): ?Product;
 
     /**
      * @param ProductId[] $ids

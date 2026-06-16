@@ -15,7 +15,7 @@ trait CustomerUserTrait
      */
     private function createUser(string $id): UserInterface
     {
-        return new readonly class($id) implements UserInterface {
+        return new class($id) implements UserInterface {
             public function __construct(private string $id)
             {
             }

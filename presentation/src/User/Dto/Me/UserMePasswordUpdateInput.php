@@ -4,16 +4,12 @@ declare(strict_types=1);
 
 namespace App\Presentation\User\Dto\Me;
 
-use App\Presentation\User\Validator as AppAssert;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
 
 final class UserMePasswordUpdateInput
 {
-    #[Assert\Sequentially([
-        new Assert\NotBlank(),
-        new AppAssert\CurrentPassword(),
-    ])]
+    #[Assert\NotBlank]
     #[Groups(groups: ['user:item:write'])]
     public ?string $currentPassword = null;
 

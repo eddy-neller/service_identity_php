@@ -25,6 +25,7 @@ use App\Presentation\Tests\Unit\State\Shop\Customer\CustomerUserTrait;
 use LogicException;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
+use stdClass;
 use Symfony\Bundle\SecurityBundle\Security;
 
 final class CartLinePostProcessorTest extends TestCase
@@ -109,7 +110,7 @@ final class CartLinePostProcessorTest extends TestCase
         $this->expectException(LogicException::class);
         $this->expectExceptionMessage(PresentationErrorCode::INVALID_INPUT->value);
 
-        $processor->process(new \stdClass(), $this->operation);
+        $processor->process(new stdClass(), $this->operation);
     }
 
     private function createCart(): CartItem

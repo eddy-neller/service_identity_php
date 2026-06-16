@@ -25,6 +25,7 @@ use App\Presentation\Tests\Unit\State\Shop\Customer\CustomerUserTrait;
 use LogicException;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
+use stdClass;
 use Symfony\Bundle\SecurityBundle\Security;
 
 final class CartLinePatchProcessorTest extends TestCase
@@ -112,7 +113,7 @@ final class CartLinePatchProcessorTest extends TestCase
         $this->expectException(LogicException::class);
         $this->expectExceptionMessage(PresentationErrorCode::INVALID_INPUT->value);
 
-        $processor->process(new \stdClass(), $this->operation, ['productId' => '550e8400-e29b-41d4-a716-446655440912']);
+        $processor->process(new stdClass(), $this->operation, ['productId' => '550e8400-e29b-41d4-a716-446655440912']);
     }
 
     public function testProcessThrowsLogicExceptionForMissingProductId(): void

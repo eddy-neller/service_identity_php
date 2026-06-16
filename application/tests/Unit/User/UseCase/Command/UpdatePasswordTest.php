@@ -10,6 +10,7 @@ use App\Application\User\Port\PasswordHasherInterface;
 use App\Application\User\Port\UserRepositoryInterface;
 use App\Application\User\UseCase\Command\UpdatePassword\UpdatePasswordCommand;
 use App\Application\User\UseCase\Command\UpdatePassword\UpdatePasswordCommandHandler;
+use App\Domain\User\Exception\Security\InvalidCurrentPasswordException;
 use App\Domain\User\Exception\UserDomainException;
 use App\Domain\User\Identity\ValueObject\EmailAddress;
 use App\Domain\User\Identity\ValueObject\UserId;
@@ -51,14 +52,20 @@ final class UpdatePasswordTest extends TestCase
     {
         $userId = UserId::fromString('550e8400-e29b-41d4-a716-446655440000');
         $user = $this->createUser($userId);
+        $currentPassword = 'current-password';
         $newPassword = 'new-password';
         $hashedPassword = new HashedPassword('hashed-new-password');
-        $command = new UpdatePasswordCommand($userId, $newPassword);
+        $command = new UpdatePasswordCommand($userId, $currentPassword, $newPassword);
 
         $this->repository->expects($this->once())
             ->method('findById')
             ->with($userId)
             ->willReturn($user);
+
+        $this->passwordHasher->expects($this->once())
+            ->method('verify')
+            ->with($user->getPassword(), $currentPassword)
+            ->willReturn(true);
 
         $this->passwordHasher->expects($this->once())
             ->method('hash')
@@ -85,8 +92,10 @@ final class UpdatePasswordTest extends TestCase
     public function testHandleThrowsExceptionWhenUserNotFound(): void
     {
         $userId = UserId::fromString('550e8400-e29b-41d4-a716-446655440001');
-        $newPassword = 'new-password';
-        $command = new UpdatePasswordCommand($userId, $newPassword);
+        $command = new UpdatePasswordCommand($userId, 'current-password', 'new-password');
+
+        $this->passwordHasher->expects($this->never())
+            ->method('verify');
 
         $this->passwordHasher->expects($this->never())
             ->method('hash');
@@ -104,6 +113,39 @@ final class UpdatePasswordTest extends TestCase
 
         $this->expectException(UserDomainException::class);
         $this->expectExceptionMessage('User not found.');
+
+        $this->handler->handle($command);
+    }
+
+    public function testHandleThrowsExceptionWhenCurrentPasswordIsInvalid(): void
+    {
+        $userId = UserId::fromString('550e8400-e29b-41d4-a716-446655440002');
+        $user = $this->createUser($userId);
+        $command = new UpdatePasswordCommand($userId, 'wrong-password', 'new-password');
+
+        $this->repository->expects($this->once())
+            ->method('findById')
+            ->with($userId)
+            ->willReturn($user);
+
+        $this->passwordHasher->expects($this->once())
+            ->method('verify')
+            ->with($user->getPassword(), 'wrong-password')
+            ->willReturn(false);
+
+        $this->passwordHasher->expects($this->never())
+            ->method('hash');
+
+        $this->clock->expects($this->never())
+            ->method('now');
+
+        $this->transactional->expects($this->never())
+            ->method('transactional');
+
+        $this->repository->expects($this->never())
+            ->method('save');
+
+        $this->expectException(InvalidCurrentPasswordException::class);
 
         $this->handler->handle($command);
     }

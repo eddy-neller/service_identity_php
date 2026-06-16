@@ -1152,7 +1152,7 @@ confirmNewPassword: This value should not be blank.',
             [
                 'class' => ClientExceptionInterface::class,
                 'code' => Response::HTTP_UNPROCESSABLE_ENTITY,
-                'message' => 'currentPassword: Invalid password.',
+                'message' => 'The current password is invalid.',
             ],
         ];
         yield 'Missing current password' => [

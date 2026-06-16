@@ -12,6 +12,7 @@ use App\Application\Shop\ReadModel\Catalog\ProductList;
 use App\Domain\Shop\Catalog\Model\Product as DomainProduct;
 use App\Domain\Shop\Catalog\ValueObject\CategoryId;
 use App\Domain\Shop\Catalog\ValueObject\ProductId;
+use App\Domain\Shop\Catalog\ValueObject\ProductTitle;
 use App\Infrastructure\Entity\Shop\Category as DoctrineCategory;
 use App\Infrastructure\Entity\Shop\Product as DoctrineProduct;
 use Doctrine\ORM\EntityManagerInterface;
@@ -99,6 +100,13 @@ final readonly class DoctrineProductRepository implements ProductRepositoryInter
         $entity = $this->findEntity($id);
 
         return null === $entity ? null : $this->mapper->toDomain($entity);
+    }
+
+    public function findByTitle(ProductTitle $title): ?DomainProduct
+    {
+        $entity = $this->em->getRepository(DoctrineProduct::class)->findOneBy(['title' => $title->toString()]);
+
+        return $entity instanceof DoctrineProduct ? $this->mapper->toDomain($entity) : null;
     }
 
     public function findByIds(array $ids): array

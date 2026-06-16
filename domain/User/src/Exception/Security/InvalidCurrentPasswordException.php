@@ -6,10 +6,10 @@ namespace App\Domain\User\Exception\Security;
 
 use App\Domain\User\Exception\UserDomainException;
 
-final class UserLockedException extends UserDomainException
+final class InvalidCurrentPasswordException extends UserDomainException
 {
     public function __construct()
     {
-        parent::__construct('The account is locked.');
+        parent::__construct('The current password is invalid.');
     }
 }

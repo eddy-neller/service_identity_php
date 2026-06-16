@@ -14,6 +14,7 @@ use App\Application\Shop\UseCase\Command\Catalog\UpdateProductByAdmin\UpdateProd
 use App\Domain\SharedKernel\ValueObject\Slug;
 use App\Domain\Shop\Catalog\Exception\CategoryNotFoundException;
 use App\Domain\Shop\Catalog\Exception\ProductNotFoundException;
+use App\Domain\Shop\Catalog\Exception\ProductTitleAlreadyUsedException;
 use App\Domain\Shop\Catalog\Model\Category;
 use App\Domain\Shop\Catalog\Model\Product;
 use App\Domain\Shop\Catalog\ValueObject\CategoryId;
@@ -93,6 +94,11 @@ final class UpdateProductByAdminTest extends TestCase
         $this->clock->expects($this->once())
             ->method('now')
             ->willReturn($now);
+
+        $this->productRepository->expects($this->once())
+            ->method('findByTitle')
+            ->with(ProductTitle::fromString('New title'))
+            ->willReturn(null);
 
         $this->slugGenerator->expects($this->once())
             ->method('generate')
@@ -430,6 +436,11 @@ final class UpdateProductByAdminTest extends TestCase
             ->method('now')
             ->willReturn($now);
 
+        $this->productRepository->expects($this->once())
+            ->method('findByTitle')
+            ->with(ProductTitle::fromString('New title'))
+            ->willReturn(null);
+
         $this->slugGenerator->expects($this->once())
             ->method('generate')
             ->with('New title')
@@ -454,6 +465,120 @@ final class UpdateProductByAdminTest extends TestCase
         $this->expectExceptionMessage('Category not found.');
 
         $this->handler->handle($command);
+    }
+
+    public function testHandleThrowsWhenTitleBelongsToAnotherProduct(): void
+    {
+        $now = new DateTimeImmutable('2024-02-01 12:00:00');
+        $productId = ProductId::fromString(self::PRODUCT_ID);
+        $categoryId = CategoryId::fromString(self::CATEGORY_ID);
+        $product = $this->createProduct($productId, $categoryId);
+        $otherProduct = $this->createProduct(
+            ProductId::fromString('550e8400-e29b-41d4-a716-446655440009'),
+            $categoryId,
+        );
+
+        $command = new UpdateProductByAdminCommand(
+            productId: $productId,
+            title: 'New title',
+            subtitle: null,
+            description: null,
+            price: null,
+            categoryId: null,
+        );
+
+        $this->productRepository->expects($this->once())
+            ->method('findById')
+            ->with($productId)
+            ->willReturn($product);
+
+        $this->clock->expects($this->once())
+            ->method('now')
+            ->willReturn($now);
+
+        $this->productRepository->expects($this->once())
+            ->method('findByTitle')
+            ->with(ProductTitle::fromString('New title'))
+            ->willReturn($otherProduct);
+
+        $this->slugGenerator->expects($this->never())
+            ->method('generate');
+
+        $this->productRepository->expects($this->never())
+            ->method('save');
+
+        $this->categoryRepository->expects($this->never())
+            ->method('findById');
+
+        $this->categoryRepository->expects($this->never())
+            ->method('save');
+
+        $this->transactional->expects($this->once())
+            ->method('transactional')
+            ->willReturnCallback(function (callable $callback) {
+                return $callback();
+            });
+
+        $this->expectException(ProductTitleAlreadyUsedException::class);
+
+        $this->handler->handle($command);
+    }
+
+    public function testHandleSucceedsWhenTitleBelongsToSameProduct(): void
+    {
+        $now = new DateTimeImmutable('2024-02-01 12:00:00');
+        $productId = ProductId::fromString(self::PRODUCT_ID);
+        $categoryId = CategoryId::fromString(self::CATEGORY_ID);
+        $product = $this->createProduct($productId, $categoryId);
+        $category = $this->createCategory($categoryId, 'Category', 'category');
+
+        $command = new UpdateProductByAdminCommand(
+            productId: $productId,
+            title: 'New title',
+            subtitle: null,
+            description: null,
+            price: null,
+            categoryId: null,
+        );
+
+        $this->productRepository->expects($this->once())
+            ->method('findById')
+            ->with($productId)
+            ->willReturn($product);
+
+        $this->clock->expects($this->once())
+            ->method('now')
+            ->willReturn($now);
+
+        $this->productRepository->expects($this->once())
+            ->method('findByTitle')
+            ->with(ProductTitle::fromString('New title'))
+            ->willReturn($product);
+
+        $this->slugGenerator->expects($this->once())
+            ->method('generate')
+            ->with('New title')
+            ->willReturn(Slug::fromString('new-title'));
+
+        $this->productRepository->expects($this->once())
+            ->method('save')
+            ->with($product);
+
+        $this->categoryRepository->expects($this->once())
+            ->method('findById')
+            ->with($categoryId)
+            ->willReturn($category);
+
+        $this->transactional->expects($this->once())
+            ->method('transactional')
+            ->willReturnCallback(function (callable $callback) {
+                return $callback();
+            });
+
+        $output = $this->handler->handle($command);
+
+        $this->assertSame($category, $output->productItem->category);
+        $this->assertSame('New title', $product->getTitle()->toString());
     }
 
     private function createProduct(ProductId $productId, CategoryId $categoryId): Product

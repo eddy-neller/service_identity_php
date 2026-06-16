@@ -269,8 +269,8 @@ final class ProductTest extends BaseTest
             ],
             [
                 'class' => ClientExceptionInterface::class,
-                'code' => Response::HTTP_UNPROCESSABLE_ENTITY,
-                'message' => 'title: A product already has this title.',
+                'code' => Response::HTTP_CONFLICT,
+                'message' => 'Product title is already used.',
             ],
         ];
 
