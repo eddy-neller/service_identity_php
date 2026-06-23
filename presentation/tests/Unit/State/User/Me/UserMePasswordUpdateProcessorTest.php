@@ -140,7 +140,6 @@ final class UserMePasswordUpdateProcessorTest extends KernelTestCase
         $input = new UserMePasswordUpdateInput();
         $input->currentPassword = 'current_password';
         $input->newPassword = 'NewPassword123!';
-        $input->confirmNewPassword = 'NewPassword123!';
 
         return $input;
     }

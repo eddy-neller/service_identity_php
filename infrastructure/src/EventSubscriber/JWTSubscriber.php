@@ -8,7 +8,7 @@ use App\Application\Shared\CQRS\Command\CommandBusInterface;
 use App\Application\User\Port\UserRepositoryInterface;
 use App\Application\User\UseCase\Command\RegisterWrongPasswordAttempt\RegisterWrongPasswordAttemptCommand;
 use App\Application\User\UseCase\Command\ResetWrongPasswordAttempts\ResetWrongPasswordAttemptsCommand;
-use App\Domain\User\Identity\ValueObject\EmailAddress;
+use App\Domain\User\ValueObject\EmailAddress;
 use App\Infrastructure\Entity\User\User;
 use App\Infrastructure\Service\InfoCodes;
 use DateTimeImmutable;

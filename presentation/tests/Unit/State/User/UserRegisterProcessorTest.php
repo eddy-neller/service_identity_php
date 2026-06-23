@@ -9,12 +9,12 @@ use App\Application\Shared\CQRS\Command\CommandBusInterface;
 use App\Application\User\Port\AvatarUrlResolverInterface;
 use App\Application\User\UseCase\Command\RegisterUser\RegisterUserCommand;
 use App\Application\User\UseCase\Command\RegisterUser\RegisterUserOutput;
-use App\Domain\User\Identity\ValueObject\EmailAddress;
-use App\Domain\User\Identity\ValueObject\UserId;
-use App\Domain\User\Identity\ValueObject\Username;
 use App\Domain\User\Model\User as DomainUser;
-use App\Domain\User\Preference\ValueObject\Preferences;
-use App\Domain\User\Security\ValueObject\HashedPassword;
+use App\Domain\User\ValueObject\EmailAddress;
+use App\Domain\User\ValueObject\Preferences;
+use App\Domain\User\ValueObject\Security\HashedPassword;
+use App\Domain\User\ValueObject\UserId;
+use App\Domain\User\ValueObject\Username;
 use App\Presentation\Shared\State\PresentationErrorCode;
 use App\Presentation\User\ApiResource\UserResource;
 use App\Presentation\User\Dto\Partial\UserPreferences;
@@ -146,7 +146,6 @@ final class UserRegisterProcessorTest extends KernelTestCase
         $input->email = 'test@example.com';
         $input->username = 'testuser';
         $input->password = 'TestPassword123!';
-        $input->confirmPassword = 'TestPassword123!';
 
         $preferences = new UserPreferences();
         $preferences->lang = 'fr';

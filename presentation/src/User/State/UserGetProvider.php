@@ -8,7 +8,7 @@ use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProviderInterface;
 use App\Application\Shared\CQRS\Query\QueryBusInterface;
 use App\Application\User\UseCase\Query\DisplayUser\DisplayUserQuery;
-use App\Domain\User\Identity\ValueObject\UserId;
+use App\Domain\User\ValueObject\UserId;
 use App\Presentation\Shared\State\PresentationErrorCode;
 use App\Presentation\User\ApiResource\UserResource;
 use App\Presentation\User\Presenter\UserResourcePresenter;

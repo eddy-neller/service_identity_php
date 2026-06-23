@@ -13,12 +13,6 @@ final class UserRegisterInput
     #[Assert\Sequentially([
         new Assert\NotBlank(),
         new Assert\Email(),
-        new Assert\Length(
-            min: 4,
-            max: 100,
-            minMessage: 'The email must be at least {{ limit }} characters long.',
-            maxMessage: 'The email must be at most {{ limit }} characters long.'
-        ),
     ])]
     #[Groups(groups: ['user:item:write'])]
     public string $email;
@@ -42,14 +36,6 @@ final class UserRegisterInput
     )]
     #[Groups(groups: ['user:item:write'])]
     public string $password;
-
-    #[Assert\NotBlank]
-    #[Assert\EqualTo(
-        propertyPath: 'password',
-        message: 'The password confirmation does not match.'
-    )]
-    #[Groups(groups: ['user:item:write'])]
-    public string $confirmPassword;
 
     #[Assert\Valid]
     #[Assert\NotBlank]

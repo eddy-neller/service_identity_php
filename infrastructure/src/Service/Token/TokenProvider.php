@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Infrastructure\Service\Token;
 
 use App\Application\User\Port\TokenProviderInterface;
-use App\Domain\User\Identity\ValueObject\EmailAddress;
+use App\Domain\User\ValueObject\EmailAddress;
 use App\Infrastructure\Service\User\TokenManager;
 
 final readonly class TokenProvider implements TokenProviderInterface

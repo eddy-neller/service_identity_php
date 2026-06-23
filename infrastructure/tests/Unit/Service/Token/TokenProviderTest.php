@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Infrastructure\Tests\Unit\Service\Token;
 
-use App\Domain\User\Identity\ValueObject\EmailAddress;
+use App\Domain\User\ValueObject\EmailAddress;
 use App\Infrastructure\Service\Token\TokenProvider;
 use App\Infrastructure\Service\User\TokenManager;
 use PHPUnit\Framework\MockObject\MockObject;

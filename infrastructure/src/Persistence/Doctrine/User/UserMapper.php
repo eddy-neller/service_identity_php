@@ -4,17 +4,17 @@ declare(strict_types=1);
 
 namespace App\Infrastructure\Persistence\Doctrine\User;
 
-use App\Domain\User\Identity\ValueObject\EmailAddress;
-use App\Domain\User\Identity\ValueObject\Firstname;
-use App\Domain\User\Identity\ValueObject\Lastname;
-use App\Domain\User\Identity\ValueObject\UserId;
-use App\Domain\User\Identity\ValueObject\Username;
 use App\Domain\User\Model\User as DomainUser;
-use App\Domain\User\Preference\ValueObject\Preferences;
-use App\Domain\User\Profile\ValueObject\Avatar;
-use App\Domain\User\Security\ValueObject\HashedPassword;
-use App\Domain\User\Security\ValueObject\RoleSet;
-use App\Domain\User\Security\ValueObject\UserStatus;
+use App\Domain\User\ValueObject\Avatar;
+use App\Domain\User\ValueObject\EmailAddress;
+use App\Domain\User\ValueObject\Firstname;
+use App\Domain\User\ValueObject\Lastname;
+use App\Domain\User\ValueObject\Preferences;
+use App\Domain\User\ValueObject\Security\HashedPassword;
+use App\Domain\User\ValueObject\Security\RoleSet;
+use App\Domain\User\ValueObject\Security\UserStatus;
+use App\Domain\User\ValueObject\UserId;
+use App\Domain\User\ValueObject\Username;
 use App\Infrastructure\Entity\User\User as DoctrineUser;
 use Ramsey\Uuid\Uuid;
 

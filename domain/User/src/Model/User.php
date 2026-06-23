@@ -21,19 +21,19 @@ use App\Domain\User\Exception\RateLimit\ActivationLimitReachedException;
 use App\Domain\User\Exception\RateLimit\ResetPasswordLimitReachedException;
 use App\Domain\User\Exception\Security\UserLockedException;
 use App\Domain\User\Exception\UserDomainException;
-use App\Domain\User\Identity\ValueObject\EmailAddress;
-use App\Domain\User\Identity\ValueObject\Firstname;
-use App\Domain\User\Identity\ValueObject\Lastname;
-use App\Domain\User\Identity\ValueObject\UserId;
-use App\Domain\User\Identity\ValueObject\Username;
-use App\Domain\User\Preference\ValueObject\Preferences;
-use App\Domain\User\Profile\ValueObject\Avatar;
-use App\Domain\User\Security\ValueObject\ActiveEmail;
-use App\Domain\User\Security\ValueObject\HashedPassword;
-use App\Domain\User\Security\ValueObject\ResetPassword;
-use App\Domain\User\Security\ValueObject\RoleSet;
-use App\Domain\User\Security\ValueObject\Security;
-use App\Domain\User\Security\ValueObject\UserStatus;
+use App\Domain\User\ValueObject\Avatar;
+use App\Domain\User\ValueObject\EmailAddress;
+use App\Domain\User\ValueObject\Firstname;
+use App\Domain\User\ValueObject\Lastname;
+use App\Domain\User\ValueObject\Preferences;
+use App\Domain\User\ValueObject\Security\ActiveEmail;
+use App\Domain\User\ValueObject\Security\HashedPassword;
+use App\Domain\User\ValueObject\Security\ResetPassword;
+use App\Domain\User\ValueObject\Security\RoleSet;
+use App\Domain\User\ValueObject\Security\Security;
+use App\Domain\User\ValueObject\Security\UserStatus;
+use App\Domain\User\ValueObject\UserId;
+use App\Domain\User\ValueObject\Username;
 use DateTimeImmutable;
 
 final class User
@@ -211,11 +211,6 @@ final class User
         ));
     }
 
-    public function clearActivation(): void
-    {
-        $this->activeEmail = new ActiveEmail();
-    }
-
     public function activate(string $token, DateTimeImmutable $now): void
     {
         $this->assertNotLocked();
@@ -228,6 +223,11 @@ final class User
             userId: $this->id,
             occurredOn: $now,
         ));
+    }
+
+    public function clearActivation(): void
+    {
+        $this->activeEmail = new ActiveEmail();
     }
 
     public function requestPasswordReset(string $token, DateTimeImmutable $expiresAt, DateTimeImmutable $now): void

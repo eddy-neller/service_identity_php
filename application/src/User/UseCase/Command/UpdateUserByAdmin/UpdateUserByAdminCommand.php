@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Application\User\UseCase\Command\UpdateUserByAdmin;
 
 use App\Application\Shared\CQRS\Command\CommandInterface;
-use App\Domain\User\Identity\ValueObject\UserId;
+use App\Domain\User\ValueObject\UserId;
 
 final readonly class UpdateUserByAdminCommand implements CommandInterface
 {

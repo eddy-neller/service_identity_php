@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Application\User\UseCase\Query\DisplayUser;
 
 use App\Application\Shared\CQRS\Query\CacheableQueryInterface;
-use App\Domain\User\Identity\ValueObject\UserId;
+use App\Domain\User\ValueObject\UserId;
 
 final readonly class DisplayUserQuery implements CacheableQueryInterface
 {

@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Domain\User\Tests\Unit\ValueObject\Security;
 
 use App\Domain\User\Exception\InvalidRoleException;
-use App\Domain\User\Security\ValueObject\RoleSet;
+use App\Domain\User\ValueObject\Security\RoleSet;
 use PHPUnit\Framework\TestCase;
 
 final class RoleSetTest extends TestCase

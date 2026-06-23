@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Infrastructure\Service\Hasher;
 
 use App\Application\User\Port\PasswordHasherInterface;
-use App\Domain\User\Security\ValueObject\HashedPassword;
+use App\Domain\User\ValueObject\Security\HashedPassword;
 use App\Infrastructure\Entity\User\User;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 

@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Presentation\User\Dto;
 
-use App\Domain\User\Security\ValueObject\RoleSet;
-use App\Domain\User\Security\ValueObject\UserStatus;
+use App\Domain\User\ValueObject\Security\RoleSet;
+use App\Domain\User\ValueObject\Security\UserStatus;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
 
@@ -14,12 +14,6 @@ final class UserPostInput
     #[Assert\Sequentially([
         new Assert\NotBlank(),
         new Assert\Email(),
-        new Assert\Length(
-            min: 6,
-            max: 100,
-            minMessage: 'The email must be at least {{ limit }} characters long.',
-            maxMessage: 'The email must be at most {{ limit }} characters long.'
-        ),
     ])]
     #[Groups(groups: ['user:admin'])]
     public string $email;

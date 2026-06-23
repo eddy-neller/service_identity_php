@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace App\Domain\User\Tests\Unit\ValueObject\Identity;
+namespace App\Domain\User\Tests\Unit\ValueObject;
 
 use App\Domain\User\Exception\InvalidEmailAddressException;
-use App\Domain\User\Identity\ValueObject\EmailAddress;
+use App\Domain\User\ValueObject\EmailAddress;
 use PHPUnit\Framework\TestCase;
 
 final class EmailAddressTest extends TestCase

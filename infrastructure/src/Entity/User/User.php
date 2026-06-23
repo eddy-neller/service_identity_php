@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace App\Infrastructure\Entity\User;
 
-use App\Domain\User\Security\ValueObject\ActiveEmail;
-use App\Domain\User\Security\ValueObject\ResetPassword;
-use App\Domain\User\Security\ValueObject\RoleSet;
-use App\Domain\User\Security\ValueObject\Security;
-use App\Domain\User\Security\ValueObject\UserStatus;
+use App\Domain\User\ValueObject\Security\ActiveEmail;
+use App\Domain\User\ValueObject\Security\ResetPassword;
+use App\Domain\User\ValueObject\Security\RoleSet;
+use App\Domain\User\ValueObject\Security\Security;
+use App\Domain\User\ValueObject\Security\UserStatus;
 use App\Entity\Shop\Order;
 use App\Infrastructure\Persistence\Doctrine\User\UserRepository;
 use DateTimeImmutable;

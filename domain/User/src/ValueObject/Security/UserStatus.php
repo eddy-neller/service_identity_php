@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Domain\User\Security\ValueObject;
+namespace App\Domain\User\ValueObject\Security;
 
 final class UserStatus
 {

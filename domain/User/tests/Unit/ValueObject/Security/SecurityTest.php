@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Domain\User\Tests\Unit\ValueObject\Security;
 
-use App\Domain\User\Security\ValueObject\Security;
+use App\Domain\User\ValueObject\Security\Security;
 use PHPUnit\Framework\TestCase;
 
 final class SecurityTest extends TestCase

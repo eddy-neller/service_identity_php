@@ -20,12 +20,4 @@ final class PasswordResetConfirmInput
     )]
     #[Groups(groups: ['user:item:users-password-reset-confirm'])]
     public string $newPassword;
-
-    #[Assert\NotBlank]
-    #[Assert\EqualTo(
-        propertyPath: 'newPassword',
-        message: 'The password confirmation does not match.'
-    )]
-    #[Groups(groups: ['user:item:users-password-reset-confirm'])]
-    public string $confirmNewPassword;
 }

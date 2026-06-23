@@ -103,7 +103,6 @@ final class PasswordResetConfirmProcessorTest extends KernelTestCase
         $input = new PasswordResetConfirmInput();
         $input->token = 'valid-reset-token-123';
         $input->newPassword = 'NewPassword123!';
-        $input->confirmNewPassword = 'NewPassword123!';
 
         return $input;
     }

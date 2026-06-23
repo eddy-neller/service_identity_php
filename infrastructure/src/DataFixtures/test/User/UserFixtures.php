@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Infrastructure\DataFixtures\test\User;
 
-use App\Domain\User\Security\ValueObject\ActiveEmail;
-use App\Domain\User\Security\ValueObject\ResetPassword;
-use App\Domain\User\Security\ValueObject\RoleSet;
-use App\Domain\User\Security\ValueObject\UserStatus;
+use App\Domain\User\ValueObject\Security\ActiveEmail;
+use App\Domain\User\ValueObject\Security\ResetPassword;
+use App\Domain\User\ValueObject\Security\RoleSet;
+use App\Domain\User\ValueObject\Security\UserStatus;
 use App\Infrastructure\DataFixtures\DataFixturesTrait;
 use App\Infrastructure\Entity\User\User;
 use DateTimeImmutable;

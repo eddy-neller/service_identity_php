@@ -2,15 +2,15 @@
 
 declare(strict_types=1);
 
-namespace App\Domain\User\Identity\ValueObject;
+namespace App\Domain\User\ValueObject;
 
-use App\Domain\User\Exception\InvalidFirstnameException;
+use App\Domain\User\Exception\InvalidUsernameException;
 
-final readonly class Firstname
+final readonly class Username
 {
     private const int MIN_LENGTH = 2;
 
-    private const int MAX_LENGTH = 50;
+    private const int MAX_LENGTH = 20;
 
     private string $value;
 
@@ -19,16 +19,16 @@ final readonly class Firstname
         $trimmed = trim($value);
 
         if (empty($trimmed)) {
-            throw InvalidFirstnameException::empty();
+            throw InvalidUsernameException::empty();
         }
 
         $length = mb_strlen($trimmed);
         if ($length < self::MIN_LENGTH) {
-            throw InvalidFirstnameException::tooShort(self::MIN_LENGTH);
+            throw InvalidUsernameException::tooShort(self::MIN_LENGTH);
         }
 
         if ($length > self::MAX_LENGTH) {
-            throw InvalidFirstnameException::tooLong(self::MAX_LENGTH);
+            throw InvalidUsernameException::tooLong(self::MAX_LENGTH);
         }
 
         $this->value = $trimmed;

@@ -6,7 +6,7 @@ namespace App\Infrastructure\Tests\Unit\Service\User;
 
 use App\Application\Shared\Port\FileInterface;
 use App\Domain\User\Exception\UserNotFoundException;
-use App\Domain\User\Identity\ValueObject\UserId;
+use App\Domain\User\ValueObject\UserId;
 use App\Infrastructure\Entity\User\User as DoctrineUser;
 use App\Infrastructure\Service\User\AvatarUploader;
 use Doctrine\ORM\EntityManagerInterface;

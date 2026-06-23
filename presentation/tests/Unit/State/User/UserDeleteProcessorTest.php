@@ -7,7 +7,7 @@ namespace App\Presentation\Tests\Unit\State\User;
 use ApiPlatform\Metadata\Operation;
 use App\Application\Shared\CQRS\Command\CommandBusInterface;
 use App\Application\User\UseCase\Command\DeleteUserByAdmin\DeleteUserByAdminCommand;
-use App\Domain\User\Identity\ValueObject\UserId;
+use App\Domain\User\ValueObject\UserId;
 use App\Presentation\Shared\State\PresentationErrorCode;
 use App\Presentation\User\State\UserDeleteProcessor;
 use LogicException;

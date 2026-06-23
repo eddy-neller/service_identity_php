@@ -15,7 +15,7 @@ use ApiPlatform\Metadata\GetCollection;
 use ApiPlatform\Metadata\Patch;
 use ApiPlatform\Metadata\Post;
 use ApiPlatform\OpenApi\Model;
-use App\Domain\User\Security\ValueObject\RoleSet;
+use App\Domain\User\ValueObject\Security\RoleSet;
 use App\Infrastructure\Entity\Shop\Category;
 use App\Presentation\RouteRequirements;
 use App\Presentation\Shop\Dto\Catalog\Category\CategoryPatchInput;

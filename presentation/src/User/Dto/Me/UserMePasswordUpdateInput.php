@@ -24,12 +24,4 @@ final class UserMePasswordUpdateInput
     )]
     #[Groups(groups: ['user:item:write'])]
     public ?string $newPassword = null;
-
-    #[Assert\NotBlank]
-    #[Assert\EqualTo(
-        propertyPath: 'newPassword',
-        message: 'The password confirmation does not match.'
-    )]
-    #[Groups(groups: ['user:item:write'])]
-    public ?string $confirmNewPassword = null;
 }

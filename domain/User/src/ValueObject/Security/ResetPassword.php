@@ -2,42 +2,25 @@
 
 declare(strict_types=1);
 
-namespace App\Domain\User\Security\ValueObject;
+namespace App\Domain\User\ValueObject\Security;
 
-use DateTime;
-use DateTimeInterface;
-use Exception;
 use JsonSerializable;
-use RuntimeException;
 
-final readonly class ActiveEmail implements JsonSerializable
+final readonly class ResetPassword implements JsonSerializable
 {
     public function __construct(
         private int $mailSent = 0,
         private ?string $token = null,
         private ?int $tokenTtl = null,
-        private ?DateTimeInterface $lastAttempt = null,
     ) {
     }
 
     public static function fromArray(array $data): self
     {
-        $lastAttempt = null;
-        if (isset($data['lastAttempt'])) {
-            try {
-                $lastAttempt = $data['lastAttempt'] instanceof DateTimeInterface
-                    ? $data['lastAttempt']
-                    : new DateTime($data['lastAttempt']);
-            } catch (Exception) {
-                throw new RuntimeException('Error on lastAttempt');
-            }
-        }
-
         return new self(
             mailSent: (int) ($data['mailSent'] ?? 0),
             token: $data['token'] ?? null,
             tokenTtl: $data['tokenTtl'] ?? null,
-            lastAttempt: $lastAttempt,
         );
     }
 
@@ -47,7 +30,6 @@ final readonly class ActiveEmail implements JsonSerializable
             'mailSent' => $this->mailSent,
             'token' => $this->token,
             'tokenTtl' => $this->tokenTtl,
-            'lastAttempt' => $this->lastAttempt?->format('c'),
         ];
     }
 
@@ -71,18 +53,12 @@ final readonly class ActiveEmail implements JsonSerializable
         return $this->tokenTtl;
     }
 
-    public function getLastAttempt(): ?DateTimeInterface
-    {
-        return $this->lastAttempt;
-    }
-
     public function withMailSent(int $mailSent): self
     {
         return new self(
             mailSent: $mailSent,
             token: $this->token,
             tokenTtl: $this->tokenTtl,
-            lastAttempt: $this->lastAttempt,
         );
     }
 
@@ -92,7 +68,6 @@ final readonly class ActiveEmail implements JsonSerializable
             mailSent: $this->mailSent,
             token: $token,
             tokenTtl: $this->tokenTtl,
-            lastAttempt: $this->lastAttempt,
         );
     }
 
@@ -102,17 +77,6 @@ final readonly class ActiveEmail implements JsonSerializable
             mailSent: $this->mailSent,
             token: $this->token,
             tokenTtl: $tokenTtl,
-            lastAttempt: $this->lastAttempt,
-        );
-    }
-
-    public function withLastAttempt(?DateTimeInterface $lastAttempt): self
-    {
-        return new self(
-            mailSent: $this->mailSent,
-            token: $this->token,
-            tokenTtl: $this->tokenTtl,
-            lastAttempt: $lastAttempt,
         );
     }
 }

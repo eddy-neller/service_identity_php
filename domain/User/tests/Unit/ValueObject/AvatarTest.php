@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace App\Domain\User\Tests\Unit\ValueObject\Profile;
+namespace App\Domain\User\Tests\Unit\ValueObject;
 
-use App\Domain\User\Profile\ValueObject\Avatar;
+use App\Domain\User\ValueObject\Avatar;
 use PHPUnit\Framework\TestCase;
 
 final class AvatarTest extends TestCase

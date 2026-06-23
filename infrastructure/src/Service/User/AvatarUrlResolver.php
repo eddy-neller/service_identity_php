@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Infrastructure\Service\User;
 
 use App\Application\User\Port\AvatarUrlResolverInterface;
-use App\Domain\User\Profile\ValueObject\Avatar;
+use App\Domain\User\ValueObject\Avatar;
 
 final class AvatarUrlResolver implements AvatarUrlResolverInterface
 {

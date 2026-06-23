@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace App\Domain\User\Tests\Unit\ValueObject\Preference;
+namespace App\Domain\User\Tests\Unit\ValueObject;
 
-use App\Domain\User\Preference\ValueObject\Preferences;
+use App\Domain\User\ValueObject\Preferences;
 use PHPUnit\Framework\TestCase;
 
 final class PreferencesTest extends TestCase

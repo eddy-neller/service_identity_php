@@ -13,12 +13,12 @@ use App\Application\User\UseCase\Command\CreateUserByAdmin\CreateUserByAdminComm
 use App\Application\User\UseCase\Command\CreateUserByAdmin\CreateUserByAdminCommandHandler;
 use App\Domain\User\Exception\Uniqueness\EmailAlreadyUsedException;
 use App\Domain\User\Exception\Uniqueness\UsernameAlreadyUsedException;
-use App\Domain\User\Identity\ValueObject\EmailAddress;
-use App\Domain\User\Identity\ValueObject\UserId;
-use App\Domain\User\Identity\ValueObject\Username;
 use App\Domain\User\Model\User;
-use App\Domain\User\Security\ValueObject\HashedPassword;
-use App\Domain\User\Security\ValueObject\UserStatus;
+use App\Domain\User\ValueObject\EmailAddress;
+use App\Domain\User\ValueObject\Security\HashedPassword;
+use App\Domain\User\ValueObject\Security\UserStatus;
+use App\Domain\User\ValueObject\UserId;
+use App\Domain\User\ValueObject\Username;
 use DateTimeImmutable;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;

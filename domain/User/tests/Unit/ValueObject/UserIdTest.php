@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace App\Domain\User\Tests\Unit\ValueObject\Identity;
+namespace App\Domain\User\Tests\Unit\ValueObject;
 
-use App\Domain\User\Identity\ValueObject\UserId;
+use App\Domain\User\ValueObject\UserId;
 use InvalidArgumentException;
 use PHPUnit\Framework\TestCase;
 

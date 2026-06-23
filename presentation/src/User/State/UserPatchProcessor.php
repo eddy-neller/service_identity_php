@@ -8,7 +8,7 @@ use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProcessorInterface;
 use App\Application\Shared\CQRS\Command\CommandBusInterface;
 use App\Application\User\UseCase\Command\UpdateUserByAdmin\UpdateUserByAdminCommand;
-use App\Domain\User\Identity\ValueObject\UserId;
+use App\Domain\User\ValueObject\UserId;
 use App\Presentation\Shared\State\PresentationErrorCode;
 use App\Presentation\User\ApiResource\UserResource;
 use App\Presentation\User\Dto\UserPatchInput;

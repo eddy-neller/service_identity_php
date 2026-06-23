@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Domain\User\Identity\ValueObject;
+namespace App\Domain\User\ValueObject;
 
 use App\Domain\SharedKernel\ValueObject\Uuid;
 

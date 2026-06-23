@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Domain\User\Profile\ValueObject;
+namespace App\Domain\User\ValueObject;
 
 final readonly class Avatar
 {

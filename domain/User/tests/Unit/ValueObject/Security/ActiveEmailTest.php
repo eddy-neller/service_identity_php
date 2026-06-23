@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Domain\User\Tests\Unit\ValueObject\Security;
 
-use App\Domain\User\Security\ValueObject\ActiveEmail;
+use App\Domain\User\ValueObject\Security\ActiveEmail;
 use DateTimeImmutable;
 use DateTimeInterface;
 use PHPUnit\Framework\TestCase;

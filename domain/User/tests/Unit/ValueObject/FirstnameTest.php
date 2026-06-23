@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace App\Domain\User\Tests\Unit\ValueObject\Identity;
+namespace App\Domain\User\Tests\Unit\ValueObject;
 
 use App\Domain\User\Exception\InvalidFirstnameException;
-use App\Domain\User\Identity\ValueObject\Firstname;
+use App\Domain\User\ValueObject\Firstname;
 use PHPUnit\Framework\TestCase;
 
 final class FirstnameTest extends TestCase

@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Presentation\Tests\Api\User;
 
-use App\Domain\User\Security\ValueObject\RoleSet;
-use App\Domain\User\Security\ValueObject\UserStatus;
+use App\Domain\User\ValueObject\Security\RoleSet;
+use App\Domain\User\ValueObject\Security\UserStatus;
 use App\Infrastructure\DataFixtures\test\User\UserFixtures;
 use App\Infrastructure\Entity\User\User;
 use App\Infrastructure\Service\InfoCodes;
@@ -294,7 +294,6 @@ final class UserTest extends BaseTest
                     'email' => $fakeData['email'],
                     'username' => $fakeData['username'],
                     'password' => $fakeData['password'],
-                    'confirmPassword' => $fakeData['password'],
                     'preferences' => [
                         'lang' => 'EN',
                     ],
@@ -338,7 +337,6 @@ final class UserTest extends BaseTest
                 'message' => 'email: This value should not be blank.
 username: This value should not be blank.
 password: This value should not be blank.
-confirmPassword: This value should not be blank.
 preferences: This value should not be blank.',
             ],
         ];
@@ -378,41 +376,6 @@ preferences: This value should not be blank.',
                 'class' => ClientExceptionInterface::class,
                 'code' => Response::HTTP_UNPROCESSABLE_ENTITY,
                 'message' => 'preferences.lang: The language must be exactly 2 characters long.',
-            ],
-        ];
-        yield 'Password confirmation mismatch' => [
-            [
-                'json' => [
-                    'email' => $faker->email(),
-                    'username' => $faker->userName(),
-                    'password' => 'ValidPassword123!',
-                    'confirmPassword' => 'DifferentPassword123!',
-                    'preferences' => [
-                        'lang' => 'EN',
-                    ],
-                ],
-            ],
-            [
-                'class' => ClientExceptionInterface::class,
-                'code' => Response::HTTP_UNPROCESSABLE_ENTITY,
-                'message' => 'confirmPassword: The password confirmation does not match.',
-            ],
-        ];
-        yield 'Missing confirm password' => [
-            [
-                'json' => [
-                    'email' => $faker->email(),
-                    'username' => $faker->userName(),
-                    'password' => 'ValidPassword123!',
-                    'preferences' => [
-                        'lang' => 'EN',
-                    ],
-                ],
-            ],
-            [
-                'class' => ClientExceptionInterface::class,
-                'code' => Response::HTTP_UNPROCESSABLE_ENTITY,
-                'message' => 'confirmPassword: This value should not be blank.',
             ],
         ];
     }
@@ -752,7 +715,6 @@ preferences: This value should not be blank.',
                 'json' => [
                     'token' => $encoded,
                     'newPassword' => 'NewPassword123!',
-                    'confirmNewPassword' => 'NewPassword123!',
                 ],
             ],
         ];
@@ -780,8 +742,7 @@ preferences: This value should not be blank.',
                 'class' => ClientExceptionInterface::class,
                 'code' => Response::HTTP_UNPROCESSABLE_ENTITY,
                 'message' => 'token: This value should not be blank.
-newPassword: This value should not be blank.
-confirmNewPassword: This value should not be blank.',
+newPassword: This value should not be blank.',
             ],
         ];
         yield 'Missing token' => [
@@ -826,14 +787,12 @@ confirmNewPassword: This value should not be blank.',
                 'json' => [
                     'token' => 'valid-reset-token-123',
                     'newPassword' => '',
-                    'confirmNewPassword' => '',
                 ],
             ],
             [
                 'class' => ClientExceptionInterface::class,
                 'code' => Response::HTTP_UNPROCESSABLE_ENTITY,
-                'message' => 'newPassword: This value should not be blank.
-confirmNewPassword: This value should not be blank.',
+                'message' => 'newPassword: This value should not be blank.',
             ],
         ];
         yield 'Password too short' => [
@@ -841,7 +800,6 @@ confirmNewPassword: This value should not be blank.',
                 'json' => [
                     'token' => 'valid-reset-token-123',
                     'newPassword' => 'Short1!',
-                    'confirmPassword' => 'Short1!',
                 ],
             ],
             [
@@ -855,7 +813,6 @@ confirmNewPassword: This value should not be blank.',
                 'json' => [
                     'token' => 'valid-reset-token-123',
                     'newPassword' => 'VeryLongPasswordThatExceedsTheMaximumLengthAllowed123!',
-                    'confirmPassword' => 'VeryLongPasswordThatExceedsTheMaximumLengthAllowed123!',
                 ],
             ],
             [
@@ -869,7 +826,6 @@ confirmNewPassword: This value should not be blank.',
                 'json' => [
                     'token' => 'valid-reset-token-123',
                     'newPassword' => 'Password123',
-                    'confirmPassword' => 'Password123',
                 ],
             ],
             [
@@ -883,7 +839,6 @@ confirmNewPassword: This value should not be blank.',
                 'json' => [
                     'token' => 'valid-reset-token-123',
                     'newPassword' => 'Password!@#',
-                    'confirmNewPassword' => 'Password!@#',
                 ],
             ],
             [
@@ -897,40 +852,12 @@ confirmNewPassword: This value should not be blank.',
                 'json' => [
                     'token' => 'valid-reset-token-123',
                     'newPassword' => 'password123!',
-                    'confirmNewPassword' => 'password123!',
                 ],
             ],
             [
                 'class' => ClientExceptionInterface::class,
                 'code' => Response::HTTP_UNPROCESSABLE_ENTITY,
                 'message' => 'newPassword: Invalid password.',
-            ],
-        ];
-        yield 'Password confirmation mismatch' => [
-            [
-                'json' => [
-                    'token' => 'valid-reset-token-123',
-                    'newPassword' => 'ValidPassword123!',
-                    'confirmNewPassword' => 'DifferentPassword123!',
-                ],
-            ],
-            [
-                'class' => ClientExceptionInterface::class,
-                'code' => Response::HTTP_UNPROCESSABLE_ENTITY,
-                'message' => 'confirmNewPassword: The password confirmation does not match.',
-            ],
-        ];
-        yield 'Missing confirm password' => [
-            [
-                'json' => [
-                    'token' => 'valid-reset-token-123',
-                    'newPassword' => 'ValidPassword123!',
-                ],
-            ],
-            [
-                'class' => ClientExceptionInterface::class,
-                'code' => Response::HTTP_UNPROCESSABLE_ENTITY,
-                'message' => 'confirmNewPassword: This value should not be blank.',
             ],
         ];
     }
@@ -1114,7 +1041,6 @@ confirmNewPassword: This value should not be blank.',
                 'json' => [
                     'currentPassword' => self::USER_DATA,
                     'newPassword' => 'NewPassword123!',
-                    'confirmNewPassword' => 'NewPassword123!',
                 ],
             ],
         ];
@@ -1146,7 +1072,6 @@ confirmNewPassword: This value should not be blank.',
                 'json' => [
                     'currentPassword' => $faker->password(),
                     'newPassword' => 'NewPassword123!',
-                    'confirmNewPassword' => 'NewPassword123!',
                 ],
             ],
             [
@@ -1163,7 +1088,6 @@ confirmNewPassword: This value should not be blank.',
                 ],
                 'json' => [
                     'newPassword' => 'NewPassword123!',
-                    'confirmNewPassword' => 'NewPassword123!',
                 ],
             ],
             [
@@ -1180,48 +1104,12 @@ confirmNewPassword: This value should not be blank.',
                 ],
                 'json' => [
                     'currentPassword' => self::USER_DATA,
-                    'confirmNewPassword' => 'NewPassword123!',
                 ],
             ],
             [
                 'class' => ClientExceptionInterface::class,
                 'code' => Response::HTTP_UNPROCESSABLE_ENTITY,
                 'message' => 'newPassword: This value should not be blank.',
-            ],
-        ];
-        yield 'Missing confirm password' => [
-            [
-                'auth_bearer' => $ownerToken,
-                'headers' => [
-                    'Content-Type' => 'application/merge-patch+json',
-                ],
-                'json' => [
-                    'currentPassword' => self::USER_DATA,
-                    'newPassword' => 'NewPassword123!',
-                ],
-            ],
-            [
-                'class' => ClientExceptionInterface::class,
-                'code' => Response::HTTP_UNPROCESSABLE_ENTITY,
-                'message' => 'confirmNewPassword: This value should not be blank.',
-            ],
-        ];
-        yield 'Password confirmation mismatch' => [
-            [
-                'auth_bearer' => $ownerToken,
-                'headers' => [
-                    'Content-Type' => 'application/merge-patch+json',
-                ],
-                'json' => [
-                    'currentPassword' => self::USER_DATA,
-                    'newPassword' => 'NewPassword123!',
-                    'confirmNewPassword' => 'DifferentPassword123!',
-                ],
-            ],
-            [
-                'class' => ClientExceptionInterface::class,
-                'code' => Response::HTTP_UNPROCESSABLE_ENTITY,
-                'message' => 'confirmNewPassword: The password confirmation does not match.',
             ],
         ];
         yield 'Same password as current' => [
@@ -1233,7 +1121,6 @@ confirmNewPassword: This value should not be blank.',
                 'json' => [
                     'currentPassword' => self::USER_DATA,
                     'newPassword' => self::USER_DATA,
-                    'confirmNewPassword' => self::USER_DATA,
                 ],
             ],
             [
@@ -1251,7 +1138,6 @@ confirmNewPassword: This value should not be blank.',
                 'json' => [
                     'currentPassword' => self::USER_DATA,
                     'newPassword' => 'weak',
-                    'confirmNewPassword' => 'weak',
                 ],
             ],
             [
@@ -1679,40 +1565,6 @@ status: This value should not be blank.',
                 'class' => ClientExceptionInterface::class,
                 'code' => Response::HTTP_UNPROCESSABLE_ENTITY,
                 'message' => 'email: This value is not a valid email address.',
-            ],
-        ];
-        yield 'Email too short' => [
-            [
-                'auth_bearer' => $adminToken,
-                'json' => [
-                    'email' => 'a@b.c',
-                    'username' => $faker->userName(),
-                    'password' => 'ValidPassword123!',
-                    'roles' => [RoleSet::ROLE_USER],
-                    'status' => UserStatus::ACTIVE,
-                ],
-            ],
-            [
-                'class' => ClientExceptionInterface::class,
-                'code' => Response::HTTP_UNPROCESSABLE_ENTITY,
-                'message' => 'email: The email must be at least 6 characters long.',
-            ],
-        ];
-        yield 'Email too long' => [
-            [
-                'auth_bearer' => $adminToken,
-                'json' => [
-                    'email' => str_repeat('a', 95) . '@example.com',
-                    'username' => $faker->userName(),
-                    'password' => 'ValidPassword123!',
-                    'roles' => [RoleSet::ROLE_USER],
-                    'status' => UserStatus::ACTIVE,
-                ],
-            ],
-            [
-                'class' => ClientExceptionInterface::class,
-                'code' => Response::HTTP_UNPROCESSABLE_ENTITY,
-                'message' => 'email: The email must be at most 100 characters long.',
             ],
         ];
         yield 'Username too short' => [

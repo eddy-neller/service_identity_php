@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Domain\User\Event;
 
 use App\Domain\SharedKernel\Event\DomainEventInterface;
-use App\Domain\User\Identity\ValueObject\UserId;
+use App\Domain\User\ValueObject\UserId;
 use DateTimeImmutable;
 
 final readonly class UserUpdatedByAdminEvent implements DomainEventInterface

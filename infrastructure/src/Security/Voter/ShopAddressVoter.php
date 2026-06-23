@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Infrastructure\Security\Voter;
 
-use App\Domain\User\Security\ValueObject\RoleSet;
+use App\Domain\User\ValueObject\Security\RoleSet;
 use App\Infrastructure\Entity\Shop\Address;
 use App\Infrastructure\Entity\User\User;
 use Doctrine\ORM\EntityManagerInterface;

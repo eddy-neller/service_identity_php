@@ -12,7 +12,7 @@ use App\Application\User\Port\UserRepositoryInterface;
 use App\Domain\Shop\Customer\Exception\CustomerAlreadyExistsException;
 use App\Domain\Shop\Customer\Model\Customer;
 use App\Domain\User\Exception\UserNotFoundException;
-use App\Domain\User\Identity\ValueObject\UserId;
+use App\Domain\User\ValueObject\UserId;
 
 final readonly class CreateCustomerCommandHandler implements CommandHandlerInterface
 {

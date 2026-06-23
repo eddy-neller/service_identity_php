@@ -9,7 +9,7 @@ use App\Application\Shared\Port\ClockInterface;
 use App\Application\Shared\Port\ConfigInterface;
 use App\Application\Shared\Port\TransactionalInterface;
 use App\Application\User\Port\UserRepositoryInterface;
-use App\Domain\User\Identity\ValueObject\EmailAddress;
+use App\Domain\User\ValueObject\EmailAddress;
 
 final readonly class RegisterWrongPasswordAttemptCommandHandler implements CommandHandlerInterface
 {

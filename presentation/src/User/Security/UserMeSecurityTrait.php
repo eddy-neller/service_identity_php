@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Presentation\User\Security;
 
 use ApiPlatform\Symfony\Security\Exception\AccessDeniedException;
-use App\Domain\User\Identity\ValueObject\UserId;
+use App\Domain\User\ValueObject\UserId;
 use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\Security\Core\User\UserInterface;
 
