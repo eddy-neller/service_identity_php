@@ -62,10 +62,10 @@ final class CreateCategoryByAdminTest extends TestCase
         $description = CategoryDescription::fromString($descriptionValue);
         $slug = Slug::fromString('my-category');
         $parent = $this->createCategory($parentId, 'Parent category', 'parent-category');
-        $categoryItem = new CategoryItem(
-            $this->createCategory($categoryId, $title, $slug->toString(), $description, $parentId),
-            $parent,
-            [],
+        $categoryItem = CategoryItem::fromCategory(
+            category: $this->createCategory($categoryId, $title, $slug->toString(), $description, $parentId),
+            parent: $parent,
+            children: [],
         );
 
         $command = new CreateCategoryByAdminCommand(
@@ -124,7 +124,7 @@ final class CreateCategoryByAdminTest extends TestCase
 
         $output = $this->handler->handle($command);
 
-        $this->assertSame($categoryItem, $output->categoryItem);
+        $this->assertSame($categoryItem, $output);
     }
 
     public function testHandleThrowsWhenParentNotFound(): void

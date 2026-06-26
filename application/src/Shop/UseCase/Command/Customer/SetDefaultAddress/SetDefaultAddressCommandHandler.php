@@ -20,7 +20,7 @@ final readonly class SetDefaultAddressCommandHandler implements CommandHandlerIn
     ) {
     }
 
-    public function handle(SetDefaultAddressCommand $command): SetDefaultAddressOutput
+    public function handle(SetDefaultAddressCommand $command): AddressItem
     {
         $address = $this->repository->findById($command->addressId);
 
@@ -29,7 +29,7 @@ final readonly class SetDefaultAddressCommandHandler implements CommandHandlerIn
         }
 
         if ($address->isDefault()) {
-            return new SetDefaultAddressOutput(new AddressItem($address));
+            return AddressItem::fromAddress($address);
         }
 
         $this->transactional->transactional(function () use ($address, $command): void {
@@ -40,6 +40,6 @@ final readonly class SetDefaultAddressCommandHandler implements CommandHandlerIn
             $this->repository->save($address);
         });
 
-        return new SetDefaultAddressOutput(new AddressItem($address));
+        return AddressItem::fromAddress($address);
     }
 }

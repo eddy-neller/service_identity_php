@@ -50,8 +50,7 @@ final class DisplayMyCustomerTest extends TestCase
 
         $output = $this->handler->handle(new DisplayMyCustomerQuery($userAccountId));
 
-        $this->assertSame(self::CUSTOMER_ID, $output->customerId->toString());
-        $this->assertSame(CustomerStatus::ACTIVE, $output->status->toInt());
+        $this->assertSame(self::CUSTOMER_ID, $output->id);
     }
 
     public function testHandleThrowsWhenCustomerMissing(): void

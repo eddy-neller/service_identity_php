@@ -58,7 +58,7 @@ final class CheckPasswordResetTokenTest extends TestCase
 
         $output = $this->handler->handle($query);
 
-        $this->assertTrue($output->isValid);
+        $this->assertTrue($output);
     }
 
     public function testHandleReturnsInvalidWhenUserNotFound(): void
@@ -80,7 +80,7 @@ final class CheckPasswordResetTokenTest extends TestCase
 
         $output = $this->handler->handle($query);
 
-        $this->assertFalse($output->isValid);
+        $this->assertFalse($output);
     }
 
     public function testHandleReturnsInvalidWhenEmailMismatch(): void
@@ -103,7 +103,7 @@ final class CheckPasswordResetTokenTest extends TestCase
 
         $output = $this->handler->handle($query);
 
-        $this->assertFalse($output->isValid);
+        $this->assertFalse($output);
     }
 
     public function testHandleReturnsInvalidWhenTokenExpired(): void
@@ -126,7 +126,7 @@ final class CheckPasswordResetTokenTest extends TestCase
 
         $output = $this->handler->handle($query);
 
-        $this->assertFalse($output->isValid);
+        $this->assertFalse($output);
     }
 
     public function testHandleReturnsInvalidWhenTokenMismatch(): void
@@ -149,7 +149,7 @@ final class CheckPasswordResetTokenTest extends TestCase
 
         $output = $this->handler->handle($query);
 
-        $this->assertFalse($output->isValid);
+        $this->assertFalse($output);
     }
 
     private function createUserWithResetToken(string $email, string $token, int $ttl): User

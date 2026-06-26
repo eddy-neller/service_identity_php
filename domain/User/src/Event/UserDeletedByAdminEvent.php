@@ -8,7 +8,7 @@ use App\Domain\SharedKernel\Event\DomainEventInterface;
 use App\Domain\User\ValueObject\UserId;
 use DateTimeImmutable;
 
-final readonly class UserDeletedEvent implements DomainEventInterface
+final readonly class UserDeletedByAdminEvent implements DomainEventInterface
 {
     public function __construct(
         private UserId $userId,

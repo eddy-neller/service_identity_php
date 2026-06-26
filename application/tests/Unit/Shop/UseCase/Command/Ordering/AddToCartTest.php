@@ -9,10 +9,10 @@ use App\Application\Shared\Port\TransactionalInterface;
 use App\Application\Shop\Port\CartRepositoryInterface;
 use App\Application\Shop\Port\ProductImageUrlResolverInterface;
 use App\Application\Shop\Port\ProductRepositoryInterface;
+use App\Application\Shop\ReadModel\Ordering\CartItem;
 use App\Application\Shop\Service\CartItemFactory;
 use App\Application\Shop\UseCase\Command\Ordering\AddToCart\AddToCartCommand;
 use App\Application\Shop\UseCase\Command\Ordering\AddToCart\AddToCartCommandHandler;
-use App\Application\Shop\UseCase\Command\Ordering\AddToCart\AddToCartOutput;
 use App\Domain\SharedKernel\ValueObject\Slug;
 use App\Domain\Shop\Catalog\Exception\ProductNotFoundException;
 use App\Domain\Shop\Catalog\Model\Product;
@@ -137,8 +137,8 @@ final class AddToCartTest extends TestCase
 
         $output = $this->handler->handle($command);
 
-        $this->assertInstanceOf(AddToCartOutput::class, $output);
-        $this->assertSame(self::CART_ID, $output->cart->id);
+        $this->assertInstanceOf(CartItem::class, $output);
+        $this->assertSame(self::CART_ID, $output->id);
     }
 
     public function testHandleAddsLineToExistingCart(): void

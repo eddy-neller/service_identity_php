@@ -6,6 +6,7 @@ namespace App\Application\Shop\UseCase\Query\Customer\DisplayListCustomer;
 
 use App\Application\Shared\CQRS\Query\QueryHandlerInterface;
 use App\Application\Shop\Port\CustomerRepositoryInterface;
+use App\Application\Shop\ReadModel\Customer\CustomerList;
 
 final readonly class DisplayListCustomerQueryHandler implements QueryHandlerInterface
 {
@@ -14,21 +15,15 @@ final readonly class DisplayListCustomerQueryHandler implements QueryHandlerInte
     ) {
     }
 
-    public function handle(DisplayListCustomerQuery $query): DisplayListCustomerOutput
+    public function handle(DisplayListCustomerQuery $query): CustomerList
     {
         $orderBy = [] !== $query->orderBy ? $query->orderBy : ['createdAt' => 'DESC'];
 
-        $list = $this->repository->list(
+        return $this->repository->list(
             filters: $query->filters,
             orderBy: $orderBy,
             page: $query->pagination->page,
             itemsPerPage: $query->pagination->itemsPerPage,
-        );
-
-        return new DisplayListCustomerOutput(
-            customers: $list->customers,
-            totalItems: $list->totalItems,
-            totalPages: $list->totalPages,
         );
     }
 }

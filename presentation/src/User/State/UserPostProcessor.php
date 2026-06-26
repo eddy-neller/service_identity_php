@@ -40,6 +40,6 @@ final readonly class UserPostProcessor implements ProcessorInterface
 
         $output = $this->commandBus->dispatch($command);
 
-        return $this->userResourcePresenter->toResource($output->user);
+        return $this->userResourcePresenter->toResource($output);
     }
 }

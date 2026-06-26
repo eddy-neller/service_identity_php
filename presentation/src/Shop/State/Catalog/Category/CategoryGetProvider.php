@@ -31,6 +31,6 @@ final readonly class CategoryGetProvider implements ProviderInterface
         $categoryId = CategoryId::fromString($uriVariables['id']);
         $output = $this->queryBus->dispatch(new DisplayCategoryQuery($categoryId));
 
-        return $this->categoryResourcePresenter->toResource($output->categoryItem);
+        return $this->categoryResourcePresenter->toResource($output);
     }
 }

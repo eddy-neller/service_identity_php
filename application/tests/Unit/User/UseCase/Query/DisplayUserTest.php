@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Application\Tests\Unit\User\UseCase\Query;
 
 use App\Application\User\Port\UserRepositoryInterface;
+use App\Application\User\ReadModel\UserItem;
 use App\Application\User\UseCase\Query\DisplayUser\DisplayUserQuery;
 use App\Application\User\UseCase\Query\DisplayUser\DisplayUserQueryHandler;
 use App\Domain\User\Exception\UserDomainException;
@@ -43,7 +44,10 @@ final class DisplayUserTest extends TestCase
 
         $output = $this->handler->handle($query);
 
-        $this->assertSame($user, $output->user);
+        $this->assertInstanceOf(UserItem::class, $output);
+        $this->assertSame($userId->toString(), $output->id);
+        $this->assertSame('testuser', $output->username);
+        $this->assertSame('test@example.com', $output->email);
     }
 
     public function testHandleThrowsExceptionWhenUserNotFound(): void

@@ -7,8 +7,8 @@ namespace App\Presentation\Tests\Unit\State\User;
 use ApiPlatform\Metadata\Operation;
 use App\Application\Shared\CQRS\Command\CommandBusInterface;
 use App\Application\User\Port\AvatarUrlResolverInterface;
+use App\Application\User\ReadModel\UserItem;
 use App\Application\User\UseCase\Command\UpdateUserByAdmin\UpdateUserByAdminCommand;
-use App\Application\User\UseCase\Command\UpdateUserByAdmin\UpdateUserByAdminOutput;
 use App\Domain\User\Model\User as DomainUser;
 use App\Domain\User\ValueObject\EmailAddress;
 use App\Domain\User\ValueObject\Preferences;
@@ -59,11 +59,11 @@ final class UserPatchProcessorTest extends KernelTestCase
         $userIdVO = UserId::fromString($userId);
         $uriVariables = ['id' => $userId];
         $domainUser = $this->createDomainUser();
-        $output = new UpdateUserByAdminOutput($domainUser);
+        $output = UserItem::fromUser($domainUser);
 
         $this->commandBus->expects($this->once())
             ->method('dispatch')
-            ->willReturnCallback(function ($command) use ($userIdVO, $input, $output): UpdateUserByAdminOutput {
+            ->willReturnCallback(function ($command) use ($userIdVO, $input, $output): UserItem {
                 $this->assertInstanceOf(UpdateUserByAdminCommand::class, $command);
                 $this->assertTrue($command->userId->equals($userIdVO));
                 $this->assertSame($input->email, $command->email);
@@ -160,7 +160,7 @@ final class UserPatchProcessorTest extends KernelTestCase
         $userId = Uuid::uuid4()->toString();
         $uriVariables = ['id' => $userId];
         $domainUser = $this->createDomainUser();
-        $output = new UpdateUserByAdminOutput($domainUser);
+        $output = UserItem::fromUser($domainUser);
 
         $this->commandBus->expects($this->once())
             ->method('dispatch')
@@ -181,7 +181,7 @@ final class UserPatchProcessorTest extends KernelTestCase
         $userId = Uuid::uuid4()->toString();
         $uriVariables = ['id' => $userId];
         $domainUser = $this->createDomainUser();
-        $output = new UpdateUserByAdminOutput($domainUser);
+        $output = UserItem::fromUser($domainUser);
 
         $this->commandBus->expects($this->once())
             ->method('dispatch')
@@ -204,7 +204,7 @@ final class UserPatchProcessorTest extends KernelTestCase
         $userId = Uuid::uuid4()->toString();
         $uriVariables = ['id' => $userId];
         $domainUser = $this->createDomainUser();
-        $output = new UpdateUserByAdminOutput($domainUser);
+        $output = UserItem::fromUser($domainUser);
 
         $this->commandBus->expects($this->once())
             ->method('dispatch')

@@ -18,7 +18,7 @@ use App\Domain\User\Event\PasswordResetRequestedEvent;
 use App\Domain\User\Event\UserActivatedEvent;
 use App\Domain\User\Event\UserAvatarUpdatedEvent;
 use App\Domain\User\Event\UserCreatedByAdminEvent;
-use App\Domain\User\Event\UserDeletedEvent;
+use App\Domain\User\Event\UserDeletedByAdminEvent;
 use App\Domain\User\Event\UserPasswordUpdatedEvent;
 use App\Domain\User\Event\UserRegisteredEvent;
 use App\Domain\User\Event\UserUpdatedByAdminEvent;
@@ -154,7 +154,7 @@ final readonly class UserEventSubscriber implements EventSubscriberInterface
         // - Invalider les sessions actives
     }
 
-    public function onUserDeleted(UserDeletedEvent $event): void
+    public function onUserDeleted(UserDeletedByAdminEvent $event): void
     {
         $this->logger->info('User deleted', [
             'user_id' => $event->getUserId()->toString(),

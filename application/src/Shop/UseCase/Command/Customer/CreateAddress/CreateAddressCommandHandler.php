@@ -22,9 +22,9 @@ final readonly class CreateAddressCommandHandler implements CommandHandlerInterf
     ) {
     }
 
-    public function handle(CreateAddressCommand $command): CreateAddressOutput
+    public function handle(CreateAddressCommand $command): AddressItem
     {
-        return $this->transactional->transactional(function () use ($command): CreateAddressOutput {
+        return $this->transactional->transactional(function () use ($command): AddressItem {
             if ($this->repository->countByOwnerForUpdate($command->ownerId) >= Customer::MAX_ADDRESSES) {
                 throw new AddressLimitReachedException();
             }
@@ -50,7 +50,7 @@ final readonly class CreateAddressCommandHandler implements CommandHandlerInterf
 
             $this->repository->save($address);
 
-            return new CreateAddressOutput(new AddressItem($address));
+            return AddressItem::fromAddress($address);
         });
     }
 }

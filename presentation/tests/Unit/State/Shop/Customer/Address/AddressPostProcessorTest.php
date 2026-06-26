@@ -8,14 +8,12 @@ use ApiPlatform\Metadata\Operation;
 use App\Application\Shared\CQRS\Command\CommandBusInterface;
 use App\Application\Shared\CQRS\Query\QueryBusInterface;
 use App\Application\Shop\ReadModel\Customer\AddressItem;
+use App\Application\Shop\ReadModel\Customer\CurrentCustomerItem;
 use App\Application\Shop\UseCase\Command\Customer\CreateAddress\CreateAddressCommand;
-use App\Application\Shop\UseCase\Command\Customer\CreateAddress\CreateAddressOutput;
-use App\Application\Shop\UseCase\Query\Customer\DisplayMyCustomer\DisplayMyCustomerOutput;
 use App\Application\Shop\UseCase\Query\Customer\DisplayMyCustomer\DisplayMyCustomerQuery;
 use App\Domain\Shop\Customer\Model\Address as DomainAddress;
 use App\Domain\Shop\Customer\ValueObject\AddressId;
 use App\Domain\Shop\Customer\ValueObject\CustomerId;
-use App\Domain\Shop\Customer\ValueObject\CustomerStatus;
 use App\Domain\Shop\Customer\ValueObject\UserAccountId;
 use App\Presentation\Shared\State\PresentationErrorCode;
 use App\Presentation\Shop\ApiResource\Customer\AddressResource;
@@ -74,14 +72,14 @@ final class AddressPostProcessorTest extends TestCase
         $input->phone = '+33 1 23 45 67 89';
 
         $customerId = CustomerId::fromString('550e8400-e29b-41d4-a716-446655440401');
-        $customerOutput = new DisplayMyCustomerOutput($customerId, CustomerStatus::active());
+        $customerOutput = new CurrentCustomerItem($customerId->toString());
 
         $address = $this->createAddress($customerId);
-        $output = new CreateAddressOutput(new AddressItem($address));
+        $output = AddressItem::fromAddress($address);
 
         $this->queryBus->expects($this->once())
             ->method('dispatch')
-            ->willReturnCallback(function ($query) use ($customerOutput): DisplayMyCustomerOutput {
+            ->willReturnCallback(function ($query) use ($customerOutput): CurrentCustomerItem {
                 $this->assertInstanceOf(DisplayMyCustomerQuery::class, $query);
                 $this->assertTrue($query->userAccountId->equals(UserAccountId::fromString('550e8400-e29b-41d4-a716-446655440400')));
 
@@ -90,7 +88,7 @@ final class AddressPostProcessorTest extends TestCase
 
         $this->commandBus->expects($this->once())
             ->method('dispatch')
-            ->willReturnCallback(function ($command) use ($input, $customerId, $output): CreateAddressOutput {
+            ->willReturnCallback(function ($command) use ($input, $customerId, $output): AddressItem {
                 $this->assertInstanceOf(CreateAddressCommand::class, $command);
                 $this->assertTrue($command->ownerId->equals($customerId));
                 $this->assertSame($input->name, $command->label);

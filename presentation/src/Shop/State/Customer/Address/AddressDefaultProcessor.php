@@ -35,6 +35,6 @@ final readonly class AddressDefaultProcessor implements ProcessorInterface
             ownerId: $this->customerResolver->resolve(),
         ));
 
-        return $this->presenter->toResource($output->addressItem->address);
+        return $this->presenter->toResource($output);
     }
 }

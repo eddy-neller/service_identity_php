@@ -34,6 +34,6 @@ final readonly class CurrentCustomerResolver
             UserAccountId::fromString($userId->toString()),
         ));
 
-        return $output->customerId;
+        return CustomerId::fromString($output->id);
     }
 }

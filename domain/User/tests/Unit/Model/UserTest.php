@@ -10,7 +10,7 @@ use App\Domain\User\Event\PasswordResetRequestedEvent;
 use App\Domain\User\Event\UserActivatedEvent;
 use App\Domain\User\Event\UserAvatarUpdatedEvent;
 use App\Domain\User\Event\UserCreatedByAdminEvent;
-use App\Domain\User\Event\UserDeletedEvent;
+use App\Domain\User\Event\UserDeletedByAdminEvent;
 use App\Domain\User\Event\UserPasswordUpdatedEvent;
 use App\Domain\User\Event\UserRegisteredEvent;
 use App\Domain\User\Event\UserUpdatedByAdminEvent;
@@ -300,11 +300,11 @@ final class UserTest extends TestCase
         $user = $this->createActiveUser();
         $now = new DateTimeImmutable();
 
-        $user->delete($now);
+        $user->deleteByAdmin($now);
 
         $events = $user->getDomainEvents();
         $this->assertCount(1, $events);
-        $this->assertInstanceOf(UserDeletedEvent::class, $events[0]);
+        $this->assertInstanceOf(UserDeletedByAdminEvent::class, $events[0]);
 
         $event = $events[0];
         $this->assertTrue($user->getId()->equals($event->getUserId()));

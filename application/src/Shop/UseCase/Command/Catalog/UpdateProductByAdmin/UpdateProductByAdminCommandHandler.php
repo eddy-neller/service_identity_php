@@ -32,7 +32,7 @@ final readonly class UpdateProductByAdminCommandHandler implements CommandHandle
     ) {
     }
 
-    public function handle(UpdateProductByAdminCommand $command): UpdateProductByAdminOutput
+    public function handle(UpdateProductByAdminCommand $command): ProductItem
     {
         $product = $this->productRepository->findById($command->productId);
 
@@ -42,7 +42,7 @@ final readonly class UpdateProductByAdminCommandHandler implements CommandHandle
 
         // Product uses explicit domain methods (rename/reprice/...) to keep invariants clear
         // instead of a generic update() like Address.
-        return $this->transactional->transactional(function () use ($command, $product): UpdateProductByAdminOutput {
+        return $this->transactional->transactional(function () use ($command, $product): ProductItem {
             $now = $this->clock->now();
 
             $this->applyTitleAndSubtitle($command, $product, $now);
@@ -64,7 +64,7 @@ final readonly class UpdateProductByAdminCommandHandler implements CommandHandle
                 throw new CategoryNotFoundException();
             }
 
-            return new UpdateProductByAdminOutput(new ProductItem($product, $category));
+            return ProductItem::fromProduct($product, $category);
         });
     }
 

@@ -19,7 +19,7 @@ final readonly class DisplayProductQueryHandler implements QueryHandlerInterface
     ) {
     }
 
-    public function handle(DisplayProductQuery $query): DisplayProductOutput
+    public function handle(DisplayProductQuery $query): ProductItem
     {
         $product = $this->productRepository->findById($query->productId);
 
@@ -32,6 +32,6 @@ final readonly class DisplayProductQueryHandler implements QueryHandlerInterface
             throw new CategoryNotFoundException();
         }
 
-        return new DisplayProductOutput(new ProductItem($product, $category));
+        return ProductItem::fromProduct($product, $category);
     }
 }

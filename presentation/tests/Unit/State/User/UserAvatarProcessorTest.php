@@ -8,8 +8,8 @@ use ApiPlatform\Metadata\Operation;
 use App\Application\Shared\CQRS\Command\CommandBusInterface;
 use App\Application\Shared\Port\FileInterface;
 use App\Application\User\Port\AvatarUrlResolverInterface;
+use App\Application\User\ReadModel\UserItem;
 use App\Application\User\UseCase\Command\UpdateAvatar\UpdateAvatarCommand;
-use App\Application\User\UseCase\Command\UpdateAvatar\UpdateAvatarOutput;
 use App\Domain\User\Model\User as DomainUser;
 use App\Domain\User\ValueObject\EmailAddress;
 use App\Domain\User\ValueObject\Preferences;
@@ -61,11 +61,11 @@ final class UserAvatarProcessorTest extends KernelTestCase
         $userIdVO = UserId::fromString($userId);
         $uriVariables = ['id' => $userId];
         $domainUser = $this->createDomainUser();
-        $output = new UpdateAvatarOutput($domainUser);
+        $output = UserItem::fromUser($domainUser);
 
         $this->commandBus->expects($this->once())
             ->method('dispatch')
-            ->willReturnCallback(function ($command) use ($userIdVO, $output): UpdateAvatarOutput {
+            ->willReturnCallback(function ($command) use ($userIdVO, $output): UserItem {
                 $this->assertInstanceOf(UpdateAvatarCommand::class, $command);
                 $this->assertTrue($command->userId->equals($userIdVO));
                 $this->assertInstanceOf(FileInterface::class, $command->avatarFile);

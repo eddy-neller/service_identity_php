@@ -33,6 +33,6 @@ final readonly class CustomerPostProcessor implements ProcessorInterface
 
         $output = $this->commandBus->dispatch(new CreateCustomerCommand($userAccountId));
 
-        return $this->customerResourcePresenter->toSummaryResource($output->customer);
+        return $this->customerResourcePresenter->toSummaryResource($output);
     }
 }

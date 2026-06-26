@@ -7,9 +7,9 @@ namespace App\Application\Tests\Unit\Shop\UseCase\Command\Customer;
 use App\Application\Shared\Port\ClockInterface;
 use App\Application\Shared\Port\TransactionalInterface;
 use App\Application\Shop\Port\CustomerRepositoryInterface;
+use App\Application\Shop\ReadModel\Customer\CustomerItem;
 use App\Application\Shop\UseCase\Command\Customer\CreateCustomer\CreateCustomerCommand;
 use App\Application\Shop\UseCase\Command\Customer\CreateCustomer\CreateCustomerCommandHandler;
-use App\Application\Shop\UseCase\Command\Customer\CreateCustomer\CreateCustomerOutput;
 use App\Application\User\Port\UserRepositoryInterface;
 use App\Domain\Shop\Customer\Exception\CustomerAlreadyExistsException;
 use App\Domain\Shop\Customer\Model\Customer;
@@ -101,10 +101,10 @@ final class CreateCustomerTest extends TestCase
 
         $result = $this->handler->handle($command);
 
-        $this->assertInstanceOf(CreateCustomerOutput::class, $result);
-        $this->assertTrue($result->customer->getId()->equals($customerId));
-        $this->assertTrue($result->customer->getUserAccountId()?->equals($accountId));
-        $this->assertTrue($result->customer->getStatus()->isActive());
+        $this->assertInstanceOf(CustomerItem::class, $result);
+        $this->assertSame($customerId->toString(), $result->id);
+        $this->assertSame($accountId->toString(), $result->userAccountId);
+        $this->assertSame(1, $result->status);
     }
 
     public function testHandleThrowsWhenCustomerAlreadyExistsForUser(): void

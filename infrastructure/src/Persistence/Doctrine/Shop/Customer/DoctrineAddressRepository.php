@@ -7,6 +7,7 @@ namespace App\Infrastructure\Persistence\Doctrine\Shop\Customer;
 use App\Application\Shared\Port\UuidGeneratorInterface;
 use App\Application\Shared\ReadModel\Pagination;
 use App\Application\Shop\Port\AddressRepositoryInterface;
+use App\Application\Shop\ReadModel\Customer\AddressItem;
 use App\Application\Shop\ReadModel\Customer\AddressList;
 use App\Domain\Shop\Customer\Model\Address as DomainAddress;
 use App\Domain\Shop\Customer\ValueObject\AddressId;
@@ -54,12 +55,12 @@ final readonly class DoctrineAddressRepository implements AddressRepositoryInter
         $addresses = [];
         foreach ($paginator as $entity) {
             if ($entity instanceof DoctrineAddress) {
-                $addresses[] = $this->mapper->toDomain($entity);
+                $addresses[] = AddressItem::fromAddress($this->mapper->toDomain($entity));
             }
         }
 
         return new AddressList(
-            addresses: $addresses,
+            items: $addresses,
             totalItems: $totalItems,
             totalPages: $totalPages,
         );

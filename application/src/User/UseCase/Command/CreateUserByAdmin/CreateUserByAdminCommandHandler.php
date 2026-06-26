@@ -10,6 +10,7 @@ use App\Application\Shared\Port\TransactionalInterface;
 use App\Application\User\Port\PasswordHasherInterface;
 use App\Application\User\Port\UserRepositoryInterface;
 use App\Application\User\Port\UserUniquenessCheckerInterface;
+use App\Application\User\ReadModel\UserItem;
 use App\Domain\User\Model\User;
 use App\Domain\User\ValueObject\EmailAddress;
 use App\Domain\User\ValueObject\Firstname;
@@ -30,9 +31,9 @@ final readonly class CreateUserByAdminCommandHandler implements CommandHandlerIn
     ) {
     }
 
-    public function handle(CreateUserByAdminCommand $command): CreateUserByAdminOutput
+    public function handle(CreateUserByAdminCommand $command): UserItem
     {
-        return $this->transactional->transactional(function () use ($command): CreateUserByAdminOutput {
+        return $this->transactional->transactional(function () use ($command): UserItem {
             $now = $this->clock->now();
             $userId = $this->repository->nextIdentity();
             $username = Username::fromString($command->username);
@@ -59,7 +60,7 @@ final readonly class CreateUserByAdminCommandHandler implements CommandHandlerIn
 
             $this->repository->save($user);
 
-            return new CreateUserByAdminOutput($user);
+            return UserItem::fromUser($user);
         });
     }
 }

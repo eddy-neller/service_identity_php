@@ -8,6 +8,7 @@ use App\Application\Shared\CQRS\Command\CommandHandlerInterface;
 use App\Application\Shared\Port\ClockInterface;
 use App\Application\Shared\Port\TransactionalInterface;
 use App\Application\Shop\Port\CartRepositoryInterface;
+use App\Application\Shop\ReadModel\Ordering\CartItem;
 use App\Application\Shop\Service\CartItemFactory;
 use App\Domain\Shop\Ordering\Exception\CartLineNotFoundException;
 
@@ -21,9 +22,9 @@ final readonly class UpdateCartLineCommandHandler implements CommandHandlerInter
     ) {
     }
 
-    public function handle(UpdateCartLineCommand $command): UpdateCartLineOutput
+    public function handle(UpdateCartLineCommand $command): CartItem
     {
-        return $this->transactional->transactional(function () use ($command): UpdateCartLineOutput {
+        return $this->transactional->transactional(function () use ($command): CartItem {
             $cart = $this->repository->findByOwnerForUpdate($command->customerId)
                 ?? throw new CartLineNotFoundException();
 
@@ -31,7 +32,7 @@ final readonly class UpdateCartLineCommandHandler implements CommandHandlerInter
 
             $this->repository->save($cart);
 
-            return new UpdateCartLineOutput($this->cartItemFactory->create($cart));
+            return $this->cartItemFactory->create($cart);
         });
     }
 }

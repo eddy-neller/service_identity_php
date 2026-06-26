@@ -84,7 +84,8 @@ final class SetDefaultAddressTest extends TestCase
 
         $output = $this->handler->handle($command);
 
-        $this->assertSame($address, $output->addressItem->address);
+        $this->assertSame($address->getId()->toString(), $output->id);
+        $this->assertTrue($output->isDefault);
     }
 
     public function testHandleReturnsAlreadyDefaultAddressWithoutWriting(): void
@@ -113,7 +114,8 @@ final class SetDefaultAddressTest extends TestCase
 
         $output = $this->handler->handle(new SetDefaultAddressCommand($addressId, $customerId));
 
-        $this->assertSame($address, $output->addressItem->address);
+        $this->assertSame($address->getId()->toString(), $output->id);
+        $this->assertTrue($output->isDefault);
     }
 
     public function testHandleThrowsWhenAddressMissing(): void

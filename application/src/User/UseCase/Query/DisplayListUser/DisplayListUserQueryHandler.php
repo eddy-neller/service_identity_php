@@ -6,6 +6,7 @@ namespace App\Application\User\UseCase\Query\DisplayListUser;
 
 use App\Application\Shared\CQRS\Query\QueryHandlerInterface;
 use App\Application\User\Port\UserRepositoryInterface;
+use App\Application\User\ReadModel\UserList;
 
 final readonly class DisplayListUserQueryHandler implements QueryHandlerInterface
 {
@@ -14,21 +15,15 @@ final readonly class DisplayListUserQueryHandler implements QueryHandlerInterfac
     ) {
     }
 
-    public function handle(DisplayListUserQuery $query): DisplayListUserOutput
+    public function handle(DisplayListUserQuery $query): UserList
     {
         $orderBy = [] !== $query->orderBy ? $query->orderBy : ['createdAt' => 'DESC'];
 
-        $list = $this->repository->list(
+        return $this->repository->list(
             filters: $query->filters,
             orderBy: $orderBy,
             page: $query->pagination->page,
             itemsPerPage: $query->pagination->itemsPerPage,
-        );
-
-        return new DisplayListUserOutput(
-            users: $list->users,
-            totalItems: $list->totalItems,
-            totalPages: $list->totalPages,
         );
     }
 }

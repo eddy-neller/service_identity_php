@@ -13,6 +13,7 @@ use App\Application\User\Port\PasswordHasherInterface;
 use App\Application\User\Port\TokenProviderInterface;
 use App\Application\User\Port\UserRepositoryInterface;
 use App\Application\User\Port\UserUniquenessCheckerInterface;
+use App\Application\User\ReadModel\UserItem;
 use App\Domain\User\Model\User;
 use App\Domain\User\ValueObject\EmailAddress;
 use App\Domain\User\ValueObject\Preferences;
@@ -33,9 +34,9 @@ final readonly class RegisterUserCommandHandler implements CommandHandlerInterfa
     ) {
     }
 
-    public function handle(RegisterUserCommand $command): RegisterUserOutput
+    public function handle(RegisterUserCommand $command): UserItem
     {
-        return $this->transactional->transactional(function () use ($command): RegisterUserOutput {
+        return $this->transactional->transactional(function () use ($command): UserItem {
             $now = $this->clock->now();
             $userId = $this->repository->nextIdentity();
 
@@ -64,7 +65,7 @@ final readonly class RegisterUserCommandHandler implements CommandHandlerInterfa
 
             $this->repository->save($user);
 
-            return new RegisterUserOutput($user);
+            return UserItem::fromUser($user);
         });
     }
 }

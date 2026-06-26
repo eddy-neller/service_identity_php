@@ -8,7 +8,6 @@ use ApiPlatform\Metadata\Operation;
 use App\Application\Shared\CQRS\Query\QueryBusInterface;
 use App\Application\Shop\Port\ProductImageUrlResolverInterface;
 use App\Application\Shop\ReadModel\Catalog\ProductItem;
-use App\Application\Shop\UseCase\Query\Catalog\DisplayProduct\DisplayProductOutput;
 use App\Application\Shop\UseCase\Query\Catalog\DisplayProduct\DisplayProductQuery;
 use App\Domain\SharedKernel\ValueObject\Slug;
 use App\Domain\Shop\Catalog\Model\Category;
@@ -60,11 +59,11 @@ final class ProductGetProviderTest extends TestCase
     public function testProvideWithValidId(): void
     {
         $productId = '550e8400-e29b-41d4-a716-446655440000';
-        $output = new DisplayProductOutput($this->createProductView());
+        $output = $this->createProductView();
 
         $this->queryBus->expects($this->once())
             ->method('dispatch')
-            ->willReturnCallback(function ($query) use ($productId, $output): DisplayProductOutput {
+            ->willReturnCallback(function ($query) use ($productId, $output): ProductItem {
                 $this->assertInstanceOf(DisplayProductQuery::class, $query);
                 $this->assertSame($productId, $query->productId->toString());
 
@@ -132,6 +131,6 @@ final class ProductGetProviderTest extends TestCase
             updatedAt: $now,
         );
 
-        return new ProductItem($product, $category);
+        return ProductItem::fromProduct($product, $category);
     }
 }

@@ -28,7 +28,7 @@ final readonly class PasswordResetCheckProcessor implements ProcessorInterface
 
         $output = $this->queryBus->dispatch(new CheckPasswordResetTokenQuery($data->token));
 
-        if (!$output->isValid) {
+        if (!$output) {
             throw new BadRequestHttpException('Token de réinitialisation invalide ou expiré.');
         }
     }

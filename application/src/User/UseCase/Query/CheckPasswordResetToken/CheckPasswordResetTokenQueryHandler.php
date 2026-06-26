@@ -17,7 +17,7 @@ final readonly class CheckPasswordResetTokenQueryHandler implements QueryHandler
     ) {
     }
 
-    public function handle(CheckPasswordResetTokenQuery $query): CheckPasswordResetTokenOutput
+    public function handle(CheckPasswordResetTokenQuery $query): bool
     {
         $split = $this->tokenProvider->split($query->token);
         $email = EmailAddress::fromString($split['email'] ?? '');
@@ -26,19 +26,15 @@ final readonly class CheckPasswordResetTokenQueryHandler implements QueryHandler
         $user = $this->repository->findByResetPasswordToken($rawToken);
 
         if (null === $user || !$user->getEmail()->equals($email)) {
-            return new CheckPasswordResetTokenOutput(isValid: false);
+            return false;
         }
 
         $resetPassword = $user->getResetPassword();
         $ttl = $resetPassword->getTokenTtl() ?? 0;
         if ($ttl <= 0 || $ttl <= time()) {
-            return new CheckPasswordResetTokenOutput(isValid: false);
+            return false;
         }
 
-        if ($resetPassword->getToken() !== $rawToken) {
-            return new CheckPasswordResetTokenOutput(isValid: false);
-        }
-
-        return new CheckPasswordResetTokenOutput(isValid: true);
+        return $resetPassword->getToken() === $rawToken;
     }
 }

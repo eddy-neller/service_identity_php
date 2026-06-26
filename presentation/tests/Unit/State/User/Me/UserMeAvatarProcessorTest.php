@@ -8,8 +8,8 @@ use ApiPlatform\Metadata\Operation;
 use App\Application\Shared\CQRS\Command\CommandBusInterface;
 use App\Application\Shared\Port\FileInterface;
 use App\Application\User\Port\AvatarUrlResolverInterface;
+use App\Application\User\ReadModel\UserItem;
 use App\Application\User\UseCase\Command\UpdateAvatar\UpdateAvatarCommand;
-use App\Application\User\UseCase\Command\UpdateAvatar\UpdateAvatarOutput;
 use App\Domain\User\Model\User as DomainUser;
 use App\Domain\User\ValueObject\EmailAddress;
 use App\Domain\User\ValueObject\Preferences;
@@ -68,7 +68,7 @@ final class UserMeAvatarProcessorTest extends KernelTestCase
         $input = $this->createValidUserMeAvatarInput();
         $userId = Uuid::uuid4();
         $domainUser = $this->createDomainUser();
-        $output = new UpdateAvatarOutput($domainUser);
+        $output = UserItem::fromUser($domainUser);
 
         $this->user->expects($this->once())
             ->method('getId')
@@ -80,7 +80,7 @@ final class UserMeAvatarProcessorTest extends KernelTestCase
 
         $this->commandBus->expects($this->once())
             ->method('dispatch')
-            ->willReturnCallback(function ($command) use ($output): UpdateAvatarOutput {
+            ->willReturnCallback(function ($command) use ($output): UserItem {
                 $this->assertInstanceOf(UpdateAvatarCommand::class, $command);
                 $this->assertInstanceOf(FileInterface::class, $command->avatarFile);
                 $this->assertSame('avatar.jpg', $command->avatarFile->getClientOriginalName());

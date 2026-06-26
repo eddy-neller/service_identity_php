@@ -31,6 +31,6 @@ final readonly class UserGetProvider implements ProviderInterface
         $userId = UserId::fromString($uriVariables['id']);
         $output = $this->queryBus->dispatch(new DisplayUserQuery($userId));
 
-        return $this->userResourcePresenter->toResource($output->user);
+        return $this->userResourcePresenter->toResource($output);
     }
 }

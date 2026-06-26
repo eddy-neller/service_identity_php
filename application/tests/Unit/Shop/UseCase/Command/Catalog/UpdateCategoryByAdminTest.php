@@ -61,7 +61,7 @@ final class UpdateCategoryByAdminTest extends TestCase
         $category = $this->createCategory($categoryId, 'Old title', 'old-title');
         $parent = $this->createCategory($parentId, 'Parent', 'parent');
         $slug = Slug::fromString('new-title');
-        $categoryItem = new CategoryItem($category, $parent, []);
+        $categoryItem = CategoryItem::fromCategory($category, $parent, []);
 
         $command = new UpdateCategoryByAdminCommand(
             categoryId: $categoryId,
@@ -115,7 +115,7 @@ final class UpdateCategoryByAdminTest extends TestCase
 
         $output = $this->handler->handle($command);
 
-        $this->assertSame($categoryItem, $output->categoryItem);
+        $this->assertSame($categoryItem, $output);
         $this->assertSame('New title', $category->getTitle()->toString());
         $this->assertSame('new-title', $category->getSlug()->toString());
         $this->assertSame('New description', $category->getDescription()?->toString());
@@ -130,7 +130,7 @@ final class UpdateCategoryByAdminTest extends TestCase
         $description = CategoryDescription::fromString('Existing description');
         $category = $this->createCategory($categoryId, 'Old title', 'old-title', $description);
         $slug = Slug::fromString('new-title');
-        $categoryItem = new CategoryItem($category, null, []);
+        $categoryItem = CategoryItem::fromCategory($category, null, []);
 
         $command = new UpdateCategoryByAdminCommand(
             categoryId: $categoryId,
@@ -170,7 +170,7 @@ final class UpdateCategoryByAdminTest extends TestCase
 
         $output = $this->handler->handle($command);
 
-        $this->assertSame($categoryItem, $output->categoryItem);
+        $this->assertSame($categoryItem, $output);
         $this->assertSame('New title', $category->getTitle()->toString());
         $this->assertSame('new-title', $category->getSlug()->toString());
         $this->assertSame($description, $category->getDescription());
@@ -393,7 +393,7 @@ final class UpdateCategoryByAdminTest extends TestCase
         $now = new DateTimeImmutable('2024-02-01 12:00:00');
         $categoryId = CategoryId::fromString(self::CATEGORY_ID);
         $category = $this->createCategory($categoryId, 'Old title', 'old-title');
-        $categoryItem = new CategoryItem($category, null, []);
+        $categoryItem = CategoryItem::fromCategory($category, null, []);
 
         $command = new UpdateCategoryByAdminCommand(
             categoryId: $categoryId,
@@ -438,7 +438,7 @@ final class UpdateCategoryByAdminTest extends TestCase
 
         $output = $this->handler->handle($command);
 
-        $this->assertSame($categoryItem, $output->categoryItem);
+        $this->assertSame($categoryItem, $output);
         $this->assertSame('Same title', $category->getTitle()->toString());
     }
 

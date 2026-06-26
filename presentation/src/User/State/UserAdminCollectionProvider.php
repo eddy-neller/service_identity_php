@@ -43,8 +43,8 @@ final readonly class UserAdminCollectionProvider implements ProviderInterface
         }
 
         $items = [];
-        foreach ($output->users as $user) {
-            $items[] = $this->userResourcePresenter->toResource($user);
+        foreach ($output->items as $userItem) {
+            $items[] = $this->userResourcePresenter->toResource($userItem);
         }
 
         return $items;

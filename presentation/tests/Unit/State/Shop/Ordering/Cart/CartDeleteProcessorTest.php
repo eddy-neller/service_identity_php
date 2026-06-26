@@ -7,11 +7,10 @@ namespace App\Presentation\Tests\Unit\State\Shop\Ordering\Cart;
 use ApiPlatform\Metadata\Operation;
 use App\Application\Shared\CQRS\Command\CommandBusInterface;
 use App\Application\Shared\CQRS\Query\QueryBusInterface;
+use App\Application\Shop\ReadModel\Customer\CurrentCustomerItem;
 use App\Application\Shop\UseCase\Command\Ordering\ClearCart\ClearCartCommand;
-use App\Application\Shop\UseCase\Query\Customer\DisplayMyCustomer\DisplayMyCustomerOutput;
 use App\Application\Shop\UseCase\Query\Customer\DisplayMyCustomer\DisplayMyCustomerQuery;
 use App\Domain\Shop\Customer\ValueObject\CustomerId;
-use App\Domain\Shop\Customer\ValueObject\CustomerStatus;
 use App\Domain\Shop\Customer\ValueObject\UserAccountId;
 use App\Presentation\Shop\State\Ordering\Cart\CartDeleteProcessor;
 use App\Presentation\Shop\State\Shared\CurrentCustomerResolver;
@@ -51,11 +50,11 @@ final class CartDeleteProcessorTest extends TestCase
         );
 
         $customerId = CustomerId::fromString('550e8400-e29b-41d4-a716-446655441101');
-        $customerOutput = new DisplayMyCustomerOutput($customerId, CustomerStatus::active());
+        $customerOutput = new CurrentCustomerItem($customerId->toString());
 
         $this->queryBus->expects($this->once())
             ->method('dispatch')
-            ->willReturnCallback(function ($query) use ($customerOutput): DisplayMyCustomerOutput {
+            ->willReturnCallback(function ($query) use ($customerOutput): CurrentCustomerItem {
                 $this->assertInstanceOf(DisplayMyCustomerQuery::class, $query);
                 $this->assertTrue($query->userAccountId->equals(UserAccountId::fromString('550e8400-e29b-41d4-a716-446655441100')));
 

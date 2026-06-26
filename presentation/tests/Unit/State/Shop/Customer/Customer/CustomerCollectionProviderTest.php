@@ -6,7 +6,8 @@ namespace App\Presentation\Tests\Unit\State\Shop\Customer\Customer;
 
 use ApiPlatform\Metadata\GetCollection;
 use App\Application\Shared\CQRS\Query\QueryBusInterface;
-use App\Application\Shop\UseCase\Query\Customer\DisplayListCustomer\DisplayListCustomerOutput;
+use App\Application\Shop\ReadModel\Customer\CustomerItem;
+use App\Application\Shop\ReadModel\Customer\CustomerList;
 use App\Application\Shop\UseCase\Query\Customer\DisplayListCustomer\DisplayListCustomerQuery;
 use App\Domain\Shop\Customer\Model\Customer;
 use App\Domain\Shop\Customer\ValueObject\CustomerId;
@@ -31,11 +32,11 @@ final class CustomerCollectionProviderTest extends TestCase
             now: new DateTimeImmutable('2025-01-01 10:00:00'),
             userAccountId: UserAccountId::fromString('550e8400-e29b-41d4-a716-446655440821'),
         );
-        $output = new DisplayListCustomerOutput([$customer], 3, 2);
+        $output = new CustomerList([CustomerItem::fromCustomer($customer)], 3, 2);
 
         $queryBus->expects($this->once())
             ->method('dispatch')
-            ->willReturnCallback(function ($query) use ($output): DisplayListCustomerOutput {
+            ->willReturnCallback(function ($query) use ($output): CustomerList {
                 $this->assertInstanceOf(DisplayListCustomerQuery::class, $query);
                 $this->assertSame(2, $query->pagination->page);
                 $this->assertSame(15, $query->pagination->itemsPerPage);
@@ -81,11 +82,11 @@ final class CustomerCollectionProviderTest extends TestCase
             now: new DateTimeImmutable('2025-01-01 10:00:00'),
             userAccountId: UserAccountId::fromString('550e8400-e29b-41d4-a716-446655440831'),
         );
-        $output = new DisplayListCustomerOutput([$customer], 1, 1);
+        $output = new CustomerList([CustomerItem::fromCustomer($customer)], 1, 1);
 
         $queryBus->expects($this->once())
             ->method('dispatch')
-            ->willReturnCallback(function ($query) use ($output): DisplayListCustomerOutput {
+            ->willReturnCallback(function ($query) use ($output): CustomerList {
                 $this->assertInstanceOf(DisplayListCustomerQuery::class, $query);
                 $this->assertSame(1, $query->pagination->page);
                 $this->assertSame(30, $query->pagination->itemsPerPage);

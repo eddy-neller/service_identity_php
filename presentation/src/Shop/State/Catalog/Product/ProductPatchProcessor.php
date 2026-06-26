@@ -50,6 +50,6 @@ final readonly class ProductPatchProcessor implements ProcessorInterface
 
         $output = $this->commandBus->dispatch($command);
 
-        return $this->productResourcePresenter->toResource($output->productItem);
+        return $this->productResourcePresenter->toResource($output);
     }
 }

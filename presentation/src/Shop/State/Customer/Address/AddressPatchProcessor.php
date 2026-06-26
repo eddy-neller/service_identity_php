@@ -51,6 +51,6 @@ final readonly class AddressPatchProcessor implements ProcessorInterface
 
         $output = $this->commandBus->dispatch($command);
 
-        return $this->presenter->toResource($output->addressItem->address);
+        return $this->presenter->toResource($output);
     }
 }

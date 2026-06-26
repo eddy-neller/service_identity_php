@@ -6,14 +6,14 @@ namespace App\Presentation\Tests\Unit\State\Shop\Customer\Address;
 
 use ApiPlatform\Metadata\GetCollection;
 use App\Application\Shared\CQRS\Query\QueryBusInterface;
-use App\Application\Shop\UseCase\Query\Customer\DisplayListAddress\DisplayListAddressOutput;
+use App\Application\Shop\ReadModel\Customer\AddressItem;
+use App\Application\Shop\ReadModel\Customer\AddressList;
+use App\Application\Shop\ReadModel\Customer\CurrentCustomerItem;
 use App\Application\Shop\UseCase\Query\Customer\DisplayListAddress\DisplayListAddressQuery;
-use App\Application\Shop\UseCase\Query\Customer\DisplayMyCustomer\DisplayMyCustomerOutput;
 use App\Application\Shop\UseCase\Query\Customer\DisplayMyCustomer\DisplayMyCustomerQuery;
 use App\Domain\Shop\Customer\Model\Address as DomainAddress;
 use App\Domain\Shop\Customer\ValueObject\AddressId;
 use App\Domain\Shop\Customer\ValueObject\CustomerId;
-use App\Domain\Shop\Customer\ValueObject\CustomerStatus;
 use App\Domain\Shop\Customer\ValueObject\UserAccountId;
 use App\Presentation\Shop\ApiResource\Customer\AddressResource;
 use App\Presentation\Shop\Presenter\Customer\AddressResourcePresenter;
@@ -41,13 +41,13 @@ final class AddressCollectionProviderTest extends TestCase
             ->willReturn($user);
 
         $customerId = CustomerId::fromString('550e8400-e29b-41d4-a716-446655440201');
-        $customerOutput = new DisplayMyCustomerOutput($customerId, CustomerStatus::active());
+        $customerOutput = new CurrentCustomerItem($customerId->toString());
         $address = $this->createAddress($customerId);
-        $listOutput = new DisplayListAddressOutput([$address], 2, 1);
+        $listOutput = new AddressList([AddressItem::fromAddress($address)], 2, 1);
 
         $queryBus->expects($this->exactly(2))
             ->method('dispatch')
-            ->willReturnCallback(function ($query) use ($customerOutput, $listOutput): DisplayMyCustomerOutput|DisplayListAddressOutput {
+            ->willReturnCallback(function ($query) use ($customerOutput, $listOutput): CurrentCustomerItem|AddressList {
                 if ($query instanceof DisplayMyCustomerQuery) {
                     $this->assertTrue($query->userAccountId->equals(UserAccountId::fromString('550e8400-e29b-41d4-a716-446655440200')));
 
@@ -109,9 +109,9 @@ final class AddressCollectionProviderTest extends TestCase
             ->willReturn($user);
 
         $customerId = CustomerId::fromString('550e8400-e29b-41d4-a716-446655440211');
-        $customerOutput = new DisplayMyCustomerOutput($customerId, CustomerStatus::active());
+        $customerOutput = new CurrentCustomerItem($customerId->toString());
         $address = $this->createAddress($customerId);
-        $listOutput = new DisplayListAddressOutput([$address], 1, 1);
+        $listOutput = new AddressList([AddressItem::fromAddress($address)], 1, 1);
 
         $queryBus->expects($this->exactly(2))
             ->method('dispatch')

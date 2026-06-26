@@ -36,6 +36,6 @@ final readonly class CustomerPatchProcessor implements ProcessorInterface
         $customerId = CustomerId::fromString($uriVariables['id']);
         $output = $this->commandBus->dispatch(new DisableCustomerCommand($customerId));
 
-        return $this->customerResourcePresenter->toSummaryResource($output->customer);
+        return $this->customerResourcePresenter->toSummaryResource($output);
     }
 }

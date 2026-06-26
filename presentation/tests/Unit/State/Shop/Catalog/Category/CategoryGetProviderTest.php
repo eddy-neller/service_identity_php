@@ -7,7 +7,6 @@ namespace App\Presentation\Tests\Unit\State\Shop\Catalog\Category;
 use ApiPlatform\Metadata\Operation;
 use App\Application\Shared\CQRS\Query\QueryBusInterface;
 use App\Application\Shop\ReadModel\Catalog\CategoryItem;
-use App\Application\Shop\UseCase\Query\Catalog\DisplayCategory\DisplayCategoryOutput;
 use App\Application\Shop\UseCase\Query\Catalog\DisplayCategory\DisplayCategoryQuery;
 use App\Domain\SharedKernel\ValueObject\Slug;
 use App\Domain\Shop\Catalog\Model\Category;
@@ -44,11 +43,11 @@ final class CategoryGetProviderTest extends TestCase
     public function testProvideWithValidId(): void
     {
         $categoryId = '550e8400-e29b-41d4-a716-446655440000';
-        $output = new DisplayCategoryOutput($this->createCategoryTree());
+        $output = $this->createCategoryTree();
 
         $this->queryBus->expects($this->once())
             ->method('dispatch')
-            ->willReturnCallback(function ($query) use ($categoryId, $output): DisplayCategoryOutput {
+            ->willReturnCallback(function ($query) use ($categoryId, $output): CategoryItem {
                 $this->assertInstanceOf(DisplayCategoryQuery::class, $query);
                 $this->assertSame($categoryId, $query->categoryId->toString());
 
@@ -94,6 +93,6 @@ final class CategoryGetProviderTest extends TestCase
             now: $now,
         );
 
-        return new CategoryItem($category, null, []);
+        return CategoryItem::fromCategory($category, null, []);
     }
 }

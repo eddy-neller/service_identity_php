@@ -6,14 +6,12 @@ namespace App\Presentation\Tests\Unit\State\Shop\Ordering\Cart;
 
 use ApiPlatform\Metadata\Get;
 use App\Application\Shared\CQRS\Query\QueryBusInterface;
+use App\Application\Shop\ReadModel\Customer\CurrentCustomerItem;
 use App\Application\Shop\ReadModel\Ordering\CartItem;
 use App\Application\Shop\ReadModel\Ordering\CartLineItem;
-use App\Application\Shop\UseCase\Query\Customer\DisplayMyCustomer\DisplayMyCustomerOutput;
 use App\Application\Shop\UseCase\Query\Customer\DisplayMyCustomer\DisplayMyCustomerQuery;
-use App\Application\Shop\UseCase\Query\Ordering\DisplayMyCart\DisplayMyCartOutput;
 use App\Application\Shop\UseCase\Query\Ordering\DisplayMyCart\DisplayMyCartQuery;
 use App\Domain\Shop\Customer\ValueObject\CustomerId;
-use App\Domain\Shop\Customer\ValueObject\CustomerStatus;
 use App\Domain\Shop\Customer\ValueObject\UserAccountId;
 use App\Presentation\Shop\ApiResource\Ordering\CartResource;
 use App\Presentation\Shop\Presenter\Ordering\CartResourcePresenter;
@@ -38,12 +36,12 @@ final class CartGetProviderTest extends TestCase
             ->willReturn($this->createUser('550e8400-e29b-41d4-a716-446655440700'));
 
         $customerId = CustomerId::fromString('550e8400-e29b-41d4-a716-446655440701');
-        $customerOutput = new DisplayMyCustomerOutput($customerId, CustomerStatus::active());
-        $cartOutput = new DisplayMyCartOutput($this->createCart());
+        $customerOutput = new CurrentCustomerItem($customerId->toString());
+        $cartOutput = $this->createCart();
 
         $queryBus->expects($this->exactly(2))
             ->method('dispatch')
-            ->willReturnCallback(function ($query) use ($customerId, $customerOutput, $cartOutput): DisplayMyCustomerOutput|DisplayMyCartOutput {
+            ->willReturnCallback(function ($query) use ($customerId, $customerOutput, $cartOutput): CurrentCustomerItem|CartItem {
                 if ($query instanceof DisplayMyCustomerQuery) {
                     $this->assertTrue($query->userAccountId->equals(UserAccountId::fromString('550e8400-e29b-41d4-a716-446655440700')));
 

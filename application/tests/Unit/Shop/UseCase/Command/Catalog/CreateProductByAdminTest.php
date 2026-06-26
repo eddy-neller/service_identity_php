@@ -130,8 +130,8 @@ final class CreateProductByAdminTest extends TestCase
 
         $output = $this->handler->handle($command);
 
-        $this->assertSame($category, $output->productItem->category);
-        $this->assertSame('New product', $output->productItem->product->getTitle()->toString());
+        $this->assertSame($category->getId()->toString(), $output->category->id);
+        $this->assertSame('New product', $output->title);
     }
 
     public function testHandleThrowsWhenCategoryNotFound(): void

@@ -87,7 +87,8 @@ final class UpdateAvatarTest extends TestCase
 
         $output = $this->handler->handle($command);
 
-        $this->assertSame($user, $output->user);
+        $this->assertSame($userId->toString(), $output->id);
+        $this->assertSame($avatarFileName, $output->avatar->fileName());
         $this->assertSame($avatarFileName, $user->getAvatar()->fileName());
     }
 

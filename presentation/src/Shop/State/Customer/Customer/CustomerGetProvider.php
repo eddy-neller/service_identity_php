@@ -31,6 +31,6 @@ final readonly class CustomerGetProvider implements ProviderInterface
         $customerId = CustomerId::fromString($uriVariables['id']);
         $output = $this->queryBus->dispatch(new DisplayCustomerQuery($customerId));
 
-        return $this->customerResourcePresenter->toResource($output->customerItem);
+        return $this->customerResourcePresenter->toResource($output);
     }
 }

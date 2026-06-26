@@ -6,6 +6,7 @@ namespace App\Application\User\UseCase\Query\DisplayUser;
 
 use App\Application\Shared\CQRS\Query\QueryHandlerInterface;
 use App\Application\User\Port\UserRepositoryInterface;
+use App\Application\User\ReadModel\UserItem;
 use App\Domain\User\Exception\UserNotFoundException;
 
 final readonly class DisplayUserQueryHandler implements QueryHandlerInterface
@@ -15,7 +16,7 @@ final readonly class DisplayUserQueryHandler implements QueryHandlerInterface
     ) {
     }
 
-    public function handle(DisplayUserQuery $query): DisplayUserOutput
+    public function handle(DisplayUserQuery $query): UserItem
     {
         $user = $this->repository->findById($query->userId);
 
@@ -23,6 +24,6 @@ final readonly class DisplayUserQueryHandler implements QueryHandlerInterface
             throw new UserNotFoundException();
         }
 
-        return new DisplayUserOutput($user);
+        return UserItem::fromUser($user);
     }
 }

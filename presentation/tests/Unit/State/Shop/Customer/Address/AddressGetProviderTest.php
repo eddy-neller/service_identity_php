@@ -7,14 +7,12 @@ namespace App\Presentation\Tests\Unit\State\Shop\Customer\Address;
 use ApiPlatform\Metadata\Get;
 use App\Application\Shared\CQRS\Query\QueryBusInterface;
 use App\Application\Shop\ReadModel\Customer\AddressItem;
-use App\Application\Shop\UseCase\Query\Customer\DisplayAddress\DisplayAddressOutput;
+use App\Application\Shop\ReadModel\Customer\CurrentCustomerItem;
 use App\Application\Shop\UseCase\Query\Customer\DisplayAddress\DisplayAddressQuery;
-use App\Application\Shop\UseCase\Query\Customer\DisplayMyCustomer\DisplayMyCustomerOutput;
 use App\Application\Shop\UseCase\Query\Customer\DisplayMyCustomer\DisplayMyCustomerQuery;
 use App\Domain\Shop\Customer\Model\Address as DomainAddress;
 use App\Domain\Shop\Customer\ValueObject\AddressId;
 use App\Domain\Shop\Customer\ValueObject\CustomerId;
-use App\Domain\Shop\Customer\ValueObject\CustomerStatus;
 use App\Domain\Shop\Customer\ValueObject\UserAccountId;
 use App\Presentation\Shared\State\PresentationErrorCode;
 use App\Presentation\Shop\ApiResource\Customer\AddressResource;
@@ -42,13 +40,13 @@ final class AddressGetProviderTest extends TestCase
             ->willReturn($user);
 
         $customerId = CustomerId::fromString('550e8400-e29b-41d4-a716-446655440301');
-        $customerOutput = new DisplayMyCustomerOutput($customerId, CustomerStatus::active());
+        $customerOutput = new CurrentCustomerItem($customerId->toString());
         $address = $this->createAddress($customerId);
-        $addressOutput = new DisplayAddressOutput(new AddressItem($address));
+        $addressOutput = AddressItem::fromAddress($address);
 
         $queryBus->expects($this->exactly(2))
             ->method('dispatch')
-            ->willReturnCallback(function ($query) use ($customerOutput, $addressOutput): DisplayMyCustomerOutput|DisplayAddressOutput {
+            ->willReturnCallback(function ($query) use ($customerOutput, $addressOutput): CurrentCustomerItem|AddressItem {
                 if ($query instanceof DisplayMyCustomerQuery) {
                     $this->assertTrue($query->userAccountId->equals(UserAccountId::fromString('550e8400-e29b-41d4-a716-446655440300')));
 

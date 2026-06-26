@@ -42,6 +42,6 @@ final readonly class CategoryPostProcessor implements ProcessorInterface
 
         $output = $this->commandBus->dispatch($command);
 
-        return $this->categoryResourcePresenter->toResource($output->categoryItem);
+        return $this->categoryResourcePresenter->toResource($output);
     }
 }

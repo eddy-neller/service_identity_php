@@ -61,7 +61,8 @@ final class DisplayAddressTest extends TestCase
 
         $output = $this->handler->handle($query);
 
-        $this->assertSame($address, $output->addressItem->address);
+        $this->assertSame($address->getId()->toString(), $output->id);
+        $this->assertSame($address->getStreet(), $output->address);
     }
 
     public function testHandleThrowsWhenAddressMissing(): void

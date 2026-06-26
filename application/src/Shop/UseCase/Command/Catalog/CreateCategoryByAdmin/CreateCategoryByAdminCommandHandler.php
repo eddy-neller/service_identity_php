@@ -9,6 +9,7 @@ use App\Application\Shared\Port\ClockInterface;
 use App\Application\Shared\Port\SlugGeneratorInterface;
 use App\Application\Shared\Port\TransactionalInterface;
 use App\Application\Shop\Port\CategoryRepositoryInterface;
+use App\Application\Shop\ReadModel\Catalog\CategoryItem;
 use App\Domain\Shop\Catalog\Exception\CategoryNotFoundException;
 use App\Domain\Shop\Catalog\Exception\CategoryTitleAlreadyUsedException;
 use App\Domain\Shop\Catalog\Model\Category;
@@ -25,9 +26,9 @@ final readonly class CreateCategoryByAdminCommandHandler implements CommandHandl
     ) {
     }
 
-    public function handle(CreateCategoryByAdminCommand $command): CreateCategoryByAdminOutput
+    public function handle(CreateCategoryByAdminCommand $command): CategoryItem
     {
-        return $this->transactional->transactional(function () use ($command): CreateCategoryByAdminOutput {
+        return $this->transactional->transactional(function () use ($command): CategoryItem {
             $now = $this->clock->now();
             $id = $this->repository->nextIdentity();
             $title = CategoryTitle::fromString($command->title);
@@ -64,7 +65,7 @@ final readonly class CreateCategoryByAdminCommandHandler implements CommandHandl
                 throw new CategoryNotFoundException();
             }
 
-            return new CreateCategoryByAdminOutput($categoryItem);
+            return $categoryItem;
         });
     }
 }

@@ -38,6 +38,6 @@ final readonly class CartLinePatchProcessor implements ProcessorInterface
             $data->quantity,
         ));
 
-        return $this->presenter->toResource($output->cart);
+        return $this->presenter->toResource($output);
     }
 }

@@ -10,6 +10,7 @@ use App\Application\Shared\Port\TransactionalInterface;
 use App\Application\User\Port\PasswordHasherInterface;
 use App\Application\User\Port\UserRepositoryInterface;
 use App\Application\User\Port\UserUniquenessCheckerInterface;
+use App\Application\User\ReadModel\UserItem;
 use App\Domain\User\Exception\UserNotFoundException;
 use App\Domain\User\ValueObject\EmailAddress;
 use App\Domain\User\ValueObject\Firstname;
@@ -29,7 +30,7 @@ final readonly class UpdateUserByAdminCommandHandler implements CommandHandlerIn
     ) {
     }
 
-    public function handle(UpdateUserByAdminCommand $command): UpdateUserByAdminOutput
+    public function handle(UpdateUserByAdminCommand $command): UserItem
     {
         $user = $this->repository->findById($command->userId);
 
@@ -45,7 +46,7 @@ final readonly class UpdateUserByAdminCommandHandler implements CommandHandlerIn
             $this->uniquenessChecker->ensureUsernameAvailable(Username::fromString($command->username), $user->getId());
         }
 
-        return $this->transactional->transactional(function () use ($user, $command): UpdateUserByAdminOutput {
+        return $this->transactional->transactional(function () use ($user, $command): UserItem {
             $now = $this->clock->now();
             $hashedPassword = null;
             if (null !== $command->plainPassword && '' !== trim($command->plainPassword)) {
@@ -65,7 +66,7 @@ final readonly class UpdateUserByAdminCommandHandler implements CommandHandlerIn
 
             $this->repository->save($user);
 
-            return new UpdateUserByAdminOutput($user);
+            return UserItem::fromUser($user);
         });
     }
 }

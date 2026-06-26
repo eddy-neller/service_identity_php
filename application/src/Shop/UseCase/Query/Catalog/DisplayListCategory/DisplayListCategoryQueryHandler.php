@@ -6,6 +6,7 @@ namespace App\Application\Shop\UseCase\Query\Catalog\DisplayListCategory;
 
 use App\Application\Shared\CQRS\Query\QueryHandlerInterface;
 use App\Application\Shop\Port\CategoryRepositoryInterface;
+use App\Application\Shop\ReadModel\Catalog\CategoryList;
 
 final readonly class DisplayListCategoryQueryHandler implements QueryHandlerInterface
 {
@@ -14,21 +15,15 @@ final readonly class DisplayListCategoryQueryHandler implements QueryHandlerInte
     ) {
     }
 
-    public function handle(DisplayListCategoryQuery $query): DisplayListCategoryOutput
+    public function handle(DisplayListCategoryQuery $query): CategoryList
     {
         $orderBy = [] !== $query->orderBy ? $query->orderBy : ['createdAt' => 'DESC'];
 
-        $list = $this->repository->list(
+        return $this->repository->list(
             filters: $query->filters,
             orderBy: $orderBy,
             page: $query->pagination->page,
             itemsPerPage: $query->pagination->itemsPerPage,
-        );
-
-        return new DisplayListCategoryOutput(
-            categories: $list->categories,
-            totalItems: $list->totalItems,
-            totalPages: $list->totalPages,
         );
     }
 }

@@ -108,7 +108,7 @@ final class CreateAddressTest extends TestCase
 
         $output = $this->handler->handle($command);
 
-        $this->assertTrue($output->addressItem->address->getId()->equals($addressId));
+        $this->assertSame($addressId->toString(), $output->id);
     }
 
     public function testHandleCreatesAddressWithoutDefaultWhenOwnerAlreadyHasOne(): void

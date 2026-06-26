@@ -8,7 +8,6 @@ use ApiPlatform\Metadata\Operation;
 use App\Application\Shared\CQRS\Command\CommandBusInterface;
 use App\Application\Shop\ReadModel\Catalog\CategoryItem;
 use App\Application\Shop\UseCase\Command\Catalog\CreateCategoryByAdmin\CreateCategoryByAdminCommand;
-use App\Application\Shop\UseCase\Command\Catalog\CreateCategoryByAdmin\CreateCategoryByAdminOutput;
 use App\Domain\SharedKernel\ValueObject\Slug;
 use App\Domain\Shop\Catalog\Model\Category;
 use App\Domain\Shop\Catalog\ValueObject\CategoryId;
@@ -53,11 +52,11 @@ final class CategoryPostProcessorTest extends TestCase
         $input->description = 'Category description';
         $input->parent = $this->createCategoryResource('550e8400-e29b-41d4-a716-446655440001');
 
-        $output = new CreateCategoryByAdminOutput($this->createCategoryTree());
+        $output = $this->createCategoryTree();
 
         $this->commandBus->expects($this->once())
             ->method('dispatch')
-            ->willReturnCallback(function ($command) use ($input, $output): CreateCategoryByAdminOutput {
+            ->willReturnCallback(function ($command) use ($input, $output): CategoryItem {
                 $this->assertInstanceOf(CreateCategoryByAdminCommand::class, $command);
                 $this->assertSame($input->title, $command->title);
                 $this->assertSame($input->description, $command->description);
@@ -106,7 +105,7 @@ final class CategoryPostProcessorTest extends TestCase
             now: $now,
         );
 
-        return new CategoryItem($category, $parent, []);
+        return CategoryItem::fromCategory($category, $parent, []);
     }
 
     private function createCategoryResource(string $id): CategoryResource

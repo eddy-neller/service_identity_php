@@ -9,6 +9,7 @@ use App\Application\Shared\Port\ClockInterface;
 use App\Application\Shared\Port\TransactionalInterface;
 use App\Application\Shop\Port\CartRepositoryInterface;
 use App\Application\Shop\Port\ProductRepositoryInterface;
+use App\Application\Shop\ReadModel\Ordering\CartItem;
 use App\Application\Shop\Service\CartItemFactory;
 use App\Domain\Shop\Catalog\Exception\ProductNotFoundException;
 use App\Domain\Shop\Ordering\Model\Cart;
@@ -24,9 +25,9 @@ final readonly class AddToCartCommandHandler implements CommandHandlerInterface
     ) {
     }
 
-    public function handle(AddToCartCommand $command): AddToCartOutput
+    public function handle(AddToCartCommand $command): CartItem
     {
-        return $this->transactional->transactional(function () use ($command): AddToCartOutput {
+        return $this->transactional->transactional(function () use ($command): CartItem {
             if (null === $this->productRepository->findById($command->productId)) {
                 throw new ProductNotFoundException();
             }
@@ -41,7 +42,7 @@ final readonly class AddToCartCommandHandler implements CommandHandlerInterface
             );
             $this->cartRepository->save($cart);
 
-            return new AddToCartOutput($this->cartItemFactory->create($cart));
+            return $this->cartItemFactory->create($cart);
         });
     }
 }

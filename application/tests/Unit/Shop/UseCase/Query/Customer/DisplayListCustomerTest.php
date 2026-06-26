@@ -6,6 +6,7 @@ namespace App\Application\Tests\Unit\Shop\UseCase\Query\Customer;
 
 use App\Application\Shared\ReadModel\Pagination;
 use App\Application\Shop\Port\CustomerRepositoryInterface;
+use App\Application\Shop\ReadModel\Customer\CustomerItem;
 use App\Application\Shop\ReadModel\Customer\CustomerList;
 use App\Application\Shop\UseCase\Query\Customer\DisplayListCustomer\DisplayListCustomerQuery;
 use App\Application\Shop\UseCase\Query\Customer\DisplayListCustomer\DisplayListCustomerQueryHandler;
@@ -40,7 +41,7 @@ final class DisplayListCustomerTest extends TestCase
             orderBy: ['createdAt' => 'ASC'],
         );
 
-        $customer = $this->createCustomer();
+        $customer = CustomerItem::fromCustomer($this->createCustomer());
         $list = new CustomerList([$customer], 10, 2);
 
         $this->repository->expects($this->once())
@@ -50,7 +51,7 @@ final class DisplayListCustomerTest extends TestCase
 
         $output = $this->handler->handle($query);
 
-        $this->assertSame([$customer], $output->customers);
+        $this->assertSame([$customer], $output->items);
         $this->assertSame(10, $output->totalItems);
         $this->assertSame(2, $output->totalPages);
     }
@@ -63,7 +64,7 @@ final class DisplayListCustomerTest extends TestCase
             orderBy: [],
         );
 
-        $customer = $this->createCustomer();
+        $customer = CustomerItem::fromCustomer($this->createCustomer());
         $list = new CustomerList([$customer], 1, 1);
 
         $this->repository->expects($this->once())
@@ -73,7 +74,7 @@ final class DisplayListCustomerTest extends TestCase
 
         $output = $this->handler->handle($query);
 
-        $this->assertSame([$customer], $output->customers);
+        $this->assertSame([$customer], $output->items);
         $this->assertSame(1, $output->totalItems);
         $this->assertSame(1, $output->totalPages);
     }

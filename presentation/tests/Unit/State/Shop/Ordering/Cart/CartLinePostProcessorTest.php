@@ -7,13 +7,11 @@ namespace App\Presentation\Tests\Unit\State\Shop\Ordering\Cart;
 use ApiPlatform\Metadata\Operation;
 use App\Application\Shared\CQRS\Command\CommandBusInterface;
 use App\Application\Shared\CQRS\Query\QueryBusInterface;
+use App\Application\Shop\ReadModel\Customer\CurrentCustomerItem;
 use App\Application\Shop\ReadModel\Ordering\CartItem;
 use App\Application\Shop\UseCase\Command\Ordering\AddToCart\AddToCartCommand;
-use App\Application\Shop\UseCase\Command\Ordering\AddToCart\AddToCartOutput;
-use App\Application\Shop\UseCase\Query\Customer\DisplayMyCustomer\DisplayMyCustomerOutput;
 use App\Application\Shop\UseCase\Query\Customer\DisplayMyCustomer\DisplayMyCustomerQuery;
 use App\Domain\Shop\Customer\ValueObject\CustomerId;
-use App\Domain\Shop\Customer\ValueObject\CustomerStatus;
 use App\Domain\Shop\Customer\ValueObject\UserAccountId;
 use App\Presentation\Shared\State\PresentationErrorCode;
 use App\Presentation\Shop\ApiResource\Ordering\CartResource;
@@ -64,12 +62,12 @@ final class CartLinePostProcessorTest extends TestCase
         $input->quantity = 2;
 
         $customerId = CustomerId::fromString('550e8400-e29b-41d4-a716-446655440801');
-        $customerOutput = new DisplayMyCustomerOutput($customerId, CustomerStatus::active());
-        $output = new AddToCartOutput($this->createCart());
+        $customerOutput = new CurrentCustomerItem($customerId->toString());
+        $output = $this->createCart();
 
         $this->queryBus->expects($this->once())
             ->method('dispatch')
-            ->willReturnCallback(function ($query) use ($customerOutput): DisplayMyCustomerOutput {
+            ->willReturnCallback(function ($query) use ($customerOutput): CurrentCustomerItem {
                 $this->assertInstanceOf(DisplayMyCustomerQuery::class, $query);
                 $this->assertTrue($query->userAccountId->equals(UserAccountId::fromString('550e8400-e29b-41d4-a716-446655440800')));
 
@@ -78,7 +76,7 @@ final class CartLinePostProcessorTest extends TestCase
 
         $this->commandBus->expects($this->once())
             ->method('dispatch')
-            ->willReturnCallback(function ($command) use ($input, $customerId, $output): AddToCartOutput {
+            ->willReturnCallback(function ($command) use ($input, $customerId, $output): CartItem {
                 $this->assertInstanceOf(AddToCartCommand::class, $command);
                 $this->assertTrue($command->customerId->equals($customerId));
                 $this->assertSame($input->productId, $command->productId->toString());

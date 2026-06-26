@@ -48,6 +48,6 @@ final readonly class UserPatchProcessor implements ProcessorInterface
 
         $output = $this->commandBus->dispatch($command);
 
-        return $this->userResourcePresenter->toResource($output->user);
+        return $this->userResourcePresenter->toResource($output);
     }
 }

@@ -4,28 +4,28 @@ declare(strict_types=1);
 
 namespace App\Presentation\Shop\Presenter\Customer;
 
-use App\Domain\Shop\Customer\Model\Address as DomainAddress;
+use App\Application\Shop\ReadModel\Customer\AddressItem;
 use App\Presentation\Shop\ApiResource\Customer\AddressResource;
 
 final readonly class AddressResourcePresenter
 {
-    public function toResource(DomainAddress $address): AddressResource
+    public function toResource(AddressItem $address): AddressResource
     {
         $resource = new AddressResource();
 
-        $resource->id = $address->getId()->toString();
-        $resource->name = $address->getLabel();
-        $resource->firstname = $address->getFirstname();
-        $resource->lastname = $address->getLastname();
-        $resource->company = $address->getCompany();
-        $resource->address = $address->getStreet();
-        $resource->zip = $address->getZipCode();
-        $resource->city = $address->getCity();
-        $resource->country = $address->getCountry();
-        $resource->phone = $address->getPhone();
-        $resource->isDefault = $address->isDefault();
-        $resource->createdAt = $address->getCreatedAt();
-        $resource->updatedAt = $address->getUpdatedAt();
+        $resource->id = $address->id;
+        $resource->name = $address->name;
+        $resource->firstname = $address->firstname;
+        $resource->lastname = $address->lastname;
+        $resource->company = $address->company;
+        $resource->address = $address->address;
+        $resource->zip = $address->zip;
+        $resource->city = $address->city;
+        $resource->country = $address->country;
+        $resource->phone = $address->phone;
+        $resource->isDefault = $address->isDefault;
+        $resource->createdAt = $address->createdAt;
+        $resource->updatedAt = $address->updatedAt;
 
         return $resource;
     }

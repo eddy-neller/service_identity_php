@@ -6,8 +6,8 @@ namespace App\Presentation\Tests\Unit\State\Shop\Customer\Customer;
 
 use ApiPlatform\Metadata\Operation;
 use App\Application\Shared\CQRS\Command\CommandBusInterface;
+use App\Application\Shop\ReadModel\Customer\CustomerItem;
 use App\Application\Shop\UseCase\Command\Customer\DisableCustomer\DisableCustomerCommand;
-use App\Application\Shop\UseCase\Command\Customer\DisableCustomer\DisableCustomerOutput;
 use App\Domain\Shop\Customer\Model\Customer;
 use App\Domain\Shop\Customer\ValueObject\CustomerId;
 use App\Domain\Shop\Customer\ValueObject\UserAccountId;
@@ -56,11 +56,11 @@ final class CustomerPatchProcessorTest extends TestCase
 
         $this->commandBus->expects($this->once())
             ->method('dispatch')
-            ->willReturnCallback(function ($command) use ($expectedCustomerId, $customer): DisableCustomerOutput {
+            ->willReturnCallback(function ($command) use ($expectedCustomerId, $customer): CustomerItem {
                 $this->assertInstanceOf(DisableCustomerCommand::class, $command);
                 $this->assertTrue($command->customerId->equals($expectedCustomerId));
 
-                return new DisableCustomerOutput($customer);
+                return CustomerItem::fromCustomer($customer);
             });
 
         $result = $this->processor->process($data, $this->operation, ['id' => $rawId]);

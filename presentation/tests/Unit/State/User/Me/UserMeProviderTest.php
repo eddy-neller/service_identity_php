@@ -7,7 +7,7 @@ namespace App\Presentation\Tests\Unit\State\User\Me;
 use ApiPlatform\Metadata\Operation;
 use App\Application\Shared\CQRS\Query\QueryBusInterface;
 use App\Application\User\Port\AvatarUrlResolverInterface;
-use App\Application\User\UseCase\Query\DisplayUser\DisplayUserOutput;
+use App\Application\User\ReadModel\UserItem;
 use App\Application\User\UseCase\Query\DisplayUser\DisplayUserQuery;
 use App\Domain\User\Model\User as DomainUser;
 use App\Domain\User\ValueObject\EmailAddress;
@@ -63,7 +63,7 @@ final class UserMeProviderTest extends KernelTestCase
         $user = $this->user;
         $userId = Uuid::uuid4();
         $domainUser = $this->createDomainUser();
-        $output = new DisplayUserOutput($domainUser);
+        $output = UserItem::fromUser($domainUser);
 
         $this->user->expects($this->once())
             ->method('getId')

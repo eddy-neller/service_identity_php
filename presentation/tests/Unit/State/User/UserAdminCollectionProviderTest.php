@@ -7,7 +7,8 @@ namespace App\Presentation\Tests\Unit\State\User;
 use ApiPlatform\Metadata\GetCollection;
 use App\Application\Shared\CQRS\Query\QueryBusInterface;
 use App\Application\User\Port\AvatarUrlResolverInterface;
-use App\Application\User\UseCase\Query\DisplayListUser\DisplayListUserOutput;
+use App\Application\User\ReadModel\UserItem;
+use App\Application\User\ReadModel\UserList;
 use App\Application\User\UseCase\Query\DisplayListUser\DisplayListUserQuery;
 use App\Domain\User\Model\User as DomainUser;
 use App\Domain\User\ValueObject\Avatar;
@@ -32,12 +33,12 @@ final class UserAdminCollectionProviderTest extends TestCase
         $request = new Request();
         $queryBus = $this->createMock(QueryBusInterface::class);
         $domainUser = $this->createDomainUser();
-        $output = new DisplayListUserOutput([$domainUser], 1, 1);
+        $output = new UserList([UserItem::fromUser($domainUser)], 1, 1);
 
         $queryBus
             ->expects($this->once())
             ->method('dispatch')
-            ->willReturnCallback(function ($query) use ($output): DisplayListUserOutput {
+            ->willReturnCallback(function ($query) use ($output): UserList {
                 $this->assertInstanceOf(DisplayListUserQuery::class, $query);
                 $this->assertSame(2, $query->pagination->page);
                 $this->assertSame(15, $query->pagination->itemsPerPage);
@@ -87,12 +88,12 @@ final class UserAdminCollectionProviderTest extends TestCase
     {
         $queryBus = $this->createMock(QueryBusInterface::class);
         $domainUser = $this->createDomainUser();
-        $output = new DisplayListUserOutput([$domainUser], 2, 3);
+        $output = new UserList([UserItem::fromUser($domainUser)], 2, 3);
 
         $queryBus
             ->expects($this->once())
             ->method('dispatch')
-            ->willReturnCallback(function ($query) use ($output): DisplayListUserOutput {
+            ->willReturnCallback(function ($query) use ($output): UserList {
                 $this->assertInstanceOf(DisplayListUserQuery::class, $query);
                 $this->assertSame(1, $query->pagination->page);
                 $this->assertSame(30, $query->pagination->itemsPerPage);

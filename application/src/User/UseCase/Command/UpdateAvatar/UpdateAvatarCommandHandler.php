@@ -9,6 +9,7 @@ use App\Application\Shared\Port\ClockInterface;
 use App\Application\Shared\Port\TransactionalInterface;
 use App\Application\User\Port\AvatarUploaderInterface;
 use App\Application\User\Port\UserRepositoryInterface;
+use App\Application\User\ReadModel\UserItem;
 use App\Domain\User\Exception\UserDomainException;
 use App\Domain\User\Exception\UserNotFoundException;
 
@@ -22,7 +23,7 @@ final readonly class UpdateAvatarCommandHandler implements CommandHandlerInterfa
     ) {
     }
 
-    public function handle(UpdateAvatarCommand $command): UpdateAvatarOutput
+    public function handle(UpdateAvatarCommand $command): UserItem
     {
         if (!$command->avatarFile->isValid()) {
             throw new UserDomainException('Fichier avatar invalide.');
@@ -36,7 +37,7 @@ final readonly class UpdateAvatarCommandHandler implements CommandHandlerInterfa
             throw new UserNotFoundException();
         }
 
-        return $this->transactional->transactional(function () use ($user, $command): UpdateAvatarOutput {
+        return $this->transactional->transactional(function () use ($user, $command): UserItem {
             $avatar = $this->avatarUploader->upload($command->userId, $command->avatarFile);
 
             $now = $this->clock->now();
@@ -44,7 +45,7 @@ final readonly class UpdateAvatarCommandHandler implements CommandHandlerInterfa
 
             $this->repository->save($user);
 
-            return new UpdateAvatarOutput($user);
+            return UserItem::fromUser($user);
         });
     }
 }

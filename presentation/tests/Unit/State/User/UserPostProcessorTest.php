@@ -7,8 +7,8 @@ namespace App\Presentation\Tests\Unit\State\User;
 use ApiPlatform\Metadata\Operation;
 use App\Application\Shared\CQRS\Command\CommandBusInterface;
 use App\Application\User\Port\AvatarUrlResolverInterface;
+use App\Application\User\ReadModel\UserItem;
 use App\Application\User\UseCase\Command\CreateUserByAdmin\CreateUserByAdminCommand;
-use App\Application\User\UseCase\Command\CreateUserByAdmin\CreateUserByAdminOutput;
 use App\Domain\User\Model\User as DomainUser;
 use App\Domain\User\ValueObject\EmailAddress;
 use App\Domain\User\ValueObject\Preferences;
@@ -56,11 +56,11 @@ final class UserPostProcessorTest extends KernelTestCase
     {
         $input = $this->createValidUserPostInput();
         $domainUser = $this->createDomainUser();
-        $output = new CreateUserByAdminOutput($domainUser);
+        $output = UserItem::fromUser($domainUser);
 
         $this->commandBus->expects($this->once())
             ->method('dispatch')
-            ->willReturnCallback(function ($command) use ($input, $output): CreateUserByAdminOutput {
+            ->willReturnCallback(function ($command) use ($input, $output): UserItem {
                 $this->assertInstanceOf(CreateUserByAdminCommand::class, $command);
                 $this->assertSame($input->email, $command->email);
                 $this->assertSame($input->username, $command->username);
@@ -125,7 +125,7 @@ final class UserPostProcessorTest extends KernelTestCase
     {
         $input = $this->createValidUserPostInput();
         $domainUser = $this->createDomainUser();
-        $output = new CreateUserByAdminOutput($domainUser);
+        $output = UserItem::fromUser($domainUser);
 
         $this->commandBus->expects($this->once())
             ->method('dispatch')

@@ -8,6 +8,7 @@ use App\Application\Shared\CQRS\Command\CommandHandlerInterface;
 use App\Application\Shared\Port\ClockInterface;
 use App\Application\Shared\Port\TransactionalInterface;
 use App\Application\Shop\Port\CustomerRepositoryInterface;
+use App\Application\Shop\ReadModel\Customer\CustomerItem;
 use App\Application\User\Port\UserRepositoryInterface;
 use App\Domain\Shop\Customer\Exception\CustomerAlreadyExistsException;
 use App\Domain\Shop\Customer\Model\Customer;
@@ -24,9 +25,9 @@ final readonly class CreateCustomerCommandHandler implements CommandHandlerInter
     ) {
     }
 
-    public function handle(CreateCustomerCommand $command): CreateCustomerOutput
+    public function handle(CreateCustomerCommand $command): CustomerItem
     {
-        return $this->transactional->transactional(function () use ($command): CreateCustomerOutput {
+        return $this->transactional->transactional(function () use ($command): CustomerItem {
             $userId = UserId::fromString($command->userAccountId->toString());
             $user = $this->userRepository->findById($userId);
 
@@ -48,7 +49,7 @@ final readonly class CreateCustomerCommandHandler implements CommandHandlerInter
 
             $this->repository->save($customer);
 
-            return new CreateCustomerOutput($customer);
+            return CustomerItem::fromCustomer($customer);
         });
     }
 }

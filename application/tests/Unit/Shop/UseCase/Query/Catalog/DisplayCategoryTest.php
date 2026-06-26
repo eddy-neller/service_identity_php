@@ -36,7 +36,7 @@ final class DisplayCategoryTest extends TestCase
         $categoryId = CategoryId::fromString(self::CATEGORY_ID);
         $query = new DisplayCategoryQuery($categoryId);
         $category = $this->createCategory($categoryId);
-        $categoryItem = new CategoryItem($category, null, []);
+        $categoryItem = CategoryItem::fromCategory($category, null, []);
 
         $this->repository->expects($this->once())
             ->method('findItemById')
@@ -45,7 +45,7 @@ final class DisplayCategoryTest extends TestCase
 
         $output = $this->handler->handle($query);
 
-        $this->assertSame($categoryItem, $output->categoryItem);
+        $this->assertSame($categoryItem, $output);
     }
 
     public function testHandleThrowsWhenCategoryNotFound(): void

@@ -6,6 +6,7 @@ namespace App\Application\Shop\UseCase\Query\Ordering\DisplayMyCart;
 
 use App\Application\Shared\CQRS\Query\QueryHandlerInterface;
 use App\Application\Shop\Port\CartRepositoryInterface;
+use App\Application\Shop\ReadModel\Ordering\CartItem;
 use App\Application\Shop\Service\CartItemFactory;
 
 final readonly class DisplayMyCartQueryHandler implements QueryHandlerInterface
@@ -16,8 +17,8 @@ final readonly class DisplayMyCartQueryHandler implements QueryHandlerInterface
     ) {
     }
 
-    public function handle(DisplayMyCartQuery $query): DisplayMyCartOutput
+    public function handle(DisplayMyCartQuery $query): CartItem
     {
-        return new DisplayMyCartOutput($this->factory->create($this->repository->findByOwner($query->customerId)));
+        return $this->factory->create($this->repository->findByOwner($query->customerId));
     }
 }

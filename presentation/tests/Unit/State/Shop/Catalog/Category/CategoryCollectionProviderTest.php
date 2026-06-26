@@ -6,7 +6,8 @@ namespace App\Presentation\Tests\Unit\State\Shop\Catalog\Category;
 
 use ApiPlatform\Metadata\GetCollection;
 use App\Application\Shared\CQRS\Query\QueryBusInterface;
-use App\Application\Shop\UseCase\Query\Catalog\DisplayListCategory\DisplayListCategoryOutput;
+use App\Application\Shop\ReadModel\Catalog\CategoryItem;
+use App\Application\Shop\ReadModel\Catalog\CategoryList;
 use App\Application\Shop\UseCase\Query\Catalog\DisplayListCategory\DisplayListCategoryQuery;
 use App\Domain\SharedKernel\ValueObject\Slug;
 use App\Domain\Shop\Catalog\Model\Category as DomainCategory;
@@ -26,12 +27,12 @@ final class CategoryCollectionProviderTest extends TestCase
         $request = new Request();
         $queryBus = $this->createMock(QueryBusInterface::class);
         $category = $this->createCategory();
-        $output = new DisplayListCategoryOutput([$category], 3, 2);
+        $output = new CategoryList([CategoryItem::fromCategory($category)], 3, 2);
 
         $queryBus
             ->expects($this->once())
             ->method('dispatch')
-            ->willReturnCallback(function ($query) use ($output): DisplayListCategoryOutput {
+            ->willReturnCallback(function ($query) use ($output): CategoryList {
                 $this->assertInstanceOf(DisplayListCategoryQuery::class, $query);
                 $this->assertSame(2, $query->pagination->page);
                 $this->assertSame(15, $query->pagination->itemsPerPage);
@@ -71,12 +72,12 @@ final class CategoryCollectionProviderTest extends TestCase
     {
         $queryBus = $this->createMock(QueryBusInterface::class);
         $category = $this->createCategory();
-        $output = new DisplayListCategoryOutput([$category], 1, 1);
+        $output = new CategoryList([CategoryItem::fromCategory($category)], 1, 1);
 
         $queryBus
             ->expects($this->once())
             ->method('dispatch')
-            ->willReturnCallback(function ($query) use ($output): DisplayListCategoryOutput {
+            ->willReturnCallback(function ($query) use ($output): CategoryList {
                 $this->assertInstanceOf(DisplayListCategoryQuery::class, $query);
                 $this->assertSame(1, $query->pagination->page);
                 $this->assertSame(30, $query->pagination->itemsPerPage);

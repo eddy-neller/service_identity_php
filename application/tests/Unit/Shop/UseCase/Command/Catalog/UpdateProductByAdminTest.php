@@ -145,7 +145,7 @@ final class UpdateProductByAdminTest extends TestCase
 
         $output = $this->handler->handle($command);
 
-        $this->assertSame($newCategory, $output->productItem->category);
+        $this->assertSame($newCategory->getId()->toString(), $output->category->id);
         $this->assertSame('New title', $product->getTitle()->toString());
         $this->assertSame('New subtitle', $product->getSubtitle()->toString());
         $this->assertSame('New description', $product->getDescription()->toString());
@@ -200,7 +200,7 @@ final class UpdateProductByAdminTest extends TestCase
 
         $output = $this->handler->handle($command);
 
-        $this->assertSame($category, $output->productItem->category);
+        $this->assertSame($category->getId()->toString(), $output->category->id);
         $this->assertSame('New description', $product->getDescription()->toString());
         $this->assertSame('Product title', $product->getTitle()->toString());
         $this->assertSame('Product subtitle', $product->getSubtitle()->toString());
@@ -252,7 +252,7 @@ final class UpdateProductByAdminTest extends TestCase
 
         $output = $this->handler->handle($command);
 
-        $this->assertSame($category, $output->productItem->category);
+        $this->assertSame($category->getId()->toString(), $output->category->id);
         $this->assertSame('Product title', $product->getTitle()->toString());
         $this->assertSame('Updated subtitle', $product->getSubtitle()->toString());
         $this->assertSame($now, $product->getUpdatedAt());
@@ -577,7 +577,7 @@ final class UpdateProductByAdminTest extends TestCase
 
         $output = $this->handler->handle($command);
 
-        $this->assertSame($category, $output->productItem->category);
+        $this->assertSame($category->getId()->toString(), $output->category->id);
         $this->assertSame('New title', $product->getTitle()->toString());
     }
 

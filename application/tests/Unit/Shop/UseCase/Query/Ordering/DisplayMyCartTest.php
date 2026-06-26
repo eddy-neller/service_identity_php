@@ -7,8 +7,8 @@ namespace App\Application\Tests\Unit\Shop\UseCase\Query\Ordering;
 use App\Application\Shop\Port\CartRepositoryInterface;
 use App\Application\Shop\Port\ProductImageUrlResolverInterface;
 use App\Application\Shop\Port\ProductRepositoryInterface;
+use App\Application\Shop\ReadModel\Ordering\CartItem;
 use App\Application\Shop\Service\CartItemFactory;
-use App\Application\Shop\UseCase\Query\Ordering\DisplayMyCart\DisplayMyCartOutput;
 use App\Application\Shop\UseCase\Query\Ordering\DisplayMyCart\DisplayMyCartQuery;
 use App\Application\Shop\UseCase\Query\Ordering\DisplayMyCart\DisplayMyCartQueryHandler;
 use App\Domain\Shop\Customer\ValueObject\CustomerId;
@@ -59,8 +59,8 @@ final class DisplayMyCartTest extends TestCase
 
         $output = $this->handler->handle($query);
 
-        $this->assertInstanceOf(DisplayMyCartOutput::class, $output);
-        $this->assertSame(self::CART_ID, $output->cart->id);
+        $this->assertInstanceOf(CartItem::class, $output);
+        $this->assertSame(self::CART_ID, $output->id);
     }
 
     public function testHandleReturnsEmptyCartWhenNoneExists(): void
@@ -77,9 +77,9 @@ final class DisplayMyCartTest extends TestCase
 
         $output = $this->handler->handle($query);
 
-        $this->assertInstanceOf(DisplayMyCartOutput::class, $output);
-        $this->assertNull($output->cart->id);
-        $this->assertSame([], $output->cart->items);
-        $this->assertSame(0, $output->cart->totalQuantity);
+        $this->assertInstanceOf(CartItem::class, $output);
+        $this->assertNull($output->id);
+        $this->assertSame([], $output->items);
+        $this->assertSame(0, $output->totalQuantity);
     }
 }

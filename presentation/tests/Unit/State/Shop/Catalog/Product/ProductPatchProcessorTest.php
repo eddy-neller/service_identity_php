@@ -9,7 +9,6 @@ use App\Application\Shared\CQRS\Command\CommandBusInterface;
 use App\Application\Shop\Port\ProductImageUrlResolverInterface;
 use App\Application\Shop\ReadModel\Catalog\ProductItem;
 use App\Application\Shop\UseCase\Command\Catalog\UpdateProductByAdmin\UpdateProductByAdminCommand;
-use App\Application\Shop\UseCase\Command\Catalog\UpdateProductByAdmin\UpdateProductByAdminOutput;
 use App\Domain\SharedKernel\ValueObject\Slug;
 use App\Domain\Shop\Catalog\Model\Category;
 use App\Domain\Shop\Catalog\Model\Product;
@@ -72,12 +71,12 @@ final class ProductPatchProcessorTest extends TestCase
         $input->price = 29.99;
         $input->category = $this->createCategoryResource('550e8400-e29b-41d4-a716-446655440001');
 
-        $output = new UpdateProductByAdminOutput($this->createProductView());
+        $output = $this->createProductView();
         $productId = '550e8400-e29b-41d4-a716-446655440000';
 
         $this->commandBus->expects($this->once())
             ->method('dispatch')
-            ->willReturnCallback(function ($command) use ($input, $productId, $output): UpdateProductByAdminOutput {
+            ->willReturnCallback(function ($command) use ($input, $productId, $output): ProductItem {
                 $this->assertInstanceOf(UpdateProductByAdminCommand::class, $command);
                 $this->assertTrue($command->productId->equals(ProductId::fromString($productId)));
                 $this->assertSame($input->title, $command->title);
@@ -168,7 +167,7 @@ final class ProductPatchProcessorTest extends TestCase
             updatedAt: $now,
         );
 
-        return new ProductItem($product, $category);
+        return ProductItem::fromProduct($product, $category);
     }
 
     private function createCategoryResource(string $id): CategoryResource

@@ -48,6 +48,6 @@ final readonly class ProductImageProcessor implements ProcessorInterface
 
         $output = $this->commandBus->dispatch($command);
 
-        return $this->productResourcePresenter->toResource($output->productItem);
+        return $this->productResourcePresenter->toResource($output);
     }
 }

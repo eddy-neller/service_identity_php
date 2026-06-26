@@ -16,7 +16,7 @@ final readonly class DisplayAddressQueryHandler implements QueryHandlerInterface
     ) {
     }
 
-    public function handle(DisplayAddressQuery $query): DisplayAddressOutput
+    public function handle(DisplayAddressQuery $query): AddressItem
     {
         $address = $this->repository->findById($query->addressId);
 
@@ -24,6 +24,6 @@ final readonly class DisplayAddressQueryHandler implements QueryHandlerInterface
             throw new AddressNotFoundException();
         }
 
-        return new DisplayAddressOutput(new AddressItem($address));
+        return AddressItem::fromAddress($address);
     }
 }

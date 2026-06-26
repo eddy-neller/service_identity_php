@@ -8,7 +8,7 @@ use ApiPlatform\Metadata\GetCollection;
 use App\Application\Shared\CQRS\Query\QueryBusInterface;
 use App\Application\Shop\Port\ProductImageUrlResolverInterface;
 use App\Application\Shop\ReadModel\Catalog\ProductItem;
-use App\Application\Shop\UseCase\Query\Catalog\DisplayListProduct\DisplayListProductOutput;
+use App\Application\Shop\ReadModel\Catalog\ProductList;
 use App\Application\Shop\UseCase\Query\Catalog\DisplayListProduct\DisplayListProductQuery;
 use App\Domain\SharedKernel\ValueObject\Slug;
 use App\Domain\Shop\Catalog\Model\Category as DomainCategory;
@@ -37,14 +37,14 @@ final class ProductCollectionProviderTest extends TestCase
         $queryBus = $this->createMock(QueryBusInterface::class);
         $category = $this->createCategory();
         $product = $this->createProduct($category->getId());
-        $output = new DisplayListProductOutput([
-            new ProductItem($product, $category),
+        $output = new ProductList([
+            ProductItem::fromProduct($product, $category),
         ], 5, 3);
 
         $queryBus
             ->expects($this->once())
             ->method('dispatch')
-            ->willReturnCallback(function ($query) use ($output): DisplayListProductOutput {
+            ->willReturnCallback(function ($query) use ($output): ProductList {
                 $this->assertInstanceOf(DisplayListProductQuery::class, $query);
                 $this->assertSame(2, $query->pagination->page);
                 $this->assertSame(15, $query->pagination->itemsPerPage);
@@ -104,14 +104,14 @@ final class ProductCollectionProviderTest extends TestCase
         $queryBus = $this->createMock(QueryBusInterface::class);
         $category = $this->createCategory();
         $product = $this->createProduct($category->getId());
-        $output = new DisplayListProductOutput([
-            new ProductItem($product, $category),
+        $output = new ProductList([
+            ProductItem::fromProduct($product, $category),
         ], 1, 1);
 
         $queryBus
             ->expects($this->once())
             ->method('dispatch')
-            ->willReturnCallback(function ($query) use ($output): DisplayListProductOutput {
+            ->willReturnCallback(function ($query) use ($output): ProductList {
                 $this->assertInstanceOf(DisplayListProductQuery::class, $query);
                 $this->assertSame(1, $query->pagination->page);
                 $this->assertSame(30, $query->pagination->itemsPerPage);

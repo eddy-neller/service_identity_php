@@ -8,14 +8,12 @@ use ApiPlatform\Metadata\Operation;
 use App\Application\Shared\CQRS\Command\CommandBusInterface;
 use App\Application\Shared\CQRS\Query\QueryBusInterface;
 use App\Application\Shop\ReadModel\Customer\AddressItem;
+use App\Application\Shop\ReadModel\Customer\CurrentCustomerItem;
 use App\Application\Shop\UseCase\Command\Customer\SetDefaultAddress\SetDefaultAddressCommand;
-use App\Application\Shop\UseCase\Command\Customer\SetDefaultAddress\SetDefaultAddressOutput;
-use App\Application\Shop\UseCase\Query\Customer\DisplayMyCustomer\DisplayMyCustomerOutput;
 use App\Application\Shop\UseCase\Query\Customer\DisplayMyCustomer\DisplayMyCustomerQuery;
 use App\Domain\Shop\Customer\Model\Address as DomainAddress;
 use App\Domain\Shop\Customer\ValueObject\AddressId;
 use App\Domain\Shop\Customer\ValueObject\CustomerId;
-use App\Domain\Shop\Customer\ValueObject\CustomerStatus;
 use App\Domain\Shop\Customer\ValueObject\UserAccountId;
 use App\Presentation\Shared\State\PresentationErrorCode;
 use App\Presentation\Shop\ApiResource\Customer\AddressResource;
@@ -62,7 +60,7 @@ final class AddressDefaultProcessorTest extends TestCase
 
         $customerId = CustomerId::fromString('550e8400-e29b-41d4-a716-446655440601');
         $addressId = AddressId::fromString('550e8400-e29b-41d4-a716-446655440602');
-        $customerOutput = new DisplayMyCustomerOutput($customerId, CustomerStatus::active());
+        $customerOutput = new CurrentCustomerItem($customerId->toString());
         $address = DomainAddress::create(
             id: $addressId,
             ownerId: $customerId,
@@ -77,11 +75,11 @@ final class AddressDefaultProcessorTest extends TestCase
             now: new DateTimeImmutable('2025-01-01 10:00:00'),
             isDefault: true,
         );
-        $output = new SetDefaultAddressOutput(new AddressItem($address));
+        $output = AddressItem::fromAddress($address);
 
         $this->queryBus->expects($this->once())
             ->method('dispatch')
-            ->willReturnCallback(function ($query) use ($customerOutput): DisplayMyCustomerOutput {
+            ->willReturnCallback(function ($query) use ($customerOutput): CurrentCustomerItem {
                 $this->assertInstanceOf(DisplayMyCustomerQuery::class, $query);
                 $this->assertTrue($query->userAccountId->equals(UserAccountId::fromString('550e8400-e29b-41d4-a716-446655440600')));
 
@@ -90,7 +88,7 @@ final class AddressDefaultProcessorTest extends TestCase
 
         $this->commandBus->expects($this->once())
             ->method('dispatch')
-            ->willReturnCallback(function ($command) use ($customerId, $addressId, $output): SetDefaultAddressOutput {
+            ->willReturnCallback(function ($command) use ($customerId, $addressId, $output): AddressItem {
                 $this->assertInstanceOf(SetDefaultAddressCommand::class, $command);
                 $this->assertTrue($command->ownerId->equals($customerId));
                 $this->assertTrue($command->addressId->equals($addressId));

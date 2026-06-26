@@ -7,9 +7,9 @@ namespace App\Application\Tests\Unit\Shop\UseCase\Command\Customer;
 use App\Application\Shared\Port\ClockInterface;
 use App\Application\Shared\Port\TransactionalInterface;
 use App\Application\Shop\Port\CustomerRepositoryInterface;
+use App\Application\Shop\ReadModel\Customer\CustomerItem;
 use App\Application\Shop\UseCase\Command\Customer\DisableCustomer\DisableCustomerCommand;
 use App\Application\Shop\UseCase\Command\Customer\DisableCustomer\DisableCustomerCommandHandler;
-use App\Application\Shop\UseCase\Command\Customer\DisableCustomer\DisableCustomerOutput;
 use App\Domain\Shop\Customer\Exception\CustomerDomainException;
 use App\Domain\Shop\Customer\Exception\CustomerNotFoundException;
 use App\Domain\Shop\Customer\Model\Customer;
@@ -134,7 +134,7 @@ final class DisableCustomerTest extends TestCase
 
         $output = $this->handler->handle($command);
 
-        $this->assertInstanceOf(DisableCustomerOutput::class, $output);
-        $this->assertTrue($output->customer->getStatus()->isDisabled());
+        $this->assertInstanceOf(CustomerItem::class, $output);
+        $this->assertSame(2, $output->status);
     }
 }

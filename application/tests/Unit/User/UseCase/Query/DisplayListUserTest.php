@@ -6,6 +6,7 @@ namespace App\Application\Tests\Unit\User\UseCase\Query;
 
 use App\Application\Shared\ReadModel\Pagination;
 use App\Application\User\Port\UserRepositoryInterface;
+use App\Application\User\ReadModel\UserItem;
 use App\Application\User\ReadModel\UserList;
 use App\Application\User\UseCase\Query\DisplayListUser\DisplayListUserQuery;
 use App\Application\User\UseCase\Query\DisplayListUser\DisplayListUserQueryHandler;
@@ -40,7 +41,8 @@ final class DisplayListUserTest extends TestCase
         );
 
         $user = $this->createUser(UserId::fromString('550e8400-e29b-41d4-a716-446655440000'));
-        $list = new UserList([$user], 10, 2);
+        $userItem = UserItem::fromUser($user);
+        $list = new UserList([$userItem], 10, 2);
 
         $this->repository->expects($this->once())
             ->method('list')
@@ -49,7 +51,7 @@ final class DisplayListUserTest extends TestCase
 
         $output = $this->handler->handle($query);
 
-        $this->assertSame([$user], $output->users);
+        $this->assertSame([$userItem], $output->items);
         $this->assertSame(10, $output->totalItems);
         $this->assertSame(2, $output->totalPages);
     }
@@ -63,7 +65,8 @@ final class DisplayListUserTest extends TestCase
         );
 
         $user = $this->createUser(UserId::fromString('550e8400-e29b-41d4-a716-446655440001'));
-        $list = new UserList([$user], 1, 1);
+        $userItem = UserItem::fromUser($user);
+        $list = new UserList([$userItem], 1, 1);
 
         $this->repository->expects($this->once())
             ->method('list')
@@ -72,7 +75,7 @@ final class DisplayListUserTest extends TestCase
 
         $output = $this->handler->handle($query);
 
-        $this->assertSame([$user], $output->users);
+        $this->assertSame([$userItem], $output->items);
     }
 
     public function testQueryCacheKeyIsStableWhenFiltersAndOrderByAreReordered(): void

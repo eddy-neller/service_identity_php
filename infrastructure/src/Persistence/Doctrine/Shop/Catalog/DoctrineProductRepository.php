@@ -56,7 +56,7 @@ final readonly class DoctrineProductRepository implements ProductRepositoryInter
         $products = [];
         foreach ($paginator as $entity) {
             if ($entity instanceof DoctrineProduct) {
-                $products[] = new ProductItem(
+                $products[] = ProductItem::fromProduct(
                     product: $this->mapper->toDomain($entity),
                     category: $this->categoryMapper->toDomain($entity->getCategory()),
                 );
@@ -64,7 +64,7 @@ final readonly class DoctrineProductRepository implements ProductRepositoryInter
         }
 
         return new ProductList(
-            products: $products,
+            items: $products,
             totalItems: $totalItems,
             totalPages: $totalPages,
         );

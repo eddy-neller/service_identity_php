@@ -46,7 +46,7 @@ final readonly class AddressCollectionProvider implements ProviderInterface
         }
 
         $items = [];
-        foreach ($output->addresses as $address) {
+        foreach ($output->items as $address) {
             $items[] = $this->presenter->toResource($address);
         }
 

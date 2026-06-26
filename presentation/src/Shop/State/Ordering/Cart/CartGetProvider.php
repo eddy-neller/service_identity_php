@@ -25,6 +25,6 @@ final readonly class CartGetProvider implements ProviderInterface
     {
         $output = $this->queryBus->dispatch(new DisplayMyCartQuery($this->customerResolver->resolve()));
 
-        return $this->presenter->toResource($output->cart);
+        return $this->presenter->toResource($output);
     }
 }

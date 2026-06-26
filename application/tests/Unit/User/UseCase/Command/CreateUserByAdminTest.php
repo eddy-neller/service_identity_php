@@ -114,9 +114,13 @@ final class CreateUserByAdminTest extends TestCase
 
         $output = $this->handler->handle($command);
 
-        $this->assertInstanceOf(User::class, $output->user);
-        $this->assertTrue($output->user->getEmail()->equals(EmailAddress::fromString($email)));
-        $this->assertSame($username, $output->user->getUsername()->toString());
+        $this->assertSame($userId->toString(), $output->id);
+        $this->assertSame($email, $output->email);
+        $this->assertSame($username, $output->username);
+        $this->assertSame($firstname, $output->firstname);
+        $this->assertSame($lastname, $output->lastname);
+        $this->assertSame($status->toInt(), $output->status);
+        $this->assertSame(array_values(array_unique($roles)), $output->roles);
     }
 
     public function testHandleThrowsWhenEmailAlreadyUsed(): void

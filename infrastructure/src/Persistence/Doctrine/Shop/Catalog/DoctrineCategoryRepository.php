@@ -52,12 +52,12 @@ final readonly class DoctrineCategoryRepository implements CategoryRepositoryInt
         $categories = [];
         foreach ($paginator as $entity) {
             if ($entity instanceof DoctrineCategory) {
-                $categories[] = $this->mapper->toDomain($entity);
+                $categories[] = CategoryItem::fromCategory($this->mapper->toDomain($entity));
             }
         }
 
         return new CategoryList(
-            categories: $categories,
+            items: $categories,
             totalItems: $totalItems,
             totalPages: $totalPages,
         );
@@ -112,9 +112,12 @@ final readonly class DoctrineCategoryRepository implements CategoryRepositoryInt
         $childrenEntities = $entity->getChildren();
 
         $parent = null === $parentEntity ? null : $this->mapper->toDomain($parentEntity);
-        $children = empty($childrenEntities) ? null : array_map(fn (DoctrineCategory $child): DomainCategory => $this->mapper->toDomain($child), $childrenEntities);
+        $children = empty($childrenEntities) ? null : array_map(
+            fn (DoctrineCategory $child): DomainCategory => $this->mapper->toDomain($child),
+            $childrenEntities,
+        );
 
-        return new CategoryItem(
+        return CategoryItem::fromCategory(
             category: $this->mapper->toDomain($entity),
             parent: $parent,
             children: $children,

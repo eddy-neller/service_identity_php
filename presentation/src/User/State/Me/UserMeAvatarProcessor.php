@@ -48,7 +48,7 @@ final readonly class UserMeAvatarProcessor implements ProcessorInterface
 
         $output = $this->commandBus->dispatch($command);
 
-        return $this->userResourcePresenter->toResource($output->user);
+        return $this->userResourcePresenter->toResource($output);
     }
 
     protected function getSecurity(): Security

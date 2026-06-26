@@ -20,7 +20,7 @@ final readonly class UpdateAddressCommandHandler implements CommandHandlerInterf
     ) {
     }
 
-    public function handle(UpdateAddressCommand $command): UpdateAddressOutput
+    public function handle(UpdateAddressCommand $command): AddressItem
     {
         $address = $this->repository->findById($command->addressId);
 
@@ -45,6 +45,6 @@ final readonly class UpdateAddressCommandHandler implements CommandHandlerInterf
             $this->repository->save($address);
         });
 
-        return new UpdateAddressOutput(new AddressItem($address));
+        return AddressItem::fromAddress($address);
     }
 }

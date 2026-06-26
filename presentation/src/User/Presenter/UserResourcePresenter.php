@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Presentation\User\Presenter;
 
 use App\Application\User\Port\AvatarUrlResolverInterface;
-use App\Domain\User\Model\User as DomainUser;
+use App\Application\User\ReadModel\UserItem;
 use App\Presentation\User\ApiResource\UserResource;
 
 final readonly class UserResourcePresenter
@@ -15,25 +15,22 @@ final readonly class UserResourcePresenter
     ) {
     }
 
-    public function toResource(DomainUser $user): UserResource
+    public function toResource(UserItem $userItem): UserResource
     {
         $resource = new UserResource();
 
-        $resource->id = $user->getId()->toString();
-        $resource->firstname = $user->getFirstname()?->toString();
-        $resource->lastname = $user->getLastname()?->toString();
-        $resource->username = $user->getUsername()->toString();
-        $resource->email = $user->getEmail()->toString();
-        $resource->roles = $user->getRoles()->all();
-        $resource->status = $user->getStatus()->toInt();
-
-        $avatar = $user->getAvatar();
-        $resource->avatarUrl = $this->avatarUrlResolver->resolve($avatar);
-
-        $resource->lastVisit = $user->getLastVisit();
-        $resource->nbLogin = $user->getLoginCount();
-        $resource->createdAt = $user->getCreatedAt();
-        $resource->updatedAt = $user->getUpdatedAt();
+        $resource->id = $userItem->id;
+        $resource->firstname = $userItem->firstname;
+        $resource->lastname = $userItem->lastname;
+        $resource->username = $userItem->username;
+        $resource->email = $userItem->email;
+        $resource->roles = $userItem->roles;
+        $resource->status = $userItem->status;
+        $resource->avatarUrl = $this->avatarUrlResolver->resolve($userItem->avatar);
+        $resource->lastVisit = $userItem->lastVisit;
+        $resource->nbLogin = $userItem->loginCount;
+        $resource->createdAt = $userItem->createdAt;
+        $resource->updatedAt = $userItem->updatedAt;
 
         return $resource;
     }

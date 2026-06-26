@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Presentation\Shop\Presenter\Customer;
 
 use App\Application\Shop\ReadModel\Customer\CustomerItem;
-use App\Domain\Shop\Customer\Model\Customer as DomainCustomer;
 use App\Presentation\Shop\ApiResource\Customer\CustomerResource;
 
 final readonly class CustomerResourcePresenter
@@ -17,7 +16,7 @@ final readonly class CustomerResourcePresenter
 
     public function toResource(CustomerItem $customerItem): CustomerResource
     {
-        $resource = $this->mapCustomer($customerItem->customer);
+        $resource = $this->mapCustomer($customerItem);
 
         $resource->nbAddress = count($customerItem->addresses);
 
@@ -28,7 +27,7 @@ final readonly class CustomerResourcePresenter
         return $resource;
     }
 
-    public function toSummaryResource(DomainCustomer $customer): CustomerResource
+    public function toSummaryResource(CustomerItem $customer): CustomerResource
     {
         return $this->mapCustomer($customer);
     }
@@ -36,15 +35,15 @@ final readonly class CustomerResourcePresenter
     /**
      * Flat mapping to prevent addresses queries in list/get payloads.
      */
-    private function mapCustomer(DomainCustomer $customer): CustomerResource
+    private function mapCustomer(CustomerItem $customer): CustomerResource
     {
         $resource = new CustomerResource();
 
-        $resource->id = $customer->getId()->toString();
-        $resource->userAccountId = $customer->getUserAccountId()?->toString() ?? '';
-        $resource->status = $customer->getStatus()->toInt();
-        $resource->createdAt = $customer->getCreatedAt();
-        $resource->updatedAt = $customer->getUpdatedAt();
+        $resource->id = $customer->id;
+        $resource->userAccountId = $customer->userAccountId ?? '';
+        $resource->status = $customer->status;
+        $resource->createdAt = $customer->createdAt;
+        $resource->updatedAt = $customer->updatedAt;
 
         return $resource;
     }

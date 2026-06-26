@@ -114,7 +114,13 @@ final class UpdateUserByAdminTest extends TestCase
 
         $output = $this->handler->handle($command);
 
-        $this->assertSame($user, $output->user);
+        $this->assertSame($userId->toString(), $output->id);
+        $this->assertSame($newUsername, $output->username);
+        $this->assertSame($newEmail, $output->email);
+        $this->assertSame($newFirstname, $output->firstname);
+        $this->assertSame($newLastname, $output->lastname);
+        $this->assertSame($newRoles, $output->roles);
+        $this->assertSame($newStatus->toInt(), $output->status);
         $this->assertSame($newUsername, $user->getUsername()->toString());
         $this->assertTrue($user->getEmail()->equals(EmailAddress::fromString($newEmail)));
         $this->assertSame($newFirstname, $user->getFirstname()?->toString());
@@ -167,7 +173,9 @@ final class UpdateUserByAdminTest extends TestCase
 
         $output = $this->handler->handle($command);
 
-        $this->assertSame($user, $output->user);
+        $this->assertSame($userId->toString(), $output->id);
+        $this->assertSame($newUsername, $output->username);
+        $this->assertSame($originalEmail->toString(), $output->email);
         $this->assertSame($newUsername, $user->getUsername()->toString());
         $this->assertTrue($user->getEmail()->equals($originalEmail));
     }

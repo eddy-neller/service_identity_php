@@ -22,13 +22,13 @@ final readonly class UpdateProductImageByAdminCommandHandler implements CommandH
     ) {
     }
 
-    public function handle(UpdateProductImageByAdminCommand $command): UpdateProductImageByAdminOutput
+    public function handle(UpdateProductImageByAdminCommand $command): ProductItem
     {
         if (!$command->imageFile->isValid()) {
             throw new CatalogDomainException('Invalid image file.', 400);
         }
 
-        return $this->transactional->transactional(function () use ($command): UpdateProductImageByAdminOutput {
+        return $this->transactional->transactional(function () use ($command): ProductItem {
             $product = $this->productRepository->updateImage($command->productId, $command->imageFile);
 
             if (null === $product) {
@@ -40,7 +40,7 @@ final readonly class UpdateProductImageByAdminCommandHandler implements CommandH
                 throw new CategoryNotFoundException();
             }
 
-            return new UpdateProductImageByAdminOutput(new ProductItem($product, $category));
+            return ProductItem::fromProduct($product, $category);
         });
     }
 }

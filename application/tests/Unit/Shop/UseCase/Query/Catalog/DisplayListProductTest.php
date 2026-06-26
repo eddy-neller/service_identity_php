@@ -48,7 +48,7 @@ final class DisplayListProductTest extends TestCase
         );
 
         $categoryId = CategoryId::fromString('550e8400-e29b-41d4-a716-446655440000');
-        $item = new ProductItem(
+        $item = ProductItem::fromProduct(
             product: $this->createProduct(ProductId::fromString('1d2f4c1a-2b2b-4aa2-9a20-8b3e18f1d152'), $categoryId),
             category: $this->createCategory($categoryId),
         );
@@ -61,7 +61,7 @@ final class DisplayListProductTest extends TestCase
 
         $output = $this->handler->handle($query);
 
-        $this->assertSame([$item], $output->products);
+        $this->assertSame([$item], $output->items);
         $this->assertSame(10, $output->totalItems);
         $this->assertSame(2, $output->totalPages);
     }
@@ -75,7 +75,7 @@ final class DisplayListProductTest extends TestCase
         );
 
         $categoryId = CategoryId::fromString('550e8400-e29b-41d4-a716-446655440001');
-        $item = new ProductItem(
+        $item = ProductItem::fromProduct(
             product: $this->createProduct(ProductId::fromString('2d2f4c1a-2b2b-4aa2-9a20-8b3e18f1d153'), $categoryId),
             category: $this->createCategory($categoryId),
         );
@@ -88,7 +88,7 @@ final class DisplayListProductTest extends TestCase
 
         $output = $this->handler->handle($query);
 
-        $this->assertSame([$item], $output->products);
+        $this->assertSame([$item], $output->items);
     }
 
     public function testQueryCacheKeyIsStableWhenFiltersAndOrderByAreReordered(): void

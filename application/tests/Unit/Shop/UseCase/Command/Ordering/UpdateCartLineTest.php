@@ -9,10 +9,10 @@ use App\Application\Shared\Port\TransactionalInterface;
 use App\Application\Shop\Port\CartRepositoryInterface;
 use App\Application\Shop\Port\ProductImageUrlResolverInterface;
 use App\Application\Shop\Port\ProductRepositoryInterface;
+use App\Application\Shop\ReadModel\Ordering\CartItem;
 use App\Application\Shop\Service\CartItemFactory;
 use App\Application\Shop\UseCase\Command\Ordering\UpdateCartLine\UpdateCartLineCommand;
 use App\Application\Shop\UseCase\Command\Ordering\UpdateCartLine\UpdateCartLineCommandHandler;
-use App\Application\Shop\UseCase\Command\Ordering\UpdateCartLine\UpdateCartLineOutput;
 use App\Domain\Shop\Catalog\ValueObject\ProductId;
 use App\Domain\Shop\Customer\ValueObject\CustomerId;
 use App\Domain\Shop\Ordering\Exception\CartLineNotFoundException;
@@ -114,8 +114,8 @@ final class UpdateCartLineTest extends TestCase
 
         $output = $this->handler->handle($command);
 
-        $this->assertInstanceOf(UpdateCartLineOutput::class, $output);
-        $this->assertSame(self::CART_ID, $output->cart->id);
+        $this->assertInstanceOf(CartItem::class, $output);
+        $this->assertSame(self::CART_ID, $output->id);
     }
 
     public function testHandleRemovesLineWhenQuantityIsZero(): void
@@ -145,7 +145,7 @@ final class UpdateCartLineTest extends TestCase
 
         $output = $this->handler->handle($command);
 
-        $this->assertInstanceOf(UpdateCartLineOutput::class, $output);
+        $this->assertInstanceOf(CartItem::class, $output);
     }
 
     private function cartWithLine(CustomerId $customerId, ProductId $productId): Cart

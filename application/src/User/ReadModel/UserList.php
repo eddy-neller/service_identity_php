@@ -4,15 +4,13 @@ declare(strict_types=1);
 
 namespace App\Application\User\ReadModel;
 
-use App\Domain\User\Model\User;
-
 final readonly class UserList
 {
     /**
-     * @param list<User> $users
+     * @param list<UserItem> $items
      */
     public function __construct(
-        public array $users,
+        public array $items,
         public int $totalItems,
         public int $totalPages,
     ) {

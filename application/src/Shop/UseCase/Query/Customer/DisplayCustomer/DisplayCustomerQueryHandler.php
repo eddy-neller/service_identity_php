@@ -19,7 +19,7 @@ final readonly class DisplayCustomerQueryHandler implements QueryHandlerInterfac
     ) {
     }
 
-    public function handle(DisplayCustomerQuery $query): DisplayCustomerOutput
+    public function handle(DisplayCustomerQuery $query): CustomerItem
     {
         $customer = $this->customerRepository->findById($query->customerId);
 
@@ -34,11 +34,9 @@ final readonly class DisplayCustomerQueryHandler implements QueryHandlerInterfac
             filters: [],
         );
 
-        return new DisplayCustomerOutput(
-            new CustomerItem(
-                customer: $customer,
-                addresses: $addressList->addresses,
-            ),
+        return CustomerItem::fromCustomer(
+            customer: $customer,
+            addresses: $addressList->items,
         );
     }
 }

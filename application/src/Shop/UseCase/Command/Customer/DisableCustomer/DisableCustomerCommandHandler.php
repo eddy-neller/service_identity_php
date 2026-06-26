@@ -8,6 +8,7 @@ use App\Application\Shared\CQRS\Command\CommandHandlerInterface;
 use App\Application\Shared\Port\ClockInterface;
 use App\Application\Shared\Port\TransactionalInterface;
 use App\Application\Shop\Port\CustomerRepositoryInterface;
+use App\Application\Shop\ReadModel\Customer\CustomerItem;
 use App\Domain\Shop\Customer\Exception\CustomerDomainException;
 use App\Domain\Shop\Customer\Exception\CustomerNotFoundException;
 
@@ -20,7 +21,7 @@ final readonly class DisableCustomerCommandHandler implements CommandHandlerInte
     ) {
     }
 
-    public function handle(DisableCustomerCommand $command): DisableCustomerOutput
+    public function handle(DisableCustomerCommand $command): CustomerItem
     {
         $customer = $this->repository->findById($command->customerId);
 
@@ -38,6 +39,6 @@ final readonly class DisableCustomerCommandHandler implements CommandHandlerInte
             $this->repository->save($customer);
         });
 
-        return new DisableCustomerOutput($customer);
+        return CustomerItem::fromCustomer($customer);
     }
 }

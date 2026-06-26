@@ -4,17 +4,36 @@ declare(strict_types=1);
 
 namespace App\Application\Shop\ReadModel\Customer;
 
-use App\Domain\Shop\Customer\Model\Address;
 use App\Domain\Shop\Customer\Model\Customer;
+use DateTimeImmutable;
 
 final readonly class CustomerItem
 {
     /**
-     * @param list<Address> $addresses
+     * @param list<AddressItem> $addresses
      */
     public function __construct(
-        public Customer $customer,
+        public string $id,
+        public ?string $userAccountId,
+        public int $status,
+        public DateTimeImmutable $createdAt,
+        public DateTimeImmutable $updatedAt,
         public array $addresses,
     ) {
+    }
+
+    /**
+     * @param list<AddressItem> $addresses
+     */
+    public static function fromCustomer(Customer $customer, array $addresses = []): self
+    {
+        return new self(
+            id: $customer->getId()->toString(),
+            userAccountId: $customer->getUserAccountId()?->toString(),
+            status: $customer->getStatus()->toInt(),
+            createdAt: $customer->getCreatedAt(),
+            updatedAt: $customer->getUpdatedAt(),
+            addresses: $addresses,
+        );
     }
 }

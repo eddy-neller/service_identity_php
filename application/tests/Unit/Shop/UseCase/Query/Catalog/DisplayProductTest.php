@@ -66,8 +66,9 @@ final class DisplayProductTest extends TestCase
 
         $output = $this->handler->handle($query);
 
-        $this->assertSame($product, $output->productItem->product);
-        $this->assertSame($category, $output->productItem->category);
+        $this->assertSame($product->getId()->toString(), $output->id);
+        $this->assertSame($product->getTitle()->toString(), $output->title);
+        $this->assertSame($category->getId()->toString(), $output->category->id);
     }
 
     public function testHandleThrowsWhenProductNotFound(): void

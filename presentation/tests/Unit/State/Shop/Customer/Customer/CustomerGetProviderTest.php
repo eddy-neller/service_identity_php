@@ -6,8 +6,8 @@ namespace App\Presentation\Tests\Unit\State\Shop\Customer\Customer;
 
 use ApiPlatform\Metadata\Get;
 use App\Application\Shared\CQRS\Query\QueryBusInterface;
+use App\Application\Shop\ReadModel\Customer\AddressItem;
 use App\Application\Shop\ReadModel\Customer\CustomerItem;
-use App\Application\Shop\UseCase\Query\Customer\DisplayCustomer\DisplayCustomerOutput;
 use App\Application\Shop\UseCase\Query\Customer\DisplayCustomer\DisplayCustomerQuery;
 use App\Domain\Shop\Customer\Model\Address as DomainAddress;
 use App\Domain\Shop\Customer\Model\Customer;
@@ -43,11 +43,11 @@ final class CustomerGetProviderTest extends TestCase
 
         $queryBus->expects($this->once())
             ->method('dispatch')
-            ->willReturnCallback(function ($query) use ($customerId, $customer, $address): DisplayCustomerOutput {
+            ->willReturnCallback(function ($query) use ($customerId, $customer, $address): CustomerItem {
                 $this->assertInstanceOf(DisplayCustomerQuery::class, $query);
                 $this->assertSame($customerId, $query->customerId->toString());
 
-                return new DisplayCustomerOutput(new CustomerItem($customer, [$address]));
+                return CustomerItem::fromCustomer($customer, [AddressItem::fromAddress($address)]);
             });
 
         $result = $provider->provide(

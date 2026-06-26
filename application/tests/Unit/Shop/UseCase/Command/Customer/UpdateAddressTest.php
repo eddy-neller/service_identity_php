@@ -115,7 +115,8 @@ final class UpdateAddressTest extends TestCase
 
         $output = $this->handler->handle($command);
 
-        $this->assertSame($address, $output->addressItem->address);
+        $this->assertSame($address->getId()->toString(), $output->id);
+        $this->assertSame('45 Second St', $output->address);
     }
 
     public function testHandleUpdatesOnlyProvidedFields(): void

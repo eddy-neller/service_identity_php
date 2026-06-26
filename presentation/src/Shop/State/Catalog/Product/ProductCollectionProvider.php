@@ -43,7 +43,7 @@ final readonly class ProductCollectionProvider implements ProviderInterface
         }
 
         $items = [];
-        foreach ($output->products as $product) {
+        foreach ($output->items as $product) {
             $items[] = $this->productResourcePresenter->toResource($product);
         }
 

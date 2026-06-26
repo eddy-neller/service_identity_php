@@ -6,6 +6,7 @@ namespace App\Application\Tests\Unit\Shop\UseCase\Query\Customer;
 
 use App\Application\Shared\ReadModel\Pagination;
 use App\Application\Shop\Port\AddressRepositoryInterface;
+use App\Application\Shop\ReadModel\Customer\AddressItem;
 use App\Application\Shop\ReadModel\Customer\AddressList;
 use App\Application\Shop\UseCase\Query\Customer\DisplayListAddress\DisplayListAddressQuery;
 use App\Application\Shop\UseCase\Query\Customer\DisplayListAddress\DisplayListAddressQueryHandler;
@@ -62,7 +63,8 @@ final class DisplayListAddressTest extends TestCase
             filters: $filters,
         );
 
-        $addressList = new AddressList([$address], 1, 1);
+        $addressItem = AddressItem::fromAddress($address);
+        $addressList = new AddressList([$addressItem], 1, 1);
 
         $this->repository->expects($this->once())
             ->method('listByOwner')
@@ -71,7 +73,7 @@ final class DisplayListAddressTest extends TestCase
 
         $output = $this->handler->handle($query);
 
-        $this->assertSame([$address], $output->addresses);
+        $this->assertSame([$addressItem], $output->items);
         $this->assertSame(1, $output->totalItems);
         $this->assertSame(1, $output->totalPages);
     }

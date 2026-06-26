@@ -6,7 +6,7 @@ namespace App\Presentation\User\Dto;
 
 use App\Domain\User\ValueObject\Security\RoleSet;
 use App\Domain\User\ValueObject\Security\UserStatus;
-use Symfony\Component\Serializer\Annotation\Groups;
+use Symfony\Component\Serializer\Attribute\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
 
 final class UserPostInput

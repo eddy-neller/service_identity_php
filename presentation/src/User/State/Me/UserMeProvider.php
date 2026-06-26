@@ -33,7 +33,7 @@ final readonly class UserMeProvider implements ProviderInterface
 
         $output = $this->queryBus->dispatch($query);
 
-        return $this->userResourcePresenter->toResource($output->user);
+        return $this->userResourcePresenter->toResource($output);
     }
 
     protected function getSecurity(): Security

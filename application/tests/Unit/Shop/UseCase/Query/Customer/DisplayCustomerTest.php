@@ -7,6 +7,7 @@ namespace App\Application\Tests\Unit\Shop\UseCase\Query\Customer;
 use App\Application\Shared\ReadModel\Pagination;
 use App\Application\Shop\Port\AddressRepositoryInterface;
 use App\Application\Shop\Port\CustomerRepositoryInterface;
+use App\Application\Shop\ReadModel\Customer\AddressItem;
 use App\Application\Shop\ReadModel\Customer\AddressList;
 use App\Application\Shop\UseCase\Query\Customer\DisplayCustomer\DisplayCustomerQuery;
 use App\Application\Shop\UseCase\Query\Customer\DisplayCustomer\DisplayCustomerQueryHandler;
@@ -77,12 +78,13 @@ final class DisplayCustomerTest extends TestCase
                 ['createdAt' => 'DESC'],
                 [],
             )
-            ->willReturn(new AddressList([$address], 1, 1));
+            ->willReturn(new AddressList([AddressItem::fromAddress($address)], 1, 1));
 
         $output = $this->handler->handle(new DisplayCustomerQuery($customerId));
 
-        $this->assertSame($customer, $output->customerItem->customer);
-        $this->assertSame([$address], $output->customerItem->addresses);
+        $this->assertSame($customer->getId()->toString(), $output->id);
+        $this->assertSame($customer->getUserAccountId()?->toString(), $output->userAccountId);
+        $this->assertSame($address->getId()->toString(), $output->addresses[0]->id);
     }
 
     public function testHandleThrowsWhenCustomerMissing(): void

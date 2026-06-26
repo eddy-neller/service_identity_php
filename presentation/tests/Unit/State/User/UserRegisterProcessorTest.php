@@ -7,8 +7,8 @@ namespace App\Presentation\Tests\Unit\State\User;
 use ApiPlatform\Metadata\Operation;
 use App\Application\Shared\CQRS\Command\CommandBusInterface;
 use App\Application\User\Port\AvatarUrlResolverInterface;
+use App\Application\User\ReadModel\UserItem;
 use App\Application\User\UseCase\Command\RegisterUser\RegisterUserCommand;
-use App\Application\User\UseCase\Command\RegisterUser\RegisterUserOutput;
 use App\Domain\User\Model\User as DomainUser;
 use App\Domain\User\ValueObject\EmailAddress;
 use App\Domain\User\ValueObject\Preferences;
@@ -57,11 +57,11 @@ final class UserRegisterProcessorTest extends KernelTestCase
     {
         $input = $this->createValidUserRegisterInput();
         $domainUser = $this->createDomainUser();
-        $output = new RegisterUserOutput($domainUser);
+        $output = UserItem::fromUser($domainUser);
 
         $this->commandBus->expects($this->once())
             ->method('dispatch')
-            ->willReturnCallback(function ($command) use ($input, $output): RegisterUserOutput {
+            ->willReturnCallback(function ($command) use ($input, $output): UserItem {
                 $this->assertInstanceOf(RegisterUserCommand::class, $command);
                 $this->assertSame($input->email, $command->email);
                 $this->assertSame($input->username, $command->username);
@@ -125,7 +125,7 @@ final class UserRegisterProcessorTest extends KernelTestCase
     {
         $input = $this->createValidUserRegisterInput();
         $domainUser = $this->createDomainUser();
-        $output = new RegisterUserOutput($domainUser);
+        $output = UserItem::fromUser($domainUser);
 
         $this->commandBus->expects($this->once())
             ->method('dispatch')

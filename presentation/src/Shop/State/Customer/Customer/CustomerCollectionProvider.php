@@ -43,7 +43,7 @@ final readonly class CustomerCollectionProvider implements ProviderInterface
         }
 
         $items = [];
-        foreach ($output->customers as $customer) {
+        foreach ($output->items as $customer) {
             $items[] = $this->customerResourcePresenter->toSummaryResource($customer);
         }
 

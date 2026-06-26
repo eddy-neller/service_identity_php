@@ -43,7 +43,7 @@ final readonly class CategoryCollectionProvider implements ProviderInterface
         }
 
         $items = [];
-        foreach ($output->categories as $category) {
+        foreach ($output->items as $category) {
             $items[] = $this->categoryResourcePresenter->toSummaryResource($category);
         }
 

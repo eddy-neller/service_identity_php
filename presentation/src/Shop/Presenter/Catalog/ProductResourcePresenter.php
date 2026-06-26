@@ -6,7 +6,6 @@ namespace App\Presentation\Shop\Presenter\Catalog;
 
 use App\Application\Shop\Port\ProductImageUrlResolverInterface;
 use App\Application\Shop\ReadModel\Catalog\ProductItem;
-use App\Domain\Shop\Catalog\Model\Product;
 use App\Presentation\Shop\ApiResource\Catalog\CategoryResource;
 use App\Presentation\Shop\ApiResource\Catalog\ProductResource;
 
@@ -22,23 +21,23 @@ final readonly class ProductResourcePresenter
     {
         $category = $this->categoryResourcePresenter->toSummaryResource($productItem->category);
 
-        return $this->mapProduct($productItem->product, $category);
+        return $this->mapProduct($productItem, $category);
     }
 
-    private function mapProduct(Product $product, CategoryResource $category): ProductResource
+    private function mapProduct(ProductItem $product, CategoryResource $category): ProductResource
     {
         $resource = new ProductResource();
 
-        $resource->id = $product->getId()->toString();
-        $resource->title = $product->getTitle()->toString();
-        $resource->subtitle = $product->getSubtitle()->toString();
-        $resource->description = $product->getDescription()->toString();
-        $resource->price = round($product->getPrice()->amount() / 100, 2);
-        $resource->slug = $product->getSlug()->toString();
-        $resource->imageUrl = $this->productImageUrlResolver->resolve($product->getImageName());
+        $resource->id = $product->id;
+        $resource->title = $product->title;
+        $resource->subtitle = $product->subtitle;
+        $resource->description = $product->description;
+        $resource->price = $product->price;
+        $resource->slug = $product->slug;
+        $resource->imageUrl = $this->productImageUrlResolver->resolve($product->imageName);
         $resource->category = $category;
-        $resource->createdAt = $product->getCreatedAt();
-        $resource->updatedAt = $product->getUpdatedAt();
+        $resource->createdAt = $product->createdAt;
+        $resource->updatedAt = $product->updatedAt;
 
         return $resource;
     }

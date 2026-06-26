@@ -6,6 +6,7 @@ namespace App\Infrastructure\Persistence\Doctrine\Shop\Customer;
 
 use App\Application\Shared\Port\UuidGeneratorInterface;
 use App\Application\Shop\Port\CustomerRepositoryInterface;
+use App\Application\Shop\ReadModel\Customer\CustomerItem;
 use App\Application\Shop\ReadModel\Customer\CustomerList;
 use App\Domain\Shop\Customer\Model\Customer as DomainCustomer;
 use App\Domain\Shop\Customer\ValueObject\CustomerId;
@@ -54,12 +55,12 @@ final readonly class DoctrineCustomerRepository implements CustomerRepositoryInt
         $customers = [];
         foreach ($paginator as $entity) {
             if ($entity instanceof DoctrineCustomer) {
-                $customers[] = $this->mapper->toDomain($entity);
+                $customers[] = CustomerItem::fromCustomer($this->mapper->toDomain($entity));
             }
         }
 
         return new CustomerList(
-            customers: $customers,
+            items: $customers,
             totalItems: $totalItems,
             totalPages: $totalPages,
         );

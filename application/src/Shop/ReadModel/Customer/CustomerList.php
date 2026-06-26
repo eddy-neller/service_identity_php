@@ -4,15 +4,13 @@ declare(strict_types=1);
 
 namespace App\Application\Shop\ReadModel\Customer;
 
-use App\Domain\Shop\Customer\Model\Customer;
-
 final readonly class CustomerList
 {
     /**
-     * @param list<Customer> $customers
+     * @param list<CustomerItem> $items
      */
     public function __construct(
-        public array $customers,
+        public array $items,
         public int $totalItems,
         public int $totalPages,
     ) {

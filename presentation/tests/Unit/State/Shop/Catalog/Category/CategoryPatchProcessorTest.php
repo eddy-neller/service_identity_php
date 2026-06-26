@@ -8,7 +8,6 @@ use ApiPlatform\Metadata\Operation;
 use App\Application\Shared\CQRS\Command\CommandBusInterface;
 use App\Application\Shop\ReadModel\Catalog\CategoryItem;
 use App\Application\Shop\UseCase\Command\Catalog\UpdateCategoryByAdmin\UpdateCategoryByAdminCommand;
-use App\Application\Shop\UseCase\Command\Catalog\UpdateCategoryByAdmin\UpdateCategoryByAdminOutput;
 use App\Domain\SharedKernel\ValueObject\Slug;
 use App\Domain\Shop\Catalog\Model\Category;
 use App\Domain\Shop\Catalog\ValueObject\CategoryId;
@@ -53,12 +52,12 @@ final class CategoryPatchProcessorTest extends TestCase
         $input->description = 'Updated description';
         $input->parent = $this->createCategoryResource('550e8400-e29b-41d4-a716-446655440001');
 
-        $output = new UpdateCategoryByAdminOutput($this->createCategoryTree());
+        $output = $this->createCategoryTree();
         $categoryId = '550e8400-e29b-41d4-a716-446655440000';
 
         $this->commandBus->expects($this->once())
             ->method('dispatch')
-            ->willReturnCallback(function ($command) use ($input, $categoryId, $output): UpdateCategoryByAdminOutput {
+            ->willReturnCallback(function ($command) use ($input, $categoryId, $output): CategoryItem {
                 $this->assertInstanceOf(UpdateCategoryByAdminCommand::class, $command);
                 $this->assertSame($input->title, $command->title);
                 $this->assertSame($input->description, $command->description);
@@ -134,7 +133,7 @@ final class CategoryPatchProcessorTest extends TestCase
             now: $now,
         );
 
-        return new CategoryItem($category, $parent, []);
+        return CategoryItem::fromCategory($category, $parent, []);
     }
 
     private function createCategoryResource(string $id): CategoryResource

@@ -11,7 +11,7 @@ use App\Domain\User\Event\PasswordResetRequestedEvent;
 use App\Domain\User\Event\UserActivatedEvent;
 use App\Domain\User\Event\UserAvatarUpdatedEvent;
 use App\Domain\User\Event\UserCreatedByAdminEvent;
-use App\Domain\User\Event\UserDeletedEvent;
+use App\Domain\User\Event\UserDeletedByAdminEvent;
 use App\Domain\User\Event\UserPasswordUpdatedEvent;
 use App\Domain\User\Event\UserRegisteredEvent;
 use App\Domain\User\Event\UserUpdatedByAdminEvent;
@@ -42,7 +42,7 @@ final readonly class UserCacheInvalidationListener
         UserCreatedByAdminEvent
         |UserRegisteredEvent
         |UserUpdatedByAdminEvent
-        |UserDeletedEvent
+        |UserDeletedByAdminEvent
         |UserActivatedEvent
         |PasswordResetRequestedEvent
         |PasswordResetCompletedEvent

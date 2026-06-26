@@ -30,9 +30,9 @@ final readonly class CreateProductByAdminCommandHandler implements CommandHandle
     ) {
     }
 
-    public function handle(CreateProductByAdminCommand $command): CreateProductByAdminOutput
+    public function handle(CreateProductByAdminCommand $command): ProductItem
     {
-        return $this->transactional->transactional(function () use ($command): CreateProductByAdminOutput {
+        return $this->transactional->transactional(function () use ($command): ProductItem {
             $now = $this->clock->now();
             $id = $this->productRepository->nextIdentity();
             $title = ProductTitle::fromString($command->title);
@@ -68,7 +68,7 @@ final readonly class CreateProductByAdminCommandHandler implements CommandHandle
             $category->increaseProductCount($now);
             $this->categoryRepository->save($category);
 
-            return new CreateProductByAdminOutput(new ProductItem($product, $category));
+            return ProductItem::fromProduct($product, $category);
         });
     }
 }

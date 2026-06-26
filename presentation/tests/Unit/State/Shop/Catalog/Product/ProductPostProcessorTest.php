@@ -9,7 +9,6 @@ use App\Application\Shared\CQRS\Command\CommandBusInterface;
 use App\Application\Shop\Port\ProductImageUrlResolverInterface;
 use App\Application\Shop\ReadModel\Catalog\ProductItem;
 use App\Application\Shop\UseCase\Command\Catalog\CreateProductByAdmin\CreateProductByAdminCommand;
-use App\Application\Shop\UseCase\Command\Catalog\CreateProductByAdmin\CreateProductByAdminOutput;
 use App\Domain\SharedKernel\ValueObject\Slug;
 use App\Domain\Shop\Catalog\Model\Category;
 use App\Domain\Shop\Catalog\Model\Product;
@@ -72,11 +71,11 @@ final class ProductPostProcessorTest extends TestCase
         $input->price = 19.99;
         $input->category = $this->createCategoryResource('550e8400-e29b-41d4-a716-446655440001');
 
-        $output = new CreateProductByAdminOutput($this->createProductView());
+        $output = $this->createProductView();
 
         $this->commandBus->expects($this->once())
             ->method('dispatch')
-            ->willReturnCallback(function ($command) use ($input, $output): CreateProductByAdminOutput {
+            ->willReturnCallback(function ($command) use ($input, $output): ProductItem {
                 $this->assertInstanceOf(CreateProductByAdminCommand::class, $command);
                 $this->assertSame($input->title, $command->title);
                 $this->assertSame($input->subtitle, $command->subtitle);
@@ -137,7 +136,7 @@ final class ProductPostProcessorTest extends TestCase
             updatedAt: $now,
         );
 
-        return new ProductItem($product, $category);
+        return ProductItem::fromProduct($product, $category);
     }
 
     private function createCategoryResource(string $id): CategoryResource

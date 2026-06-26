@@ -6,7 +6,6 @@ namespace App\Presentation\Tests\Unit\State\User;
 
 use ApiPlatform\Metadata\Operation;
 use App\Application\Shared\CQRS\Query\QueryBusInterface;
-use App\Application\User\UseCase\Query\CheckPasswordResetToken\CheckPasswordResetTokenOutput;
 use App\Application\User\UseCase\Query\CheckPasswordResetToken\CheckPasswordResetTokenQuery;
 use App\Presentation\Shared\State\PresentationErrorCode;
 use App\Presentation\User\Dto\PasswordResetCheckInput;
@@ -40,11 +39,11 @@ final class PasswordResetCheckProcessorTest extends KernelTestCase
     public function testProcessWithValidInput(): void
     {
         $input = $this->createValidPasswordResetCheckInput();
-        $output = new CheckPasswordResetTokenOutput(true);
+        $output = true;
 
         $this->queryBus->expects($this->once())
             ->method('dispatch')
-            ->willReturnCallback(function ($query) use ($input, $output): CheckPasswordResetTokenOutput {
+            ->willReturnCallback(function ($query) use ($input, $output): bool {
                 $this->assertInstanceOf(CheckPasswordResetTokenQuery::class, $query);
                 $this->assertSame($input->token, $query->token);
 
@@ -103,7 +102,7 @@ final class PasswordResetCheckProcessorTest extends KernelTestCase
     public function testProcessThrowsBadRequestHttpExceptionWhenTokenInvalid(): void
     {
         $input = $this->createValidPasswordResetCheckInput();
-        $output = new CheckPasswordResetTokenOutput(false);
+        $output = false;
 
         $this->queryBus->expects($this->once())
             ->method('dispatch')

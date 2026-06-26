@@ -10,7 +10,6 @@ use App\Application\Shared\Port\FileInterface;
 use App\Application\Shop\Port\ProductImageUrlResolverInterface;
 use App\Application\Shop\ReadModel\Catalog\ProductItem;
 use App\Application\Shop\UseCase\Command\Catalog\UpdateProductImageByAdmin\UpdateProductImageByAdminCommand;
-use App\Application\Shop\UseCase\Command\Catalog\UpdateProductImageByAdmin\UpdateProductImageByAdminOutput;
 use App\Domain\SharedKernel\ValueObject\Slug;
 use App\Domain\Shop\Catalog\Model\Category;
 use App\Domain\Shop\Catalog\Model\Product;
@@ -70,11 +69,11 @@ final class ProductImageProcessorTest extends TestCase
         $input->imageFile = $this->createUploadedFile(true);
 
         $productId = '550e8400-e29b-41d4-a716-446655440000';
-        $output = new UpdateProductImageByAdminOutput($this->createProductView());
+        $output = $this->createProductView();
 
         $this->commandBus->expects($this->once())
             ->method('dispatch')
-            ->willReturnCallback(function ($command) use ($productId, $output): UpdateProductImageByAdminOutput {
+            ->willReturnCallback(function ($command) use ($productId, $output): ProductItem {
                 $this->assertInstanceOf(UpdateProductImageByAdminCommand::class, $command);
                 $this->assertTrue($command->productId->equals(ProductId::fromString($productId)));
                 $this->assertInstanceOf(FileInterface::class, $command->imageFile);
@@ -204,6 +203,6 @@ final class ProductImageProcessorTest extends TestCase
             updatedAt: $now,
         );
 
-        return new ProductItem($product, $category);
+        return ProductItem::fromProduct($product, $category);
     }
 }

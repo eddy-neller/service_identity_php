@@ -7,7 +7,7 @@ namespace App\Presentation\Tests\Unit\State\User;
 use ApiPlatform\Metadata\Operation;
 use App\Application\Shared\CQRS\Query\QueryBusInterface;
 use App\Application\User\Port\AvatarUrlResolverInterface;
-use App\Application\User\UseCase\Query\DisplayUser\DisplayUserOutput;
+use App\Application\User\ReadModel\UserItem;
 use App\Application\User\UseCase\Query\DisplayUser\DisplayUserQuery;
 use App\Domain\User\Model\User as DomainUser;
 use App\Domain\User\ValueObject\EmailAddress;
@@ -54,11 +54,11 @@ final class UserGetProviderTest extends KernelTestCase
     {
         $userId = Uuid::uuid4()->toString();
         $domainUser = $this->createDomainUser();
-        $output = new DisplayUserOutput($domainUser);
+        $output = UserItem::fromUser($domainUser);
 
         $this->queryBus->expects($this->once())
             ->method('dispatch')
-            ->willReturnCallback(function ($query) use ($userId, $output): DisplayUserOutput {
+            ->willReturnCallback(function ($query) use ($userId, $output): UserItem {
                 $this->assertInstanceOf(DisplayUserQuery::class, $query);
                 $this->assertSame($userId, $query->userId->toString());
 

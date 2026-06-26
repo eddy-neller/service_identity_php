@@ -11,7 +11,7 @@ use App\Domain\User\Event\PasswordResetRequestedEvent;
 use App\Domain\User\Event\UserActivatedEvent;
 use App\Domain\User\Event\UserAvatarUpdatedEvent;
 use App\Domain\User\Event\UserCreatedByAdminEvent;
-use App\Domain\User\Event\UserDeletedEvent;
+use App\Domain\User\Event\UserDeletedByAdminEvent;
 use App\Domain\User\Event\UserPasswordUpdatedEvent;
 use App\Domain\User\Event\UserRegisteredEvent;
 use App\Domain\User\Event\UserUpdatedByAdminEvent;
@@ -265,9 +265,9 @@ final class User
         ));
     }
 
-    public function delete(DateTimeImmutable $now): void
+    public function deleteByAdmin(DateTimeImmutable $now): void
     {
-        $this->recordEvent(new UserDeletedEvent(
+        $this->recordEvent(new UserDeletedByAdminEvent(
             userId: $this->id,
             occurredOn: $now,
         ));
