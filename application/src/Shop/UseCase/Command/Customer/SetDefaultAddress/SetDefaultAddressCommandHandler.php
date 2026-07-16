@@ -33,10 +33,8 @@ final readonly class SetDefaultAddressCommandHandler implements CommandHandlerIn
         }
 
         $this->transactional->transactional(function () use ($address, $command): void {
-            $now = $this->clock->now();
-
             $this->repository->unsetDefaultForOwner($command->ownerId);
-            $address->markAsDefault($now);
+            $address->markAsDefault($this->clock->now());
             $this->repository->save($address);
         });
 

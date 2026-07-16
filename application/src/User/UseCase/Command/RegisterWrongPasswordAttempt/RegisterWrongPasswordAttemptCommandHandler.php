@@ -31,9 +31,8 @@ final readonly class RegisterWrongPasswordAttemptCommandHandler implements Comma
         }
 
         $this->transactional->transactional(function () use ($user): void {
-            $now = $this->clock->now();
             $maxAttempts = (int) $this->config->get('app.security.max_login_attempts');
-            $user->registerWrongPasswordAttempt($maxAttempts, $now);
+            $user->registerWrongPasswordAttempt($maxAttempts, $this->clock->now());
 
             $this->repository->save($user);
         });

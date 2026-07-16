@@ -47,14 +47,13 @@ final readonly class UpdateUserByAdminCommandHandler implements CommandHandlerIn
         }
 
         return $this->transactional->transactional(function () use ($user, $command): UserItem {
-            $now = $this->clock->now();
             $hashedPassword = null;
             if (null !== $command->plainPassword && '' !== trim($command->plainPassword)) {
                 $hashedPassword = $this->passwordHasher->hash($command->plainPassword);
             }
 
             $user->updateByAdmin(
-                now: $now,
+                now: $this->clock->now(),
                 username: $command->username ? Username::fromString($command->username) : null,
                 email: $command->email ? EmailAddress::fromString($command->email) : null,
                 firstname: $command->firstname ? Firstname::fromString($command->firstname) : null,

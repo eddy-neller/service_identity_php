@@ -34,7 +34,6 @@ final readonly class CreateUserByAdminCommandHandler implements CommandHandlerIn
     public function handle(CreateUserByAdminCommand $command): UserItem
     {
         return $this->transactional->transactional(function () use ($command): UserItem {
-            $now = $this->clock->now();
             $userId = $this->repository->nextIdentity();
             $username = Username::fromString($command->username);
             $email = EmailAddress::fromString($command->email);
@@ -52,7 +51,7 @@ final readonly class CreateUserByAdminCommandHandler implements CommandHandlerIn
                 password: $hashedPassword,
                 roles: $roles,
                 status: $status,
-                now: $now,
+                now: $this->clock->now(),
                 firstname: $command->firstname ? Firstname::fromString($command->firstname) : null,
                 lastname: $command->lastname ? Lastname::fromString($command->lastname) : null,
                 preferences: new Preferences(),

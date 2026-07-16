@@ -265,9 +265,37 @@ final class User
         ));
     }
 
-    public function deleteByAdmin(DateTimeImmutable $now): void
+    public function registerWrongPasswordAttempt(int $maxAttempts, DateTimeImmutable $now): void
     {
-        $this->recordEvent(new UserDeletedByAdminEvent(
+        $attempts = $this->security->getTotalWrongPassword() + 1;
+        $this->security = $this->security->withTotalWrongPassword($attempts);
+
+        if ($attempts >= $maxAttempts) {
+            $this->status = UserStatus::blocked();
+        }
+
+        $this->touch($now);
+
+        $this->recordEvent(new UserWrongPasswordAttemptRegisteredEvent(
+            userId: $this->id,
+            occurredOn: $now,
+        ));
+    }
+
+    public function resetWrongPasswordAttempts(DateTimeImmutable $now): void
+    {
+        if (0 === $this->security->getTotalWrongPassword()) {
+            return;
+        }
+
+        $this->security = $this->security->withTotalWrongPassword(0);
+        if ($this->getStatus()->isBlocked()) {
+            $this->status = UserStatus::active();
+        }
+
+        $this->touch($now);
+
+        $this->recordEvent(new UserWrongPasswordAttemptsResetEvent(
             userId: $this->id,
             occurredOn: $now,
         ));
@@ -352,37 +380,9 @@ final class User
         }
     }
 
-    public function registerWrongPasswordAttempt(int $maxAttempts, DateTimeImmutable $now): void
+    public function deleteByAdmin(DateTimeImmutable $now): void
     {
-        $attempts = $this->security->getTotalWrongPassword() + 1;
-        $this->security = $this->security->withTotalWrongPassword($attempts);
-
-        if ($attempts >= $maxAttempts) {
-            $this->status = UserStatus::blocked();
-        }
-
-        $this->touch($now);
-
-        $this->recordEvent(new UserWrongPasswordAttemptRegisteredEvent(
-            userId: $this->id,
-            occurredOn: $now,
-        ));
-    }
-
-    public function resetWrongPasswordAttempts(DateTimeImmutable $now): void
-    {
-        if (0 === $this->security->getTotalWrongPassword()) {
-            return;
-        }
-
-        $this->security = $this->security->withTotalWrongPassword(0);
-        if ($this->getStatus()->isBlocked()) {
-            $this->status = UserStatus::active();
-        }
-
-        $this->touch($now);
-
-        $this->recordEvent(new UserWrongPasswordAttemptsResetEvent(
+        $this->recordEvent(new UserDeletedByAdminEvent(
             userId: $this->id,
             occurredOn: $now,
         ));

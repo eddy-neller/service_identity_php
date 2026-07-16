@@ -129,7 +129,6 @@ final class CreateCategoryByAdminTest extends TestCase
 
     public function testHandleThrowsWhenParentNotFound(): void
     {
-        $now = new DateTimeImmutable('2024-01-01 10:00:00');
         $categoryId = CategoryId::fromString(self::CATEGORY_ID);
         $parentId = CategoryId::fromString(self::PARENT_ID);
 
@@ -139,9 +138,8 @@ final class CreateCategoryByAdminTest extends TestCase
             parentId: $parentId,
         );
 
-        $this->clock->expects($this->once())
-            ->method('now')
-            ->willReturn($now);
+        $this->clock->expects($this->never())
+            ->method('now');
 
         $this->repository->expects($this->once())
             ->method('nextIdentity')
@@ -219,7 +217,6 @@ final class CreateCategoryByAdminTest extends TestCase
 
     public function testHandleThrowsWhenTitleAlreadyUsed(): void
     {
-        $now = new DateTimeImmutable('2024-01-01 10:00:00');
         $categoryId = CategoryId::fromString(self::CATEGORY_ID);
         $title = 'Existing category';
 
@@ -229,9 +226,8 @@ final class CreateCategoryByAdminTest extends TestCase
             parentId: null,
         );
 
-        $this->clock->expects($this->once())
-            ->method('now')
-            ->willReturn($now);
+        $this->clock->expects($this->never())
+            ->method('now');
 
         $this->repository->expects($this->once())
             ->method('nextIdentity')

@@ -35,8 +35,7 @@ final readonly class ValidateActivationCommandHandler implements CommandHandlerI
         }
 
         $this->transactional->transactional(function () use ($user, $rawToken): void {
-            $now = $this->clock->now();
-            $user->activate($rawToken, $now);
+            $user->activate($rawToken, $this->clock->now());
 
             $this->repository->save($user);
         });

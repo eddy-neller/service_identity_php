@@ -28,8 +28,7 @@ final readonly class DeleteUserByAdminCommandHandler implements CommandHandlerIn
         }
 
         $this->transactional->transactional(function () use ($user): void {
-            $now = $this->clock->now();
-            $user->deleteByAdmin($now);
+            $user->deleteByAdmin($this->clock->now());
 
             $this->repository->delete($user);
         });

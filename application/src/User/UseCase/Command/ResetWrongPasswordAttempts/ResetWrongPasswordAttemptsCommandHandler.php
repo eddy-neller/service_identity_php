@@ -28,8 +28,7 @@ final readonly class ResetWrongPasswordAttemptsCommandHandler implements Command
         }
 
         $this->transactional->transactional(function () use ($user): void {
-            $now = $this->clock->now();
-            $user->resetWrongPasswordAttempts($now);
+            $user->resetWrongPasswordAttempts($this->clock->now());
 
             $this->repository->save($user);
         });

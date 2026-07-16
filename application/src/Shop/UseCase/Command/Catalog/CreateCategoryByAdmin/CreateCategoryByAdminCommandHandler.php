@@ -29,7 +29,6 @@ final readonly class CreateCategoryByAdminCommandHandler implements CommandHandl
     public function handle(CreateCategoryByAdminCommand $command): CategoryItem
     {
         return $this->transactional->transactional(function () use ($command): CategoryItem {
-            $now = $this->clock->now();
             $id = $this->repository->nextIdentity();
             $title = CategoryTitle::fromString($command->title);
 
@@ -53,7 +52,7 @@ final readonly class CreateCategoryByAdminCommandHandler implements CommandHandl
                 id: $id,
                 title: $title,
                 slug: $slug,
-                now: $now,
+                now: $this->clock->now(),
                 parentId: $parentId,
                 description: $description,
             );

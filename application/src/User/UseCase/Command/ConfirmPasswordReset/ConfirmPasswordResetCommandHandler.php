@@ -39,8 +39,7 @@ final readonly class ConfirmPasswordResetCommandHandler implements CommandHandle
         $hashed = $this->passwordHasher->hash($command->newPassword);
 
         $this->transactional->transactional(function () use ($user, $hashed, $rawToken): void {
-            $now = $this->clock->now();
-            $user->completePasswordReset($rawToken, $hashed, $now);
+            $user->completePasswordReset($rawToken, $hashed, $this->clock->now());
 
             $this->repository->save($user);
         });

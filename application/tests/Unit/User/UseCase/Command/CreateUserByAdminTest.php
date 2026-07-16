@@ -141,9 +141,8 @@ final class CreateUserByAdminTest extends TestCase
             ->method('nextIdentity')
             ->willReturn($userId);
 
-        $this->clock->expects($this->once())
-            ->method('now')
-            ->willReturn(new DateTimeImmutable());
+        $this->clock->expects($this->never())
+            ->method('now');
 
         $this->uniquenessChecker->expects($this->once())
             ->method('ensureEmailAndUsernameAvailable')
@@ -182,9 +181,8 @@ final class CreateUserByAdminTest extends TestCase
             ->method('nextIdentity')
             ->willReturn($userId);
 
-        $this->clock->expects($this->once())
-            ->method('now')
-            ->willReturn(new DateTimeImmutable());
+        $this->clock->expects($this->never())
+            ->method('now');
 
         $this->uniquenessChecker->expects($this->once())
             ->method('ensureEmailAndUsernameAvailable')

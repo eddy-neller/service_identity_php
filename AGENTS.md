@@ -148,6 +148,11 @@ Lancer la suite correspondante **avant chaque livraison** si le périmètre est 
 - `README.md` : quickstart, env, commandes, architecture courte.
 - `docs/` : références techniques (`CQRS_handler_resolver.md`, `varnish_cache.md`) et **audits** d'architecture datés dans `docs/audits/` (instantanés d'évaluation, **non normatifs** — les règles font foi dans les `AGENTS.md`).
 
+## Référence nouvelle API
+
+- La « nouvelle API » désigne le projet NestJS voisin : [`../api_js`](../api_js).
+- Pour aligner un comportement avec elle, consulter en priorité `src/application/` (cas d'usage), `src/presentation/http/` (contrats et validations) et `test/` (comportement attendu).
+
 ---
 
 ## Checklist architecture (transverse)

@@ -28,8 +28,7 @@ final readonly class DeleteCategoryByAdminCommandHandler implements CommandHandl
         }
 
         $this->transactional->transactional(function () use ($category): void {
-            $now = $this->clock->now();
-            $category->delete($now);
+            $category->delete($this->clock->now());
 
             $this->repository->delete($category);
         });

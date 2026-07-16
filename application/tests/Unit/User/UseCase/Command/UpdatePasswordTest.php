@@ -11,6 +11,7 @@ use App\Application\User\Port\UserRepositoryInterface;
 use App\Application\User\UseCase\Command\UpdatePassword\UpdatePasswordCommand;
 use App\Application\User\UseCase\Command\UpdatePassword\UpdatePasswordCommandHandler;
 use App\Domain\User\Exception\Security\InvalidCurrentPasswordException;
+use App\Domain\User\Exception\Security\SamePasswordException;
 use App\Domain\User\Exception\UserDomainException;
 use App\Domain\User\Model\User;
 use App\Domain\User\ValueObject\EmailAddress;
@@ -62,10 +63,12 @@ final class UpdatePasswordTest extends TestCase
             ->with($userId)
             ->willReturn($user);
 
-        $this->passwordHasher->expects($this->once())
+        $this->passwordHasher->expects($this->exactly(2))
             ->method('verify')
-            ->with($user->getPassword(), $currentPassword)
-            ->willReturn(true);
+            ->willReturnMap([
+                [$user->getPassword(), $currentPassword, true],
+                [$user->getPassword(), $newPassword, false],
+            ]);
 
         $this->passwordHasher->expects($this->once())
             ->method('hash')
@@ -146,6 +149,43 @@ final class UpdatePasswordTest extends TestCase
             ->method('save');
 
         $this->expectException(InvalidCurrentPasswordException::class);
+
+        $this->handler->handle($command);
+    }
+
+    public function testHandleThrowsExceptionWhenNewPasswordMatchesCurrentPassword(): void
+    {
+        $userId = UserId::fromString('550e8400-e29b-41d4-a716-446655440003');
+        $user = $this->createUser($userId);
+        $password = 'current-password';
+        $command = new UpdatePasswordCommand($userId, $password, $password);
+
+        $this->repository->expects($this->once())
+            ->method('findById')
+            ->with($userId)
+            ->willReturn($user);
+
+        $this->passwordHasher->expects($this->exactly(2))
+            ->method('verify')
+            ->willReturnMap([
+                [$user->getPassword(), $password, true],
+                [$user->getPassword(), $password, true],
+            ]);
+
+        $this->passwordHasher->expects($this->never())
+            ->method('hash');
+
+        $this->clock->expects($this->never())
+            ->method('now');
+
+        $this->transactional->expects($this->never())
+            ->method('transactional');
+
+        $this->repository->expects($this->never())
+            ->method('save');
+
+        $this->expectException(SamePasswordException::class);
+        $this->expectExceptionMessage('The new password must be different from the current password.');
 
         $this->handler->handle($command);
     }

@@ -10,6 +10,7 @@ use App\Application\Shared\Port\TransactionalInterface;
 use App\Application\User\Port\PasswordHasherInterface;
 use App\Application\User\Port\UserRepositoryInterface;
 use App\Domain\User\Exception\Security\InvalidCurrentPasswordException;
+use App\Domain\User\Exception\Security\SamePasswordException;
 use App\Domain\User\Exception\UserNotFoundException;
 
 final readonly class UpdatePasswordCommandHandler implements CommandHandlerInterface
@@ -34,10 +35,14 @@ final readonly class UpdatePasswordCommandHandler implements CommandHandlerInter
             throw new InvalidCurrentPasswordException();
         }
 
-        $this->transactional->transactional(function () use ($user, $command): void {
-            $now = $this->clock->now();
-            $hashedPassword = $this->passwordHasher->hash($command->newPassword);
-            $user->changePassword($hashedPassword, $now);
+        if ($this->passwordHasher->verify($user->getPassword(), $command->newPassword)) {
+            throw new SamePasswordException();
+        }
+
+        $hashedPassword = $this->passwordHasher->hash($command->newPassword);
+
+        $this->transactional->transactional(function () use ($user, $hashedPassword): void {
+            $user->changePassword($hashedPassword, $this->clock->now());
 
             $this->repository->save($user);
         });

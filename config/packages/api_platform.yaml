@@ -35,6 +35,7 @@ api_platform:
         App\Domain\User\Exception\Uniqueness\EmailAlreadyUsedException: 409
         App\Domain\User\Exception\Uniqueness\UsernameAlreadyUsedException: 409
         App\Domain\User\Exception\Security\InvalidCurrentPasswordException: 422
+        App\Domain\User\Exception\Security\SamePasswordException: 422
         App\Domain\User\Exception\Security\UserLockedException: 423
         App\Domain\User\Exception\RateLimit\ActivationLimitReachedException: 429
         App\Domain\User\Exception\RateLimit\ResetPasswordLimitReachedException: 429

@@ -29,7 +29,6 @@ final readonly class CreateAddressCommandHandler implements CommandHandlerInterf
                 throw new AddressLimitReachedException();
             }
 
-            $now = $this->clock->now();
             $isDefault = !$this->repository->hasDefaultForOwner($command->ownerId);
 
             $address = Address::create(
@@ -43,7 +42,7 @@ final readonly class CreateAddressCommandHandler implements CommandHandlerInterf
                 city: $command->city,
                 country: $command->country,
                 phone: $command->phone,
-                now: $now,
+                now: $this->clock->now(),
                 company: $command->company,
                 isDefault: $isDefault,
             );
