@@ -8,6 +8,8 @@ use App\Application\Shared\CQRS\Command\CommandHandlerInterface;
 use App\Application\Shared\Port\ClockInterface;
 use App\Application\Shared\Port\TransactionalInterface;
 use App\Application\Shop\Port\CartRepositoryInterface;
+use App\Domain\Shop\Catalog\ValueObject\ProductId;
+use App\Domain\Shop\Customer\ValueObject\CustomerId;
 use App\Domain\Shop\Ordering\Exception\CartLineNotFoundException;
 
 final readonly class RemoveCartLineCommandHandler implements CommandHandlerInterface
@@ -21,10 +23,14 @@ final readonly class RemoveCartLineCommandHandler implements CommandHandlerInter
 
     public function handle(RemoveCartLineCommand $command): void
     {
-        $this->transactional->transactional(function () use ($command): void {
-            $cart = $this->repository->findByOwnerForUpdate($command->customerId)
+        $customerId = CustomerId::fromString($command->customerId);
+        $productId = ProductId::fromString($command->productId);
+
+        $this->transactional->transactional(function () use ($customerId, $productId): void {
+            $cart = $this->repository->findByOwnerForUpdate($customerId)
                 ?? throw new CartLineNotFoundException();
-            $cart->removeLine($command->productId, $this->clock->now());
+
+            $cart->removeLine($productId, $this->clock->now());
 
             $this->repository->save($cart);
         });

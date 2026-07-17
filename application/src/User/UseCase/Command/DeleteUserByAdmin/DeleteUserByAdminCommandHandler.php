@@ -9,6 +9,7 @@ use App\Application\Shared\Port\ClockInterface;
 use App\Application\Shared\Port\TransactionalInterface;
 use App\Application\User\Port\UserRepositoryInterface;
 use App\Domain\User\Exception\UserNotFoundException;
+use App\Domain\User\ValueObject\UserId;
 
 final readonly class DeleteUserByAdminCommandHandler implements CommandHandlerInterface
 {
@@ -21,13 +22,15 @@ final readonly class DeleteUserByAdminCommandHandler implements CommandHandlerIn
 
     public function handle(DeleteUserByAdminCommand $command): void
     {
-        $user = $this->repository->findById($command->userId);
+        $userId = UserId::fromString($command->userId);
 
-        if (null === $user) {
-            throw new UserNotFoundException();
-        }
+        $this->transactional->transactional(function () use ($userId): void {
+            $user = $this->repository->findById($userId);
 
-        $this->transactional->transactional(function () use ($user): void {
+            if (null === $user) {
+                throw new UserNotFoundException();
+            }
+
             $user->deleteByAdmin($this->clock->now());
 
             $this->repository->delete($user);

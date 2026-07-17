@@ -86,7 +86,10 @@ final class RegisterWrongPasswordAttemptTest extends TestCase
     {
         $command = new RegisterWrongPasswordAttemptCommand(email: 'unknown@example.com');
 
-        $this->config->expects($this->never())->method('get');
+        $this->config->expects($this->once())
+            ->method('get')
+            ->with('app.security.max_login_attempts')
+            ->willReturn(2);
         $this->clock->expects($this->never())->method('now');
 
         $this->repository->expects($this->once())
@@ -95,7 +98,9 @@ final class RegisterWrongPasswordAttemptTest extends TestCase
             ->willReturn(null);
 
         $this->repository->expects($this->never())->method('save');
-        $this->transactional->expects($this->never())->method('transactional');
+        $this->transactional->expects($this->once())
+            ->method('transactional')
+            ->willReturnCallback(static fn (callable $callback) => $callback());
 
         $this->handler->handle($command);
     }

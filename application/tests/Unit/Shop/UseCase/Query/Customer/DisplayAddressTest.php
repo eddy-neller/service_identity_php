@@ -52,7 +52,7 @@ final class DisplayAddressTest extends TestCase
             now: $createdAt,
         );
 
-        $query = new DisplayAddressQuery($addressId, $customerId);
+        $query = new DisplayAddressQuery($addressId->toString(), $customerId->toString());
 
         $this->repository->expects($this->once())
             ->method('findById')
@@ -69,7 +69,7 @@ final class DisplayAddressTest extends TestCase
     {
         $addressId = AddressId::fromString(self::ADDRESS_ID);
         $customerId = CustomerId::fromString(self::CUSTOMER_ID);
-        $query = new DisplayAddressQuery($addressId, $customerId);
+        $query = new DisplayAddressQuery($addressId->toString(), $customerId->toString());
 
         $this->repository->expects($this->once())
             ->method('findById')
@@ -101,7 +101,7 @@ final class DisplayAddressTest extends TestCase
             now: $createdAt,
         );
 
-        $query = new DisplayAddressQuery($addressId, $customerId);
+        $query = new DisplayAddressQuery($addressId->toString(), $customerId->toString());
 
         $this->repository->expects($this->once())
             ->method('findById')

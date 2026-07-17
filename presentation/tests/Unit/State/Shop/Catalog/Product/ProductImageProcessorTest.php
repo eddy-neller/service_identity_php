@@ -75,7 +75,7 @@ final class ProductImageProcessorTest extends TestCase
             ->method('dispatch')
             ->willReturnCallback(function ($command) use ($productId, $output): ProductItem {
                 $this->assertInstanceOf(UpdateProductImageByAdminCommand::class, $command);
-                $this->assertTrue($command->productId->equals(ProductId::fromString($productId)));
+                $this->assertSame($productId, $command->productId);
                 $this->assertInstanceOf(FileInterface::class, $command->imageFile);
                 $this->assertSame('product.jpg', $command->imageFile->getClientOriginalName());
                 $this->assertTrue($command->imageFile->isValid());

@@ -5,34 +5,30 @@ declare(strict_types=1);
 namespace App\Domain\Shop\Ordering\Model;
 
 use App\Domain\Shop\Catalog\ValueObject\ProductId;
-use App\Domain\Shop\Ordering\Exception\CartQuantityExceededException;
 use App\Domain\Shop\Ordering\ValueObject\CartLineId;
+use App\Domain\Shop\Ordering\ValueObject\CartLineQuantity;
 
 final class CartLine
 {
     private function __construct(
         private readonly CartLineId $id,
         private readonly ProductId $productId,
-        private int $quantity,
+        private CartLineQuantity $quantity,
     ) {
     }
 
-    public static function create(CartLineId $id, ProductId $productId, int $quantity): self
+    public static function create(CartLineId $id, ProductId $productId, CartLineQuantity $quantity): self
     {
-        self::assertQuantity($quantity);
-
         return new self($id, $productId, $quantity);
     }
 
-    public function increase(int $quantity): void
+    public function increase(CartLineQuantity $quantity): void
     {
-        self::assertQuantity($quantity);
-        $this->setQuantity($this->quantity + $quantity);
+        $this->quantity = $this->quantity->add($quantity);
     }
 
-    public function setQuantity(int $quantity): void
+    public function setQuantity(CartLineQuantity $quantity): void
     {
-        self::assertQuantity($quantity);
         $this->quantity = $quantity;
     }
 
@@ -46,15 +42,8 @@ final class CartLine
         return $this->productId;
     }
 
-    public function getQuantity(): int
+    public function getQuantity(): CartLineQuantity
     {
         return $this->quantity;
-    }
-
-    private static function assertQuantity(int $quantity): void
-    {
-        if ($quantity < 1 || $quantity > 99) {
-            throw new CartQuantityExceededException();
-        }
     }
 }

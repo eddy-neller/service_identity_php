@@ -65,7 +65,7 @@ final class DeleteProductByAdminTest extends TestCase
         $category = $this->createCategory($categoryId);
         $category->increaseProductCount(new DateTimeImmutable('2024-02-01 10:00:00'));
 
-        $command = new DeleteProductByAdminCommand($productId);
+        $command = new DeleteProductByAdminCommand($productId->toString());
 
         $this->productRepository->expects($this->once())
             ->method('findById')
@@ -110,11 +110,12 @@ final class DeleteProductByAdminTest extends TestCase
             ->method('findById');
         $this->clock->expects($this->never())
             ->method('now');
-        $this->transactional->expects($this->never())
-            ->method('transactional');
+        $this->transactional->expects($this->once())
+            ->method('transactional')
+            ->willReturnCallback(static fn (callable $callback) => $callback());
 
         $productId = ProductId::fromString(self::PRODUCT_ID);
-        $command = new DeleteProductByAdminCommand($productId);
+        $command = new DeleteProductByAdminCommand($productId->toString());
 
         $this->productRepository->expects($this->once())
             ->method('findById')
@@ -129,21 +130,19 @@ final class DeleteProductByAdminTest extends TestCase
 
     public function testHandleThrowsWhenCategoryNotFound(): void
     {
-        $now = new DateTimeImmutable('2024-03-01 10:00:00');
         $productId = ProductId::fromString(self::PRODUCT_ID);
         $categoryId = CategoryId::fromString(self::CATEGORY_ID);
         $product = $this->createProduct($productId, $categoryId);
 
-        $command = new DeleteProductByAdminCommand($productId);
+        $command = new DeleteProductByAdminCommand($productId->toString());
 
         $this->productRepository->expects($this->once())
             ->method('findById')
             ->with($productId)
             ->willReturn($product);
 
-        $this->clock->expects($this->once())
-            ->method('now')
-            ->willReturn($now);
+        $this->clock->expects($this->never())
+            ->method('now');
 
         $this->categoryRepository->expects($this->once())
             ->method('findById')

@@ -74,7 +74,7 @@ final class CreateProductByAdminTest extends TestCase
             subtitle: 'Product subtitle',
             description: 'Product description',
             price: 12.5,
-            categoryId: $categoryId,
+            categoryId: $categoryId->toString(),
         );
 
         $this->clock->expects($this->once())
@@ -136,7 +136,6 @@ final class CreateProductByAdminTest extends TestCase
 
     public function testHandleThrowsWhenCategoryNotFound(): void
     {
-        $now = new DateTimeImmutable('2024-01-01 00:00:00');
         $categoryId = CategoryId::fromString(self::CATEGORY_ID);
         $productId = ProductId::fromString(self::PRODUCT_ID);
 
@@ -145,12 +144,11 @@ final class CreateProductByAdminTest extends TestCase
             subtitle: 'Product subtitle',
             description: 'Product description',
             price: 10.0,
-            categoryId: $categoryId,
+            categoryId: $categoryId->toString(),
         );
 
-        $this->clock->expects($this->once())
-            ->method('now')
-            ->willReturn($now);
+        $this->clock->expects($this->never())
+            ->method('now');
 
         $this->productRepository->expects($this->once())
             ->method('nextIdentity')
@@ -197,12 +195,11 @@ final class CreateProductByAdminTest extends TestCase
             subtitle: 'Product subtitle',
             description: 'Product description',
             price: 10.0,
-            categoryId: $categoryId,
+            categoryId: $categoryId->toString(),
         );
 
-        $this->clock->expects($this->once())
-            ->method('now')
-            ->willReturn($now);
+        $this->clock->expects($this->never())
+            ->method('now');
 
         $this->productRepository->expects($this->once())
             ->method('nextIdentity')
@@ -218,8 +215,10 @@ final class CreateProductByAdminTest extends TestCase
                 $now,
             ));
 
-        $this->slugGenerator->expects($this->never())
-            ->method('generate');
+        $this->slugGenerator->expects($this->once())
+            ->method('generate')
+            ->with('Existing product')
+            ->willReturn(Slug::fromString('existing-product'));
 
         $this->productRepository->expects($this->never())
             ->method('save');

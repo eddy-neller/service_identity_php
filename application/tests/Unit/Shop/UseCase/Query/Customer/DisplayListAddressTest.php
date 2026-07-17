@@ -57,7 +57,7 @@ final class DisplayListAddressTest extends TestCase
         );
 
         $query = new DisplayListAddressQuery(
-            ownerId: $customerId,
+            ownerId: $customerId->toString(),
             pagination: $pagination,
             orderBy: $orderBy,
             filters: $filters,

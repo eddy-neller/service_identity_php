@@ -166,7 +166,7 @@ final readonly class UserEventSubscriber implements EventSubscriberInterface
         );
 
         if (null !== $customer) {
-            $this->commandBus->dispatch(new DisableCustomerCommand($customer->getId()));
+            $this->commandBus->dispatch(new DisableCustomerCommand($customer->getId()->toString()));
         }
 
         // Ici, on peut ajouter d'autres actions :
@@ -258,8 +258,6 @@ final readonly class UserEventSubscriber implements EventSubscriberInterface
 
     private function syncCustomerForUser(string $userId): void
     {
-        $this->commandBus->dispatch(new CreateCustomerCommand(
-            UserAccountId::fromString($userId),
-        ));
+        $this->commandBus->dispatch(new CreateCustomerCommand($userId));
     }
 }

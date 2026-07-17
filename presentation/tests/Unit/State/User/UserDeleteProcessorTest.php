@@ -7,7 +7,6 @@ namespace App\Presentation\Tests\Unit\State\User;
 use ApiPlatform\Metadata\Operation;
 use App\Application\Shared\CQRS\Command\CommandBusInterface;
 use App\Application\User\UseCase\Command\DeleteUserByAdmin\DeleteUserByAdminCommand;
-use App\Domain\User\ValueObject\UserId;
 use App\Presentation\Shared\State\PresentationErrorCode;
 use App\Presentation\User\State\UserDeleteProcessor;
 use LogicException;
@@ -36,14 +35,13 @@ final class UserDeleteProcessorTest extends TestCase
     public function testProcessWithValidIdCallsDeleteUserByAdmin(): void
     {
         $userId = '550e8400-e29b-41d4-a716-446655440000';
-        $userIdVO = UserId::fromString($userId);
         $uriVariables = ['id' => $userId];
 
         $this->commandBus->expects($this->once())
             ->method('dispatch')
-            ->with($this->callback(function ($command) use ($userIdVO) {
+            ->with($this->callback(function ($command) use ($userId) {
                 $this->assertInstanceOf(DeleteUserByAdminCommand::class, $command);
-                $this->assertTrue($command->userId->equals($userIdVO));
+                $this->assertSame($userId, $command->userId);
 
                 return true;
             }));
@@ -67,14 +65,13 @@ final class UserDeleteProcessorTest extends TestCase
     public function testProcessReturnsNullAfterSuccessfulDeletion(): void
     {
         $userId = '550e8400-e29b-41d4-a716-446655440000';
-        $userIdVO = UserId::fromString($userId);
         $uriVariables = ['id' => $userId];
 
         $this->commandBus->expects($this->once())
             ->method('dispatch')
-            ->with($this->callback(function ($command) use ($userIdVO) {
+            ->with($this->callback(function ($command) use ($userId) {
                 $this->assertInstanceOf(DeleteUserByAdminCommand::class, $command);
-                $this->assertTrue($command->userId->equals($userIdVO));
+                $this->assertSame($userId, $command->userId);
 
                 return true;
             }));
@@ -85,14 +82,13 @@ final class UserDeleteProcessorTest extends TestCase
     public function testProcessWithDifferentUserId(): void
     {
         $userId = '660e8400-e29b-41d4-a716-446655440001';
-        $userIdVO = UserId::fromString($userId);
         $uriVariables = ['id' => $userId];
 
         $this->commandBus->expects($this->once())
             ->method('dispatch')
-            ->with($this->callback(function ($command) use ($userIdVO) {
+            ->with($this->callback(function ($command) use ($userId) {
                 $this->assertInstanceOf(DeleteUserByAdminCommand::class, $command);
-                $this->assertTrue($command->userId->equals($userIdVO));
+                $this->assertSame($userId, $command->userId);
 
                 return true;
             }));

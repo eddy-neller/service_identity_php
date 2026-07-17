@@ -12,7 +12,6 @@ use App\Application\Shop\ReadModel\Ordering\CartItem;
 use App\Application\Shop\UseCase\Command\Ordering\AddToCart\AddToCartCommand;
 use App\Application\Shop\UseCase\Query\Customer\DisplayMyCustomer\DisplayMyCustomerQuery;
 use App\Domain\Shop\Customer\ValueObject\CustomerId;
-use App\Domain\Shop\Customer\ValueObject\UserAccountId;
 use App\Presentation\Shared\State\PresentationErrorCode;
 use App\Presentation\Shop\ApiResource\Ordering\CartResource;
 use App\Presentation\Shop\Dto\Ordering\Cart\CartLinePostInput;
@@ -69,7 +68,7 @@ final class CartLinePostProcessorTest extends TestCase
             ->method('dispatch')
             ->willReturnCallback(function ($query) use ($customerOutput): CurrentCustomerItem {
                 $this->assertInstanceOf(DisplayMyCustomerQuery::class, $query);
-                $this->assertTrue($query->userAccountId->equals(UserAccountId::fromString('550e8400-e29b-41d4-a716-446655440800')));
+                $this->assertSame('550e8400-e29b-41d4-a716-446655440800', $query->userAccountId);
 
                 return $customerOutput;
             });
@@ -78,8 +77,8 @@ final class CartLinePostProcessorTest extends TestCase
             ->method('dispatch')
             ->willReturnCallback(function ($command) use ($input, $customerId, $output): CartItem {
                 $this->assertInstanceOf(AddToCartCommand::class, $command);
-                $this->assertTrue($command->customerId->equals($customerId));
-                $this->assertSame($input->productId, $command->productId->toString());
+                $this->assertSame($customerId->toString(), $command->customerId);
+                $this->assertSame($input->productId, $command->productId);
                 $this->assertSame(2, $command->quantity);
 
                 return $output;

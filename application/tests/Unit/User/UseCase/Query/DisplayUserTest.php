@@ -34,7 +34,7 @@ final class DisplayUserTest extends TestCase
     public function testHandleReturnsUserOutputWhenUserExists(): void
     {
         $userId = UserId::fromString('550e8400-e29b-41d4-a716-446655440000');
-        $query = new DisplayUserQuery($userId);
+        $query = new DisplayUserQuery($userId->toString());
         $user = $this->createUser($userId);
 
         $this->repository->expects($this->once())
@@ -53,7 +53,7 @@ final class DisplayUserTest extends TestCase
     public function testHandleThrowsExceptionWhenUserNotFound(): void
     {
         $userId = UserId::fromString('550e8400-e29b-41d4-a716-446655440001');
-        $query = new DisplayUserQuery($userId);
+        $query = new DisplayUserQuery($userId->toString());
 
         $this->repository->expects($this->once())
             ->method('findById')
@@ -71,7 +71,7 @@ final class DisplayUserTest extends TestCase
         $this->repository->expects($this->never())->method('findById');
 
         $userId = UserId::fromString('550e8400-e29b-41d4-a716-446655440002');
-        $query = new DisplayUserQuery($userId);
+        $query = new DisplayUserQuery($userId->toString());
 
         $this->assertSame('user:item:550e8400-e29b-41d4-a716-446655440002', $query->cacheKey());
         $this->assertSame(
@@ -84,7 +84,7 @@ final class DisplayUserTest extends TestCase
     {
         $this->repository->expects($this->never())->method('findById');
 
-        $query = new DisplayUserQuery(UserId::fromString('550e8400-e29b-41d4-a716-446655440003'));
+        $query = new DisplayUserQuery('550e8400-e29b-41d4-a716-446655440003');
 
         $this->assertSame(3600, $query->cacheTtl());
     }

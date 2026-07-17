@@ -29,17 +29,18 @@ final readonly class RequestPasswordResetCommandHandler implements CommandHandle
     public function handle(RequestPasswordResetCommand $command): void
     {
         $email = EmailAddress::fromString($command->email);
-        $user = $this->repository->findByEmail($email);
+        $token = $this->tokenProvider->generateRandomToken();
+        $resetPasswordInterval = $this->createInterval($this->config->getString('reset_password_token_ttl', 'PT15M'));
 
-        if (null === $user) {
-            return;
-        }
+        $this->transactional->transactional(function () use ($email, $token, $resetPasswordInterval): void {
+            $user = $this->repository->findByEmail($email);
 
-        $this->transactional->transactional(function () use ($user): void {
+            if (null === $user) {
+                return;
+            }
+
             $now = $this->clock->now();
-            $token = $this->tokenProvider->generateRandomToken();
-            $resetPasswordTtl = $this->config->getString('reset_password_token_ttl', 'PT15M');
-            $expiresAt = $now->add($this->createInterval($resetPasswordTtl));
+            $expiresAt = $now->add($resetPasswordInterval);
 
             $user->requestPasswordReset($token, $expiresAt, $now);
 

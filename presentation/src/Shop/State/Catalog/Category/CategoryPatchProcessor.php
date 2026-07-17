@@ -8,7 +8,6 @@ use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProcessorInterface;
 use App\Application\Shared\CQRS\Command\CommandBusInterface;
 use App\Application\Shop\UseCase\Command\Catalog\UpdateCategoryByAdmin\UpdateCategoryByAdminCommand;
-use App\Domain\Shop\Catalog\ValueObject\CategoryId;
 use App\Presentation\Shared\State\PresentationErrorCode;
 use App\Presentation\Shop\ApiResource\Catalog\CategoryResource;
 use App\Presentation\Shop\Dto\Catalog\Category\CategoryPatchInput;
@@ -29,16 +28,16 @@ final readonly class CategoryPatchProcessor implements ProcessorInterface
             throw new LogicException(PresentationErrorCode::INVALID_INPUT->value);
         }
 
-        if (!isset($uriVariables['id']) || !is_string($uriVariables['id'])) {
+        $categoryId = $uriVariables['id'] ?? null;
+
+        if (!is_string($categoryId) || '' === $categoryId) {
             throw new LogicException(PresentationErrorCode::INVALID_INPUT->value);
         }
 
         $parentId = null;
         if (null !== $data->parent) {
-            $parentId = CategoryId::fromString($data->parent->id);
+            $parentId = $data->parent->id;
         }
-
-        $categoryId = CategoryId::fromString($uriVariables['id']);
 
         $command = new UpdateCategoryByAdminCommand(
             categoryId: $categoryId,

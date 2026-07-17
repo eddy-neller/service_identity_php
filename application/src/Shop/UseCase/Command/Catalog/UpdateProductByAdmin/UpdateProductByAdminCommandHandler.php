@@ -11,11 +11,14 @@ use App\Application\Shared\Port\TransactionalInterface;
 use App\Application\Shop\Port\CategoryRepositoryInterface;
 use App\Application\Shop\Port\ProductRepositoryInterface;
 use App\Application\Shop\ReadModel\Catalog\ProductItem;
+use App\Domain\SharedKernel\ValueObject\Slug;
 use App\Domain\Shop\Catalog\Exception\CategoryNotFoundException;
 use App\Domain\Shop\Catalog\Exception\ProductNotFoundException;
 use App\Domain\Shop\Catalog\Exception\ProductTitleAlreadyUsedException;
 use App\Domain\Shop\Catalog\Model\Product;
+use App\Domain\Shop\Catalog\ValueObject\CategoryId;
 use App\Domain\Shop\Catalog\ValueObject\ProductDescription;
+use App\Domain\Shop\Catalog\ValueObject\ProductId;
 use App\Domain\Shop\Catalog\ValueObject\ProductSubtitle;
 use App\Domain\Shop\Catalog\ValueObject\ProductTitle;
 use App\Domain\Shop\Shared\ValueObject\Money;
@@ -34,28 +37,36 @@ final readonly class UpdateProductByAdminCommandHandler implements CommandHandle
 
     public function handle(UpdateProductByAdminCommand $command): ProductItem
     {
-        $product = $this->productRepository->findById($command->productId);
+        $productId = ProductId::fromString($command->productId);
+        $title = null !== $command->title ? ProductTitle::fromString($command->title) : null;
+        $subtitle = null !== $command->subtitle ? ProductSubtitle::fromString($command->subtitle) : null;
+        $description = null !== $command->description
+            ? ProductDescription::fromString($command->description)
+            : null;
+        $price = null !== $command->price ? Money::fromEuros($command->price) : null;
+        $categoryId = null !== $command->categoryId ? CategoryId::fromString($command->categoryId) : null;
+        $slug = null !== $title ? $this->slugGenerator->generate($title->toString()) : null;
 
-        if (null === $product) {
-            throw new ProductNotFoundException();
-        }
+        return $this->transactional->transactional(function () use ($productId, $title, $subtitle, $description, $price, $categoryId, $slug): ProductItem {
+            $product = $this->productRepository->findById($productId);
 
-        // Product uses explicit domain methods (rename/reprice/...) to keep invariants clear
-        // instead of a generic update() like Address.
-        return $this->transactional->transactional(function () use ($command, $product): ProductItem {
+            if (null === $product) {
+                throw new ProductNotFoundException();
+            }
+
             $now = $this->clock->now();
 
-            $this->applyTitleAndSubtitle($command, $product, $now);
+            $this->applyTitleAndSubtitle($title, $subtitle, $slug, $product, $now);
 
-            if (null !== $command->description) {
-                $product->rewrite(ProductDescription::fromString($command->description), $now);
+            if (null !== $description) {
+                $product->rewrite($description, $now);
             }
 
-            if (null !== $command->price) {
-                $product->reprice(Money::fromEuros($command->price), $now);
+            if (null !== $price) {
+                $product->reprice($price, $now);
             }
 
-            $this->applyCategoryChange($command, $product, $now);
+            $this->applyCategoryChange($categoryId, $product, $now);
 
             $this->productRepository->save($product);
 
@@ -69,47 +80,45 @@ final readonly class UpdateProductByAdminCommandHandler implements CommandHandle
     }
 
     private function applyTitleAndSubtitle(
-        UpdateProductByAdminCommand $command,
+        ?ProductTitle $title,
+        ?ProductSubtitle $subtitle,
+        ?Slug $slug,
         Product $product,
         DateTimeImmutable $now,
     ): void {
-        if (null === $command->title && null === $command->subtitle) {
+        if (null === $title && null === $subtitle) {
             return;
         }
 
-        $newTitle = null !== $command->title
-            ? ProductTitle::fromString($command->title)
-            : $product->getTitle();
+        $newTitle = $title ?? $product->getTitle();
 
-        if (null !== $command->title) {
+        if (null !== $title) {
             $existing = $this->productRepository->findByTitle($newTitle);
             if (null !== $existing && !$existing->getId()->equals($product->getId())) {
                 throw new ProductTitleAlreadyUsedException();
             }
         }
 
-        $newSubtitle = null !== $command->subtitle
-            ? ProductSubtitle::fromString($command->subtitle)
-            : $product->getSubtitle();
+        $newSubtitle = $subtitle ?? $product->getSubtitle();
 
         $product->rename($newTitle, $newSubtitle, $now);
 
-        if (null !== $command->title) {
-            $product->reSlug($this->slugGenerator->generate($newTitle->toString()), $now);
+        if (null !== $title && null !== $slug) {
+            $product->reSlug($slug, $now);
         }
     }
 
     private function applyCategoryChange(
-        UpdateProductByAdminCommand $command,
+        ?CategoryId $categoryId,
         Product $product,
         DateTimeImmutable $now,
     ): void {
-        if (null === $command->categoryId || $command->categoryId->equals($product->getCategoryId())) {
+        if (null === $categoryId || $categoryId->equals($product->getCategoryId())) {
             return;
         }
 
         $oldCategory = $this->categoryRepository->findById($product->getCategoryId());
-        $newCategory = $this->categoryRepository->findById($command->categoryId);
+        $newCategory = $this->categoryRepository->findById($categoryId);
 
         if (null === $oldCategory) {
             throw new CategoryNotFoundException('Current category not found.');
@@ -119,7 +128,7 @@ final readonly class UpdateProductByAdminCommandHandler implements CommandHandle
             throw new CategoryNotFoundException('New category not found.');
         }
 
-        $product->moveToCategory($command->categoryId, $now);
+        $product->moveToCategory($categoryId, $now);
 
         $oldCategory->decreaseProductCount($now);
         $this->categoryRepository->save($oldCategory);

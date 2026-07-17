@@ -24,14 +24,15 @@ final readonly class RegisterWrongPasswordAttemptCommandHandler implements Comma
     public function handle(RegisterWrongPasswordAttemptCommand $command): void
     {
         $email = EmailAddress::fromString($command->email);
-        $user = $this->repository->findByEmail($email);
+        $maxAttempts = (int) $this->config->get('app.security.max_login_attempts');
 
-        if (null === $user) {
-            return;
-        }
+        $this->transactional->transactional(function () use ($email, $maxAttempts): void {
+            $user = $this->repository->findByEmail($email);
 
-        $this->transactional->transactional(function () use ($user): void {
-            $maxAttempts = (int) $this->config->get('app.security.max_login_attempts');
+            if (null === $user) {
+                return;
+            }
+
             $user->registerWrongPasswordAttempt($maxAttempts, $this->clock->now());
 
             $this->repository->save($user);

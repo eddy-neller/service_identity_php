@@ -33,6 +33,14 @@
 - Handler : une seule méthode publique `handle(SomethingCommand|SomethingQuery $message)`.
 - Buses & resolvers dans `Application/Shared/CQRS/` — indépendants des frameworks (PSR-11, PSR-3, convention-based, avec cache).
 
+### Contrat des Commands et Queries
+
+- Une Command ou Query est un message de transport : elle ne porte que des primitives sérialisables et loggables (`string`, `int`, `bool`, tableaux de primitives, etc.), jamais de Value Object du Domain.
+- Exposer par exemple `userId: string`, et non `userId: UserId`. Le message reste ainsi transportable sur un bus et indépendant du Domain.
+- La conversion primitive → Value Object (`UserId::fromString($command->userId)`) se fait à l'entrée du use case, dans le handler. C'est le seul point où une entrée devient un concept métier valide.
+- Ne pas construire de Value Object dans la Presentation pour l'injecter dans un message : cela déplacerait la validation Domain hors du use case et dégraderait la sérialisabilité du message.
+- Cette règle est cohérente avec les DTO d'entrée Symfony/Messenger : ils portent des scalaires, puis le handler hydrate les Value Objects nécessaires au Domain.
+
 ### Buses — règle absolue
 
 - Toujours passer par `CommandBusInterface` / `QueryBusInterface` — **jamais** appeler `handle()` directement.
@@ -54,6 +62,17 @@
 - Orchestrent l'écriture : charger des agrégats via repos, appeler les méthodes métier Domain, persister / publier les events via les Ports.
 - Utilisent **uniquement** : Domain + Ports (`UserRepositoryInterface`, `ClockInterface`, `TransactionalInterface`, …).
 - Renvoient : DTOs d'output / read models, ou `void` — **jamais** d'entités Doctrine ni d'objets framework.
+
+### Transactions — performance et cohérence
+
+Les commandes d'écriture utilisent `TransactionalInterface`, avec des transactions **aussi courtes que possible**, sans sacrifier la cohérence des décisions prises sur l'état persistant.
+
+- **Avant la transaction** : préparer tout ce qui est pur et indépendant de l'état persistant : validation de format, parsing d'identifiants, construction de Value Objects, calculs, génération locale de slug/UUID et validation de fichier. Une erreur à ce stade ne doit pas ouvrir de transaction.
+- **Dans la transaction** : toute lecture de repository qui conditionne une écriture, puis les mutations et persistance associées. Cela couvre les contrôles d'existence, d'appartenance, de stock, de parenté, d'unicité applicative et les relectures nécessaires au résultat de la commande.
+- **Hors transaction** : les lectures réellement indépendantes de l'écriture (par exemple un use case de lecture) et tout I/O externe ou potentiellement long (HTTP, stockage de fichier, queue). Ces effets doivent être coordonnés par un mécanisme adapté, pas maintenus sous verrou DB.
+- Un contrôle d'unicité par repository réduit la fenêtre de concurrence mais ne remplace jamais une contrainte `UNIQUE` en base. La violation de cette contrainte doit être traduite en exception applicative/domaine appropriée.
+
+Les tests de commande reflètent ce découpage : une erreur de validation pure attend que `transactional()` ne soit pas appelé ; un échec issu d'une lecture DB décisionnelle attend l'exécution du callback transactionnel.
 
 ### Aucune logique métier dans l'Application
 
@@ -134,6 +153,7 @@ $this->transactional->expects($this->once())
 
 - [ ] Le code est dans `application/.../UseCase/Command|Query`.
 - [ ] Le DTO s'appelle `...Command` ou `...Query` ; le handler `...CommandHandler` / `...QueryHandler` et expose `handle()`.
+- [ ] Les Commands et Queries ne portent que des primitives sérialisables ; le handler les convertit en Value Objects Domain à l'entrée du use case.
 - [ ] Presentation/Infra n'appellent jamais `handle()` directement — uniquement via les Buses.
 - [ ] Le handler dépend uniquement de Ports + Domain.
 - [ ] Le temps est géré via `ClockInterface`.

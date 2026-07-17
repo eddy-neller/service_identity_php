@@ -62,7 +62,7 @@ final class UpdateProductImageByAdminTest extends TestCase
         $file->method('isValid')->willReturn(true);
 
         $command = new UpdateProductImageByAdminCommand(
-            productId: $productId,
+            productId: $productId->toString(),
             imageFile: $file,
         );
 
@@ -98,7 +98,7 @@ final class UpdateProductImageByAdminTest extends TestCase
         $file->method('isValid')->willReturn(true);
 
         $command = new UpdateProductImageByAdminCommand(
-            productId: $productId,
+            productId: $productId->toString(),
             imageFile: $file,
         );
 
@@ -127,7 +127,7 @@ final class UpdateProductImageByAdminTest extends TestCase
         $file->method('isValid')->willReturn(true);
 
         $command = new UpdateProductImageByAdminCommand(
-            productId: $productId,
+            productId: $productId->toString(),
             imageFile: $file,
         );
 
@@ -167,7 +167,7 @@ final class UpdateProductImageByAdminTest extends TestCase
         $file->method('isValid')->willReturn(false);
 
         $command = new UpdateProductImageByAdminCommand(
-            productId: $productId,
+            productId: $productId->toString(),
             imageFile: $file,
         );
 

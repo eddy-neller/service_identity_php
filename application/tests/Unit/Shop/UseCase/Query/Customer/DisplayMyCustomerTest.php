@@ -48,7 +48,7 @@ final class DisplayMyCustomerTest extends TestCase
             ->with($userAccountId)
             ->willReturn($customer);
 
-        $output = $this->handler->handle(new DisplayMyCustomerQuery($userAccountId));
+        $output = $this->handler->handle(new DisplayMyCustomerQuery($userAccountId->toString()));
 
         $this->assertSame(self::CUSTOMER_ID, $output->id);
     }
@@ -64,6 +64,6 @@ final class DisplayMyCustomerTest extends TestCase
 
         $this->expectException(CustomerNotFoundException::class);
 
-        $this->handler->handle(new DisplayMyCustomerQuery($userAccountId));
+        $this->handler->handle(new DisplayMyCustomerQuery($userAccountId->toString()));
     }
 }

@@ -14,6 +14,7 @@ use App\Domain\Shop\Catalog\Exception\CategoryNotFoundException;
 use App\Domain\Shop\Catalog\Exception\CategoryTitleAlreadyUsedException;
 use App\Domain\Shop\Catalog\Model\Category;
 use App\Domain\Shop\Catalog\ValueObject\CategoryDescription;
+use App\Domain\Shop\Catalog\ValueObject\CategoryId;
 use App\Domain\Shop\Catalog\ValueObject\CategoryTitle;
 
 final readonly class CreateCategoryByAdminCommandHandler implements CommandHandlerInterface
@@ -28,18 +29,16 @@ final readonly class CreateCategoryByAdminCommandHandler implements CommandHandl
 
     public function handle(CreateCategoryByAdminCommand $command): CategoryItem
     {
-        return $this->transactional->transactional(function () use ($command): CategoryItem {
-            $id = $this->repository->nextIdentity();
-            $title = CategoryTitle::fromString($command->title);
+        $id = $this->repository->nextIdentity();
+        $title = CategoryTitle::fromString($command->title);
+        $description = CategoryDescription::fromNullableString($command->description);
+        $parentId = null !== $command->parentId ? CategoryId::fromString($command->parentId) : null;
+        $slug = $this->slugGenerator->generate($title->toString());
 
+        return $this->transactional->transactional(function () use ($id, $title, $description, $parentId, $slug): CategoryItem {
             if (null !== $this->repository->findByTitle($title)) {
                 throw new CategoryTitleAlreadyUsedException();
             }
-
-            $slug = $this->slugGenerator->generate($title->toString());
-            $description = CategoryDescription::fromNullableString($command->description);
-
-            $parentId = $command->parentId;
 
             if (null !== $parentId) {
                 $parent = $this->repository->findById($parentId);

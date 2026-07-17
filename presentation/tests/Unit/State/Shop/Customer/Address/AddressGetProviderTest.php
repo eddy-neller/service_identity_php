@@ -13,7 +13,6 @@ use App\Application\Shop\UseCase\Query\Customer\DisplayMyCustomer\DisplayMyCusto
 use App\Domain\Shop\Customer\Model\Address as DomainAddress;
 use App\Domain\Shop\Customer\ValueObject\AddressId;
 use App\Domain\Shop\Customer\ValueObject\CustomerId;
-use App\Domain\Shop\Customer\ValueObject\UserAccountId;
 use App\Presentation\Shared\State\PresentationErrorCode;
 use App\Presentation\Shop\ApiResource\Customer\AddressResource;
 use App\Presentation\Shop\Presenter\Customer\AddressResourcePresenter;
@@ -48,14 +47,14 @@ final class AddressGetProviderTest extends TestCase
             ->method('dispatch')
             ->willReturnCallback(function ($query) use ($customerOutput, $addressOutput): CurrentCustomerItem|AddressItem {
                 if ($query instanceof DisplayMyCustomerQuery) {
-                    $this->assertTrue($query->userAccountId->equals(UserAccountId::fromString('550e8400-e29b-41d4-a716-446655440300')));
+                    $this->assertSame('550e8400-e29b-41d4-a716-446655440300', $query->userAccountId);
 
                     return $customerOutput;
                 }
 
                 if ($query instanceof DisplayAddressQuery) {
-                    $this->assertTrue($query->addressId->equals(AddressId::fromString('550e8400-e29b-41d4-a716-446655440302')));
-                    $this->assertInstanceOf(CustomerId::class, $query->ownerId);
+                    $this->assertSame('550e8400-e29b-41d4-a716-446655440302', $query->addressId);
+                    $this->assertSame('550e8400-e29b-41d4-a716-446655440301', $query->ownerId);
 
                     return $addressOutput;
                 }

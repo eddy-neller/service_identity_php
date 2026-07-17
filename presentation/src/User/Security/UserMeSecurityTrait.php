@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Presentation\User\Security;
 
 use ApiPlatform\Symfony\Security\Exception\AccessDeniedException;
-use App\Domain\User\ValueObject\UserId;
 use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\Security\Core\User\UserInterface;
 
@@ -59,11 +58,11 @@ trait UserMeSecurityTrait
     }
 
     /**
-     * Extrait le UserId du domaine depuis l'utilisateur authentifié.
+     * Extrait l'identifiant depuis l'utilisateur authentifié.
      *
-     * @throws AccessDeniedException Si l'ID ne peut pas être converti
+     * @throws AccessDeniedException Si l'ID ne peut pas être extrait
      */
-    protected function getUserIdFromAuthenticatedUser(UserInterface $user): UserId
+    protected function getUserIdFromAuthenticatedUser(UserInterface $user): string
     {
         // L'entité User de l'infrastructure a un getId() qui retourne UuidInterface
         if (!method_exists($user, 'getId')) {
@@ -76,6 +75,6 @@ trait UserMeSecurityTrait
             throw new AccessDeniedException('Identifiant utilisateur invalide.');
         }
 
-        return UserId::fromString($id->toString());
+        return $id->toString();
     }
 }

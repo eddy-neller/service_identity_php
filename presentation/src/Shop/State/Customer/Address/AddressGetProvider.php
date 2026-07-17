@@ -8,7 +8,6 @@ use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProviderInterface;
 use App\Application\Shared\CQRS\Query\QueryBusInterface;
 use App\Application\Shop\UseCase\Query\Customer\DisplayAddress\DisplayAddressQuery;
-use App\Domain\Shop\Customer\ValueObject\AddressId;
 use App\Presentation\Shared\State\PresentationErrorCode;
 use App\Presentation\Shop\Presenter\Customer\AddressResourcePresenter;
 use App\Presentation\Shop\State\Shared\CurrentCustomerResolver;
@@ -25,13 +24,13 @@ final readonly class AddressGetProvider implements ProviderInterface
 
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): object
     {
-        $rawId = $uriVariables['id'] ?? null;
-        if (!is_string($rawId) || '' === $rawId) {
+        $addressId = $uriVariables['id'] ?? null;
+        if (!is_string($addressId) || '' === $addressId) {
             throw new LogicException(PresentationErrorCode::INVALID_INPUT->value);
         }
 
         $output = $this->queryBus->dispatch(new DisplayAddressQuery(
-            addressId: AddressId::fromString($rawId),
+            addressId: $addressId,
             ownerId: $this->customerResolver->resolve(),
         ));
 

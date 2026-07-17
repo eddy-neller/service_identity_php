@@ -11,6 +11,7 @@ use App\Application\Shop\Port\CategoryRepositoryInterface;
 use App\Application\Shop\Port\ProductRepositoryInterface;
 use App\Domain\Shop\Catalog\Exception\CategoryNotFoundException;
 use App\Domain\Shop\Catalog\Exception\ProductNotFoundException;
+use App\Domain\Shop\Catalog\ValueObject\ProductId;
 
 final readonly class DeleteProductByAdminCommandHandler implements CommandHandlerInterface
 {
@@ -24,19 +25,22 @@ final readonly class DeleteProductByAdminCommandHandler implements CommandHandle
 
     public function handle(DeleteProductByAdminCommand $command): void
     {
-        $product = $this->productRepository->findById($command->productId);
+        $productId = ProductId::fromString($command->productId);
 
-        if (null === $product) {
-            throw new ProductNotFoundException();
-        }
+        $this->transactional->transactional(function () use ($productId): void {
+            $product = $this->productRepository->findById($productId);
 
-        $this->transactional->transactional(function () use ($product): void {
-            $now = $this->clock->now();
+            if (null === $product) {
+                throw new ProductNotFoundException();
+            }
+
             $category = $this->categoryRepository->findById($product->getCategoryId());
 
             if (null === $category) {
                 throw new CategoryNotFoundException();
             }
+
+            $now = $this->clock->now();
 
             $product->delete($now);
             $category->decreaseProductCount($now);

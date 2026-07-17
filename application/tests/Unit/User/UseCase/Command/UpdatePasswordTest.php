@@ -56,7 +56,7 @@ final class UpdatePasswordTest extends TestCase
         $currentPassword = 'current-password';
         $newPassword = 'new-password';
         $hashedPassword = new HashedPassword('hashed-new-password');
-        $command = new UpdatePasswordCommand($userId, $currentPassword, $newPassword);
+        $command = new UpdatePasswordCommand($userId->toString(), $currentPassword, $newPassword);
 
         $this->repository->expects($this->once())
             ->method('findById')
@@ -95,19 +95,22 @@ final class UpdatePasswordTest extends TestCase
     public function testHandleThrowsExceptionWhenUserNotFound(): void
     {
         $userId = UserId::fromString('550e8400-e29b-41d4-a716-446655440001');
-        $command = new UpdatePasswordCommand($userId, 'current-password', 'new-password');
+        $command = new UpdatePasswordCommand($userId->toString(), 'current-password', 'new-password');
 
         $this->passwordHasher->expects($this->never())
             ->method('verify');
 
-        $this->passwordHasher->expects($this->never())
-            ->method('hash');
+        $this->passwordHasher->expects($this->once())
+            ->method('hash')
+            ->with('new-password')
+            ->willReturn(new HashedPassword('hashed-new-password'));
 
         $this->clock->expects($this->never())
             ->method('now');
 
-        $this->transactional->expects($this->never())
-            ->method('transactional');
+        $this->transactional->expects($this->once())
+            ->method('transactional')
+            ->willReturnCallback(static fn (callable $callback) => $callback());
 
         $this->repository->expects($this->once())
             ->method('findById')
@@ -124,7 +127,7 @@ final class UpdatePasswordTest extends TestCase
     {
         $userId = UserId::fromString('550e8400-e29b-41d4-a716-446655440002');
         $user = $this->createUser($userId);
-        $command = new UpdatePasswordCommand($userId, 'wrong-password', 'new-password');
+        $command = new UpdatePasswordCommand($userId->toString(), 'wrong-password', 'new-password');
 
         $this->repository->expects($this->once())
             ->method('findById')
@@ -136,14 +139,17 @@ final class UpdatePasswordTest extends TestCase
             ->with($user->getPassword(), 'wrong-password')
             ->willReturn(false);
 
-        $this->passwordHasher->expects($this->never())
-            ->method('hash');
+        $this->passwordHasher->expects($this->once())
+            ->method('hash')
+            ->with('new-password')
+            ->willReturn(new HashedPassword('hashed-new-password'));
 
         $this->clock->expects($this->never())
             ->method('now');
 
-        $this->transactional->expects($this->never())
-            ->method('transactional');
+        $this->transactional->expects($this->once())
+            ->method('transactional')
+            ->willReturnCallback(static fn (callable $callback) => $callback());
 
         $this->repository->expects($this->never())
             ->method('save');
@@ -158,7 +164,7 @@ final class UpdatePasswordTest extends TestCase
         $userId = UserId::fromString('550e8400-e29b-41d4-a716-446655440003');
         $user = $this->createUser($userId);
         $password = 'current-password';
-        $command = new UpdatePasswordCommand($userId, $password, $password);
+        $command = new UpdatePasswordCommand($userId->toString(), $password, $password);
 
         $this->repository->expects($this->once())
             ->method('findById')
@@ -172,14 +178,17 @@ final class UpdatePasswordTest extends TestCase
                 [$user->getPassword(), $password, true],
             ]);
 
-        $this->passwordHasher->expects($this->never())
-            ->method('hash');
+        $this->passwordHasher->expects($this->once())
+            ->method('hash')
+            ->with($password)
+            ->willReturn(new HashedPassword('hashed-new-password'));
 
         $this->clock->expects($this->never())
             ->method('now');
 
-        $this->transactional->expects($this->never())
-            ->method('transactional');
+        $this->transactional->expects($this->once())
+            ->method('transactional')
+            ->willReturnCallback(static fn (callable $callback) => $callback());
 
         $this->repository->expects($this->never())
             ->method('save');

@@ -48,8 +48,9 @@ final readonly class CartItemFactory
             }
 
             $unitPrice = $product->getPrice();
-            $lineTotal = $unitPrice->multiply($line->getQuantity());
-            $totalQuantity += $line->getQuantity();
+            $quantity = $line->getQuantity()->toInt();
+            $lineTotal = $unitPrice->multiply($quantity);
+            $totalQuantity += $quantity;
             $subtotal = $subtotal->add($lineTotal);
 
             $items[] = new CartLineItem(
@@ -59,7 +60,7 @@ final readonly class CartItemFactory
                 productSlug: $product->getSlug()->toString(),
                 imageUrl: $this->imageUrlResolver->resolve($product->getImageName()),
                 unitPrice: $unitPrice->toEuros(),
-                quantity: $line->getQuantity(),
+                quantity: $quantity,
                 lineTotal: $lineTotal->toEuros(),
             );
         }

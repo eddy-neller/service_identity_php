@@ -15,6 +15,7 @@ use App\Domain\Shop\Ordering\Model\Cart;
 use App\Domain\Shop\Ordering\Model\CartLine;
 use App\Domain\Shop\Ordering\ValueObject\CartId;
 use App\Domain\Shop\Ordering\ValueObject\CartLineId;
+use App\Domain\Shop\Ordering\ValueObject\CartLineQuantity;
 use DateTimeImmutable;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
@@ -52,7 +53,7 @@ final class ClearCartTest extends TestCase
     public function testHandleDoesNothingWhenNoCartExists(): void
     {
         $customerId = CustomerId::fromString(self::CUSTOMER_ID);
-        $command = new ClearCartCommand($customerId);
+        $command = new ClearCartCommand($customerId->toString());
 
         $this->repository->expects($this->once())
             ->method('findByOwnerForUpdate')
@@ -73,11 +74,11 @@ final class ClearCartTest extends TestCase
         $cart = Cart::reconstitute(
             CartId::fromString(self::CART_ID),
             $customerId,
-            [CartLine::create(CartLineId::fromString(self::CART_LINE_ID), ProductId::fromString(self::PRODUCT_ID), 2)],
+            [CartLine::create(CartLineId::fromString(self::CART_LINE_ID), ProductId::fromString(self::PRODUCT_ID), CartLineQuantity::fromInt(2))],
             new DateTimeImmutable('2025-01-01 09:00:00'),
             new DateTimeImmutable('2025-01-01 09:00:00'),
         );
-        $command = new ClearCartCommand($customerId);
+        $command = new ClearCartCommand($customerId->toString());
 
         $this->repository->expects($this->once())
             ->method('findByOwnerForUpdate')

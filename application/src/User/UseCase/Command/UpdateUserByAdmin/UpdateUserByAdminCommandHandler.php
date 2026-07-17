@@ -12,11 +12,13 @@ use App\Application\User\Port\UserRepositoryInterface;
 use App\Application\User\Port\UserUniquenessCheckerInterface;
 use App\Application\User\ReadModel\UserItem;
 use App\Domain\User\Exception\UserNotFoundException;
+use App\Domain\User\Model\User;
 use App\Domain\User\ValueObject\EmailAddress;
 use App\Domain\User\ValueObject\Firstname;
 use App\Domain\User\ValueObject\Lastname;
 use App\Domain\User\ValueObject\Security\RoleSet;
 use App\Domain\User\ValueObject\Security\UserStatus;
+use App\Domain\User\ValueObject\UserId;
 use App\Domain\User\ValueObject\Username;
 
 final readonly class UpdateUserByAdminCommandHandler implements CommandHandlerInterface
@@ -32,40 +34,48 @@ final readonly class UpdateUserByAdminCommandHandler implements CommandHandlerIn
 
     public function handle(UpdateUserByAdminCommand $command): UserItem
     {
-        $user = $this->repository->findById($command->userId);
+        $userId = UserId::fromString($command->userId);
+        $email = null !== $command->email ? EmailAddress::fromString($command->email) : null;
+        $username = null !== $command->username ? Username::fromString($command->username) : null;
+        $firstname = $command->firstname ? Firstname::fromString($command->firstname) : null;
+        $lastname = $command->lastname ? Lastname::fromString($command->lastname) : null;
+        $roles = $command->roles ? RoleSet::fromArray($command->roles) : null;
+        $status = $command->status ? UserStatus::fromInt($command->status) : null;
+        $hashedPassword = null !== $command->plainPassword && '' !== trim($command->plainPassword)
+            ? $this->passwordHasher->hash($command->plainPassword)
+            : null;
 
-        if (null === $user) {
-            throw new UserNotFoundException();
-        }
+        $user = $this->transactional->transactional(function () use ($userId, $email, $username, $firstname, $lastname, $roles, $status, $hashedPassword): User {
+            $user = $this->repository->findById($userId);
 
-        if (null !== $command->email) {
-            $this->uniquenessChecker->ensureEmailAvailable(EmailAddress::fromString($command->email), $user->getId());
-        }
+            if (null === $user) {
+                throw new UserNotFoundException();
+            }
 
-        if (null !== $command->username) {
-            $this->uniquenessChecker->ensureUsernameAvailable(Username::fromString($command->username), $user->getId());
-        }
+            if (null !== $email) {
+                $this->uniquenessChecker->ensureEmailAvailable($email, $user->getId());
+            }
 
-        return $this->transactional->transactional(function () use ($user, $command): UserItem {
-            $hashedPassword = null;
-            if (null !== $command->plainPassword && '' !== trim($command->plainPassword)) {
-                $hashedPassword = $this->passwordHasher->hash($command->plainPassword);
+            if (null !== $username) {
+                $this->uniquenessChecker->ensureUsernameAvailable($username, $user->getId());
             }
 
             $user->updateByAdmin(
                 now: $this->clock->now(),
-                username: $command->username ? Username::fromString($command->username) : null,
-                email: $command->email ? EmailAddress::fromString($command->email) : null,
-                firstname: $command->firstname ? Firstname::fromString($command->firstname) : null,
-                lastname: $command->lastname ? Lastname::fromString($command->lastname) : null,
-                roles: $command->roles ? RoleSet::fromArray($command->roles) : null,
-                status: $command->status ? UserStatus::fromInt($command->status) : null,
+                username: $username,
+                email: $email,
+                firstname: $firstname,
+                lastname: $lastname,
+                roles: $roles,
+                status: $status,
                 password: $hashedPassword,
             );
 
             $this->repository->save($user);
 
-            return UserItem::fromUser($user);
+            return $user;
         });
+
+        return UserItem::fromUser($user);
     }
 }

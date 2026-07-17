@@ -58,7 +58,7 @@ final class CustomerPatchProcessorTest extends TestCase
             ->method('dispatch')
             ->willReturnCallback(function ($command) use ($expectedCustomerId, $customer): CustomerItem {
                 $this->assertInstanceOf(DisableCustomerCommand::class, $command);
-                $this->assertTrue($command->customerId->equals($expectedCustomerId));
+                $this->assertSame($expectedCustomerId->toString(), $command->customerId);
 
                 return CustomerItem::fromCustomer($customer);
             });

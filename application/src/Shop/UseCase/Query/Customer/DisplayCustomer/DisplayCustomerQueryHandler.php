@@ -10,6 +10,7 @@ use App\Application\Shop\Port\AddressRepositoryInterface;
 use App\Application\Shop\Port\CustomerRepositoryInterface;
 use App\Application\Shop\ReadModel\Customer\CustomerItem;
 use App\Domain\Shop\Customer\Exception\CustomerNotFoundException;
+use App\Domain\Shop\Customer\ValueObject\CustomerId;
 
 final readonly class DisplayCustomerQueryHandler implements QueryHandlerInterface
 {
@@ -21,7 +22,7 @@ final readonly class DisplayCustomerQueryHandler implements QueryHandlerInterfac
 
     public function handle(DisplayCustomerQuery $query): CustomerItem
     {
-        $customer = $this->customerRepository->findById($query->customerId);
+        $customer = $this->customerRepository->findById(CustomerId::fromString($query->customerId));
 
         if (null === $customer) {
             throw new CustomerNotFoundException();

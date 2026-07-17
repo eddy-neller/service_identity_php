@@ -52,7 +52,7 @@ final class DisplayProductTest extends TestCase
         $categoryId = CategoryId::fromString(self::CATEGORY_ID);
         $product = $this->createProduct($productId, $categoryId);
         $category = $this->createCategory($categoryId);
-        $query = new DisplayProductQuery($productId);
+        $query = new DisplayProductQuery($productId->toString());
 
         $this->productRepository->expects($this->once())
             ->method('findById')
@@ -77,7 +77,7 @@ final class DisplayProductTest extends TestCase
             ->method('findById');
 
         $productId = ProductId::fromString(self::PRODUCT_ID);
-        $query = new DisplayProductQuery($productId);
+        $query = new DisplayProductQuery($productId->toString());
 
         $this->productRepository->expects($this->once())
             ->method('findById')
@@ -95,7 +95,7 @@ final class DisplayProductTest extends TestCase
         $productId = ProductId::fromString(self::PRODUCT_ID);
         $categoryId = CategoryId::fromString(self::CATEGORY_ID);
         $product = $this->createProduct($productId, $categoryId);
-        $query = new DisplayProductQuery($productId);
+        $query = new DisplayProductQuery($productId->toString());
 
         $this->productRepository->expects($this->once())
             ->method('findById')

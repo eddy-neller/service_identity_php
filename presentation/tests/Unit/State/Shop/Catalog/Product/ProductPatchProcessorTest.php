@@ -78,12 +78,12 @@ final class ProductPatchProcessorTest extends TestCase
             ->method('dispatch')
             ->willReturnCallback(function ($command) use ($input, $productId, $output): ProductItem {
                 $this->assertInstanceOf(UpdateProductByAdminCommand::class, $command);
-                $this->assertTrue($command->productId->equals(ProductId::fromString($productId)));
+                $this->assertSame($productId, $command->productId);
                 $this->assertSame($input->title, $command->title);
                 $this->assertSame($input->subtitle, $command->subtitle);
                 $this->assertSame($input->description, $command->description);
                 $this->assertSame($input->price, $command->price);
-                $this->assertTrue($command->categoryId->equals(CategoryId::fromString($input->category->id)));
+                $this->assertSame($input->category->id, $command->categoryId);
 
                 return $output;
             });

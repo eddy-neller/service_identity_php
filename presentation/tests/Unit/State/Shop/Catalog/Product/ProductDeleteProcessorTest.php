@@ -40,7 +40,7 @@ final class ProductDeleteProcessorTest extends TestCase
             ->method('dispatch')
             ->with($this->callback(function ($command) use ($productIdVo): bool {
                 $this->assertInstanceOf(DeleteProductByAdminCommand::class, $command);
-                $this->assertTrue($command->productId->equals($productIdVo));
+                $this->assertSame($productIdVo->toString(), $command->productId);
 
                 return true;
             }));

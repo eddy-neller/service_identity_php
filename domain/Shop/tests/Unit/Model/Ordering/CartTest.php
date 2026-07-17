@@ -11,6 +11,7 @@ use App\Domain\Shop\Ordering\Exception\CartQuantityExceededException;
 use App\Domain\Shop\Ordering\Model\Cart;
 use App\Domain\Shop\Ordering\ValueObject\CartId;
 use App\Domain\Shop\Ordering\ValueObject\CartLineId;
+use App\Domain\Shop\Ordering\ValueObject\CartLineQuantity;
 use DateTimeImmutable;
 use PHPUnit\Framework\TestCase;
 
@@ -32,18 +33,18 @@ final class CartTest extends TestCase
         $cart->addLine(
             CartLineId::fromString(self::LINE_ID),
             ProductId::fromString(self::PRODUCT_ID),
-            2,
+            CartLineQuantity::fromInt(2),
             $now,
         );
         $cart->addLine(
             CartLineId::fromString('550e8400-e29b-41d4-a716-446655440004'),
             ProductId::fromString(self::PRODUCT_ID),
-            3,
+            CartLineQuantity::fromInt(3),
             $now,
         );
 
         self::assertCount(1, $cart->getLines());
-        self::assertSame(5, $cart->getLines()[0]->getQuantity());
+        self::assertSame(5, $cart->getLines()[0]->getQuantity()->toInt());
     }
 
     public function testUpdateRemoveAndClearLines(): void
@@ -51,15 +52,15 @@ final class CartTest extends TestCase
         $cart = $this->createCart();
         $now = new DateTimeImmutable();
         $productId = ProductId::fromString(self::PRODUCT_ID);
-        $cart->addLine(CartLineId::fromString(self::LINE_ID), $productId, 1, $now);
+        $cart->addLine(CartLineId::fromString(self::LINE_ID), $productId, CartLineQuantity::fromInt(1), $now);
 
-        $cart->updateLine($productId, 4, $now);
-        self::assertSame(4, $cart->getLines()[0]->getQuantity());
+        $cart->updateLine($productId, CartLineQuantity::fromInt(4), $now);
+        self::assertSame(4, $cart->getLines()[0]->getQuantity()->toInt());
 
         $cart->removeLine($productId, $now);
         self::assertSame([], $cart->getLines());
 
-        $cart->addLine(CartLineId::fromString(self::LINE_ID), $productId, 1, $now);
+        $cart->addLine(CartLineId::fromString(self::LINE_ID), $productId, CartLineQuantity::fromInt(1), $now);
         $cart->clear($now);
         self::assertSame([], $cart->getLines());
     }
@@ -76,10 +77,10 @@ final class CartTest extends TestCase
         $cart = $this->createCart();
         $now = new DateTimeImmutable();
         $productId = ProductId::fromString(self::PRODUCT_ID);
-        $cart->addLine(CartLineId::fromString(self::LINE_ID), $productId, 99, $now);
+        $cart->addLine(CartLineId::fromString(self::LINE_ID), $productId, CartLineQuantity::fromInt(99), $now);
 
         $this->expectException(CartQuantityExceededException::class);
-        $cart->addLine(CartLineId::fromString(self::LINE_ID), $productId, 1, $now);
+        $cart->addLine(CartLineId::fromString(self::LINE_ID), $productId, CartLineQuantity::fromInt(1), $now);
     }
 
     private function createCart(): Cart

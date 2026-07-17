@@ -208,6 +208,11 @@ serve-restart:
 grumphp:
 	@$(APP) sh -c "vendor/bin/grumphp run"
 
+## Run GrumPHP on staged files
+.PHONY: grumphp-cm
+grumphp-cm:
+	@$(APP) sh -c "vendor/bin/grumphp git:pre-commit"
+
 ## Run phpunit tests
 .PHONY: unit
 unit:

@@ -64,7 +64,7 @@ final class DeleteAddressTest extends TestCase
             now: $createdAt,
         );
 
-        $command = new DeleteAddressCommand($addressId, $customerId);
+        $command = new DeleteAddressCommand($addressId->toString(), $customerId->toString());
 
         $this->repository->expects($this->once())
             ->method('findById')
@@ -125,7 +125,7 @@ final class DeleteAddressTest extends TestCase
             now: $createdAt,
         );
 
-        $command = new DeleteAddressCommand($addressId, $customerId);
+        $command = new DeleteAddressCommand($addressId->toString(), $customerId->toString());
 
         $this->repository->expects($this->once())
             ->method('findById')
@@ -182,7 +182,7 @@ final class DeleteAddressTest extends TestCase
             isDefault: true,
         );
 
-        $command = new DeleteAddressCommand($addressId, $customerId);
+        $command = new DeleteAddressCommand($addressId->toString(), $customerId->toString());
 
         $this->repository->expects($this->once())
             ->method('findById')
@@ -217,7 +217,7 @@ final class DeleteAddressTest extends TestCase
     {
         $addressId = AddressId::fromString(self::ADDRESS_ID);
         $customerId = CustomerId::fromString(self::CUSTOMER_ID);
-        $command = new DeleteAddressCommand($addressId, $customerId);
+        $command = new DeleteAddressCommand($addressId->toString(), $customerId->toString());
 
         $this->repository->expects($this->once())
             ->method('findById')
@@ -230,8 +230,9 @@ final class DeleteAddressTest extends TestCase
         $this->clock->expects($this->never())
             ->method('now');
 
-        $this->transactional->expects($this->never())
-            ->method('transactional');
+        $this->transactional->expects($this->once())
+            ->method('transactional')
+            ->willReturnCallback(static fn (callable $callback) => $callback());
 
         $this->expectException(AddressNotFoundException::class);
 
@@ -258,7 +259,7 @@ final class DeleteAddressTest extends TestCase
             now: $createdAt,
         );
 
-        $command = new DeleteAddressCommand($addressId, $customerId);
+        $command = new DeleteAddressCommand($addressId->toString(), $customerId->toString());
 
         $this->repository->expects($this->once())
             ->method('findById')
@@ -271,8 +272,9 @@ final class DeleteAddressTest extends TestCase
         $this->clock->expects($this->never())
             ->method('now');
 
-        $this->transactional->expects($this->never())
-            ->method('transactional');
+        $this->transactional->expects($this->once())
+            ->method('transactional')
+            ->willReturnCallback(static fn (callable $callback) => $callback());
 
         $this->expectException(AddressNotFoundException::class);
 

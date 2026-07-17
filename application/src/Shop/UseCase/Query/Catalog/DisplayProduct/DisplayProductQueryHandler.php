@@ -10,6 +10,7 @@ use App\Application\Shop\Port\ProductRepositoryInterface;
 use App\Application\Shop\ReadModel\Catalog\ProductItem;
 use App\Domain\Shop\Catalog\Exception\CategoryNotFoundException;
 use App\Domain\Shop\Catalog\Exception\ProductNotFoundException;
+use App\Domain\Shop\Catalog\ValueObject\ProductId;
 
 final readonly class DisplayProductQueryHandler implements QueryHandlerInterface
 {
@@ -21,7 +22,7 @@ final readonly class DisplayProductQueryHandler implements QueryHandlerInterface
 
     public function handle(DisplayProductQuery $query): ProductItem
     {
-        $product = $this->productRepository->findById($query->productId);
+        $product = $this->productRepository->findById(ProductId::fromString($query->productId));
 
         if (null === $product) {
             throw new ProductNotFoundException();

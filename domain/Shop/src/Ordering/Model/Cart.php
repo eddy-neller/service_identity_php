@@ -9,6 +9,8 @@ use App\Domain\Shop\Customer\ValueObject\CustomerId;
 use App\Domain\Shop\Ordering\Exception\CartLineNotFoundException;
 use App\Domain\Shop\Ordering\ValueObject\CartId;
 use App\Domain\Shop\Ordering\ValueObject\CartLineId;
+use App\Domain\Shop\Ordering\ValueObject\CartLineQuantity;
+use App\Domain\Shop\Ordering\ValueObject\CartLineQuantityChange;
 use DateTimeImmutable;
 
 final class Cart
@@ -42,7 +44,7 @@ final class Cart
     public function addLine(
         CartLineId $lineId,
         ProductId $productId,
-        int $quantity,
+        CartLineQuantity $quantity,
         DateTimeImmutable $now,
     ): void {
         $line = $this->findLineByProduct($productId);
@@ -56,18 +58,21 @@ final class Cart
         $this->touch($now);
     }
 
-    public function changeLineQuantity(ProductId $productId, int $quantity, DateTimeImmutable $now): void
-    {
-        if (0 === $quantity) {
+    public function changeLineQuantity(
+        ProductId $productId,
+        CartLineQuantityChange $quantity,
+        DateTimeImmutable $now,
+    ): void {
+        if ($quantity->isRemoval()) {
             $this->removeLine($productId, $now);
 
             return;
         }
 
-        $this->updateLine($productId, $quantity, $now);
+        $this->updateLine($productId, $quantity->toCartLineQuantity(), $now);
     }
 
-    public function updateLine(ProductId $productId, int $quantity, DateTimeImmutable $now): void
+    public function updateLine(ProductId $productId, CartLineQuantity $quantity, DateTimeImmutable $now): void
     {
         $this->getLineByProduct($productId)->setQuantity($quantity);
         $this->touch($now);

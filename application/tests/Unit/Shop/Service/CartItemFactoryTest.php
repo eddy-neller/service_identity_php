@@ -21,6 +21,7 @@ use App\Domain\Shop\Ordering\Model\Cart;
 use App\Domain\Shop\Ordering\Model\CartLine;
 use App\Domain\Shop\Ordering\ValueObject\CartId;
 use App\Domain\Shop\Ordering\ValueObject\CartLineId;
+use App\Domain\Shop\Ordering\ValueObject\CartLineQuantity;
 use App\Domain\Shop\Shared\ValueObject\Money;
 use DateTimeImmutable;
 use PHPUnit\Framework\MockObject\MockObject;
@@ -84,8 +85,8 @@ final class CartItemFactoryTest extends TestCase
             CartId::fromString(self::CART_ID),
             CustomerId::fromString(self::CUSTOMER_ID),
             [
-                CartLine::create(CartLineId::fromString(self::LINE_ID_A), ProductId::fromString(self::PRODUCT_ID_A), 2),
-                CartLine::create(CartLineId::fromString(self::LINE_ID_B), ProductId::fromString(self::PRODUCT_ID_B), 3),
+                CartLine::create(CartLineId::fromString(self::LINE_ID_A), ProductId::fromString(self::PRODUCT_ID_A), CartLineQuantity::fromInt(2)),
+                CartLine::create(CartLineId::fromString(self::LINE_ID_B), ProductId::fromString(self::PRODUCT_ID_B), CartLineQuantity::fromInt(3)),
             ],
             $createdAt,
             $updatedAt,
@@ -137,8 +138,8 @@ final class CartItemFactoryTest extends TestCase
             CartId::fromString(self::CART_ID),
             CustomerId::fromString(self::CUSTOMER_ID),
             [
-                CartLine::create(CartLineId::fromString(self::LINE_ID_A), ProductId::fromString(self::PRODUCT_ID_A), 2),
-                CartLine::create(CartLineId::fromString(self::LINE_ID_B), ProductId::fromString(self::PRODUCT_ID_B), 4),
+                CartLine::create(CartLineId::fromString(self::LINE_ID_A), ProductId::fromString(self::PRODUCT_ID_A), CartLineQuantity::fromInt(2)),
+                CartLine::create(CartLineId::fromString(self::LINE_ID_B), ProductId::fromString(self::PRODUCT_ID_B), CartLineQuantity::fromInt(4)),
             ],
             new DateTimeImmutable('2025-01-01 09:00:00'),
             new DateTimeImmutable('2025-01-01 09:00:00'),

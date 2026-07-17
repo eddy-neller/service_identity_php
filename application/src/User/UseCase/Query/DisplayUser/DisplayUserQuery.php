@@ -5,20 +5,19 @@ declare(strict_types=1);
 namespace App\Application\User\UseCase\Query\DisplayUser;
 
 use App\Application\Shared\CQRS\Query\CacheableQueryInterface;
-use App\Domain\User\ValueObject\UserId;
 
 final readonly class DisplayUserQuery implements CacheableQueryInterface
 {
     private const int CACHE_TTL_SECONDS = 3600;
 
     public function __construct(
-        public UserId $userId,
+        public string $userId,
     ) {
     }
 
     public function cacheKey(): string
     {
-        return 'user:item:' . $this->userId->toString();
+        return 'user:item:' . $this->userId;
     }
 
     public function cacheTtl(): int
@@ -28,6 +27,6 @@ final readonly class DisplayUserQuery implements CacheableQueryInterface
 
     public function cacheTags(): array
     {
-        return ['users-collection', 'user-' . $this->userId->toString()];
+        return ['users-collection', 'user-' . $this->userId];
     }
 }

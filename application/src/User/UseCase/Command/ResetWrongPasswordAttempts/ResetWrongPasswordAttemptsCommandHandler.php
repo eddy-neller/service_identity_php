@@ -21,13 +21,15 @@ final readonly class ResetWrongPasswordAttemptsCommandHandler implements Command
 
     public function handle(ResetWrongPasswordAttemptsCommand $command): void
     {
-        $user = $this->repository->findById(UserId::fromString($command->userId));
+        $userId = UserId::fromString($command->userId);
 
-        if (null === $user) {
-            return;
-        }
+        $this->transactional->transactional(function () use ($userId): void {
+            $user = $this->repository->findById($userId);
 
-        $this->transactional->transactional(function () use ($user): void {
+            if (null === $user) {
+                return;
+            }
+
             $user->resetWrongPasswordAttempts($this->clock->now());
 
             $this->repository->save($user);

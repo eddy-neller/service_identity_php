@@ -28,13 +28,13 @@ final readonly class ValidateActivationCommandHandler implements CommandHandlerI
         $email = EmailAddress::fromString($split['email'] ?? '');
         $rawToken = $split['token'] ?? '';
 
-        $user = $this->repository->findByActivationToken($rawToken);
+        $this->transactional->transactional(function () use ($email, $rawToken): void {
+            $user = $this->repository->findByActivationToken($rawToken);
 
-        if (null === $user || !$user->getEmail()->equals($email)) {
-            throw new UserNotFoundException('User not found for this token.');
-        }
+            if (null === $user || !$user->getEmail()->equals($email)) {
+                throw new UserNotFoundException('User not found for this token.');
+            }
 
-        $this->transactional->transactional(function () use ($user, $rawToken): void {
             $user->activate($rawToken, $this->clock->now());
 
             $this->repository->save($user);

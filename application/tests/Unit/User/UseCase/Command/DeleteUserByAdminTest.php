@@ -48,7 +48,7 @@ final class DeleteUserByAdminTest extends TestCase
         $user = $this->createUser($userId);
 
         $command = new DeleteUserByAdminCommand(
-            userId: $userId,
+            userId: $userId->toString(),
         );
 
         $this->repository->expects($this->once())
@@ -77,14 +77,15 @@ final class DeleteUserByAdminTest extends TestCase
     {
         $userId = UserId::fromString('550e8400-e29b-41d4-a716-446655440001');
         $command = new DeleteUserByAdminCommand(
-            userId: $userId,
+            userId: $userId->toString(),
         );
 
         $this->clock->expects($this->never())
             ->method('now');
 
-        $this->transactional->expects($this->never())
-            ->method('transactional');
+        $this->transactional->expects($this->once())
+            ->method('transactional')
+            ->willReturnCallback(static fn (callable $callback) => $callback());
 
         $this->repository->expects($this->once())
             ->method('findById')

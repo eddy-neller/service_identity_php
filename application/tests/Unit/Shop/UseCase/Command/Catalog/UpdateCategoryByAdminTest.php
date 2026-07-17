@@ -64,10 +64,10 @@ final class UpdateCategoryByAdminTest extends TestCase
         $categoryItem = CategoryItem::fromCategory($category, $parent, []);
 
         $command = new UpdateCategoryByAdminCommand(
-            categoryId: $categoryId,
+            categoryId: $categoryId->toString(),
             title: 'New title',
             description: 'New description',
-            parentId: $parentId,
+            parentId: $parentId->toString(),
         );
 
         $this->repository->expects($this->exactly(2))
@@ -133,7 +133,7 @@ final class UpdateCategoryByAdminTest extends TestCase
         $categoryItem = CategoryItem::fromCategory($category, null, []);
 
         $command = new UpdateCategoryByAdminCommand(
-            categoryId: $categoryId,
+            categoryId: $categoryId->toString(),
             title: 'New title',
             description: null,
             parentId: null,
@@ -164,9 +164,7 @@ final class UpdateCategoryByAdminTest extends TestCase
 
         $this->transactional->expects($this->once())
             ->method('transactional')
-            ->willReturnCallback(function (callable $callback) {
-                return $callback();
-            });
+            ->willReturnCallback(static fn (callable $callback) => $callback());
 
         $output = $this->handler->handle($command);
 
@@ -180,14 +178,15 @@ final class UpdateCategoryByAdminTest extends TestCase
     {
         $this->clock->expects($this->never())
             ->method('now');
-        $this->transactional->expects($this->never())
-            ->method('transactional');
+        $this->transactional->expects($this->once())
+            ->method('transactional')
+            ->willReturnCallback(static fn (callable $callback) => $callback());
         $this->slugGenerator->expects($this->never())
             ->method('generate');
 
         $categoryId = CategoryId::fromString(self::CATEGORY_ID);
         $command = new UpdateCategoryByAdminCommand(
-            categoryId: $categoryId,
+            categoryId: $categoryId->toString(),
             title: null,
             description: null,
             parentId: null,
@@ -206,25 +205,20 @@ final class UpdateCategoryByAdminTest extends TestCase
 
     public function testHandleThrowsWhenParentIsSelf(): void
     {
-        $now = new DateTimeImmutable('2024-02-01 12:00:00');
         $categoryId = CategoryId::fromString(self::CATEGORY_ID);
-        $category = $this->createCategory($categoryId, 'Old title', 'old-title');
 
         $command = new UpdateCategoryByAdminCommand(
-            categoryId: $categoryId,
+            categoryId: $categoryId->toString(),
             title: null,
             description: null,
-            parentId: $categoryId,
+            parentId: $categoryId->toString(),
         );
 
-        $this->repository->expects($this->once())
-            ->method('findById')
-            ->with($categoryId)
-            ->willReturn($category);
+        $this->repository->expects($this->never())
+            ->method('findById');
 
-        $this->clock->expects($this->once())
-            ->method('now')
-            ->willReturn($now);
+        $this->clock->expects($this->never())
+            ->method('now');
 
         $this->slugGenerator->expects($this->never())
             ->method('generate');
@@ -232,11 +226,8 @@ final class UpdateCategoryByAdminTest extends TestCase
         $this->repository->expects($this->never())
             ->method('save');
 
-        $this->transactional->expects($this->once())
-            ->method('transactional')
-            ->willReturnCallback(function (callable $callback) {
-                return $callback();
-            });
+        $this->transactional->expects($this->never())
+            ->method('transactional');
 
         $this->expectException(CatalogDomainException::class);
         $this->expectExceptionMessage('Category cannot be its own parent.');
@@ -249,16 +240,15 @@ final class UpdateCategoryByAdminTest extends TestCase
         $this->slugGenerator->expects($this->never())
             ->method('generate');
 
-        $now = new DateTimeImmutable('2024-02-01 12:00:00');
         $categoryId = CategoryId::fromString(self::CATEGORY_ID);
         $parentId = CategoryId::fromString(self::PARENT_ID);
         $category = $this->createCategory($categoryId, 'Old title', 'old-title');
 
         $command = new UpdateCategoryByAdminCommand(
-            categoryId: $categoryId,
+            categoryId: $categoryId->toString(),
             title: null,
             description: null,
-            parentId: $parentId,
+            parentId: $parentId->toString(),
         );
 
         $this->repository->expects($this->exactly(2))
@@ -275,9 +265,8 @@ final class UpdateCategoryByAdminTest extends TestCase
                 return null;
             });
 
-        $this->clock->expects($this->once())
-            ->method('now')
-            ->willReturn($now);
+        $this->clock->expects($this->never())
+            ->method('now');
 
         $this->repository->expects($this->never())
             ->method('save');
@@ -301,7 +290,7 @@ final class UpdateCategoryByAdminTest extends TestCase
         $category = $this->createCategory($categoryId, 'Old title', 'old-title');
 
         $command = new UpdateCategoryByAdminCommand(
-            categoryId: $categoryId,
+            categoryId: $categoryId->toString(),
             title: 'New title',
             description: null,
             parentId: null,
@@ -344,14 +333,13 @@ final class UpdateCategoryByAdminTest extends TestCase
 
     public function testHandleThrowsWhenTitleBelongsToAnotherCategory(): void
     {
-        $now = new DateTimeImmutable('2024-02-01 12:00:00');
         $categoryId = CategoryId::fromString(self::CATEGORY_ID);
         $otherId = CategoryId::fromString(self::PARENT_ID);
         $category = $this->createCategory($categoryId, 'Old title', 'old-title');
         $other = $this->createCategory($otherId, 'New title', 'new-title');
 
         $command = new UpdateCategoryByAdminCommand(
-            categoryId: $categoryId,
+            categoryId: $categoryId->toString(),
             title: 'New title',
             description: null,
             parentId: null,
@@ -362,17 +350,18 @@ final class UpdateCategoryByAdminTest extends TestCase
             ->with($categoryId)
             ->willReturn($category);
 
-        $this->clock->expects($this->once())
-            ->method('now')
-            ->willReturn($now);
+        $this->clock->expects($this->never())
+            ->method('now');
 
         $this->repository->expects($this->once())
             ->method('findByTitle')
             ->with(CategoryTitle::fromString('New title'))
             ->willReturn($other);
 
-        $this->slugGenerator->expects($this->never())
-            ->method('generate');
+        $this->slugGenerator->expects($this->once())
+            ->method('generate')
+            ->with('New title')
+            ->willReturn(Slug::fromString('new-title'));
 
         $this->repository->expects($this->never())
             ->method('save');
@@ -396,7 +385,7 @@ final class UpdateCategoryByAdminTest extends TestCase
         $categoryItem = CategoryItem::fromCategory($category, null, []);
 
         $command = new UpdateCategoryByAdminCommand(
-            categoryId: $categoryId,
+            categoryId: $categoryId->toString(),
             title: 'Same title',
             description: null,
             parentId: null,

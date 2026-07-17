@@ -10,7 +10,7 @@
 - Gère : ressources API Platform, DTOs d'entrée (Input), Processors / Providers, Presenters, validators, sécurité.
 - Peut dépendre de :
   - `CommandBusInterface`, `QueryBusInterface`, DTOs Application (Commands/Queries/Outputs),
-  - Domain pour quelques VOs (ex. `UserId`) ou modèles Domain dans les Presenters,
+  - Domain uniquement pour les **constantes publiques** de Value Objects,
   - Symfony (validation, sécurité, sérialisation), API Platform.
 - Ne doit **pas** dépendre de : repositories Doctrine, services `infrastructure/*` (hashers, FS, …), implémentations concrètes des Ports.
   - **Exception** : `stateOptions: new Options(entityClass: ...)` dans `#[ApiResource]` peut référencer une entité Doctrine — couplage imposé par l'ORM bridge d'API Platform, acceptable **uniquement** pour ce paramètre `entityClass`.
@@ -62,6 +62,8 @@ presentation/src/
 ## Validation & Sécurité
 
 - Validation dans les DTOs Presentation (`Assert\*`, validators custom) — côté HTTP uniquement, **pas de logique métier**.
+- Les Value Objects Domain ne sont autorisés dans Presentation **que pour leurs constantes publiques** : rôles dans les expressions de sécurité, choix Symfony (`Assert\Choice`) ou valeurs par défaut API. Presentation ne construit, ne type ni ne transporte jamais une instance de VO Domain (`new`, `from*()`, propriété/paramètre/retour typé VO).
+- Les Inputs et les `Command`/`Query` restent scalaires (sauf exceptions transverses explicitement admises, comme `Pagination` et `FileInterface`) ; la conversion scalaire → VO et la validation des invariants métier se font dans le handler Application.
 - Sécurité : `security` / `security_post_denormalize` sur les opérations API Platform ; `Security` Symfony dans les Processors/Providers si besoin.
 - Endpoints `/me` : utiliser `UserMeSecurityTrait` (garantit 401/403 correct, entry point JWT) — ne pas lever d'exception HTTP directe.
 - Rôles centralisés via `RoleSet` (ex. `RoleSet::ROLE_ADMIN`) dans les expressions `security`.

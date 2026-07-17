@@ -12,6 +12,7 @@ use App\Application\User\Port\UserRepositoryInterface;
 use App\Application\User\ReadModel\UserItem;
 use App\Domain\User\Exception\UserDomainException;
 use App\Domain\User\Exception\UserNotFoundException;
+use App\Domain\User\ValueObject\UserId;
 
 final readonly class UpdateAvatarCommandHandler implements CommandHandlerInterface
 {
@@ -31,7 +32,7 @@ final readonly class UpdateAvatarCommandHandler implements CommandHandlerInterfa
 
         // On garde un lookup Domain ici pour appliquer l'update métier + save (events),
         // même si l'uploader récupère une référence Doctrine pour l'upload Vich.
-        $user = $this->repository->findById($command->userId);
+        $user = $this->repository->findById(UserId::fromString($command->userId));
 
         if (null === $user) {
             throw new UserNotFoundException();

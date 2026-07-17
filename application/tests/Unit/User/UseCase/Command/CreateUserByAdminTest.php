@@ -149,8 +149,9 @@ final class CreateUserByAdminTest extends TestCase
             ->with(EmailAddress::fromString($email), Username::fromString($username))
             ->willThrowException(new EmailAlreadyUsedException());
 
-        $this->passwordHasher->expects($this->never())
-            ->method('hash');
+        $this->passwordHasher->expects($this->once())
+            ->method('hash')
+            ->willReturn(new HashedPassword('hashed-password'));
 
         $this->expectException(EmailAlreadyUsedException::class);
 
@@ -189,8 +190,9 @@ final class CreateUserByAdminTest extends TestCase
             ->with(EmailAddress::fromString($email), Username::fromString($username))
             ->willThrowException(new UsernameAlreadyUsedException());
 
-        $this->passwordHasher->expects($this->never())
-            ->method('hash');
+        $this->passwordHasher->expects($this->once())
+            ->method('hash')
+            ->willReturn(new HashedPassword('hashed-password'));
 
         $this->expectException(UsernameAlreadyUsedException::class);
 

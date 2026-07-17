@@ -98,19 +98,23 @@ final class RequestActivationEmailTest extends TestCase
         $this->clock->expects($this->never())
             ->method('now');
 
-        $this->transactional->expects($this->never())
-            ->method('transactional');
+        $this->transactional->expects($this->once())
+            ->method('transactional')
+            ->willReturnCallback(static fn (callable $callback) => $callback());
 
-        $this->config->expects($this->never())
-            ->method('getString');
+        $this->config->expects($this->once())
+            ->method('getString')
+            ->with('register_token_ttl', 'P2D')
+            ->willReturn('P2D');
 
         $this->repository->expects($this->once())
             ->method('findByEmail')
             ->with(EmailAddress::fromString($email))
             ->willReturn(null);
 
-        $this->tokenProvider->expects($this->never())
-            ->method('generateRandomToken');
+        $this->tokenProvider->expects($this->once())
+            ->method('generateRandomToken')
+            ->willReturn('activation-token');
 
         $this->handler->handle($command);
     }

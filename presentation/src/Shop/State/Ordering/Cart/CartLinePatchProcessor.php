@@ -8,7 +8,6 @@ use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProcessorInterface;
 use App\Application\Shared\CQRS\Command\CommandBusInterface;
 use App\Application\Shop\UseCase\Command\Ordering\UpdateCartLine\UpdateCartLineCommand;
-use App\Domain\Shop\Catalog\ValueObject\ProductId;
 use App\Presentation\Shared\State\PresentationErrorCode;
 use App\Presentation\Shop\ApiResource\Ordering\CartResource;
 use App\Presentation\Shop\Dto\Ordering\Cart\CartLinePatchInput;
@@ -27,14 +26,14 @@ final readonly class CartLinePatchProcessor implements ProcessorInterface
 
     public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): CartResource
     {
-        $rawProductId = $uriVariables['productId'] ?? null;
-        if (!$data instanceof CartLinePatchInput || !is_string($rawProductId) || '' === $rawProductId) {
+        $productId = $uriVariables['productId'] ?? null;
+        if (!$data instanceof CartLinePatchInput || !is_string($productId) || '' === $productId) {
             throw new LogicException(PresentationErrorCode::INVALID_INPUT->value);
         }
 
         $output = $this->commandBus->dispatch(new UpdateCartLineCommand(
             $this->customerResolver->resolve(),
-            ProductId::fromString($rawProductId),
+            $productId,
             $data->quantity,
         ));
 

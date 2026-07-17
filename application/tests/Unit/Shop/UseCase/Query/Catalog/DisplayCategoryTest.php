@@ -34,7 +34,7 @@ final class DisplayCategoryTest extends TestCase
     public function testHandleReturnsCategoryTreeWhenFound(): void
     {
         $categoryId = CategoryId::fromString(self::CATEGORY_ID);
-        $query = new DisplayCategoryQuery($categoryId);
+        $query = new DisplayCategoryQuery($categoryId->toString());
         $category = $this->createCategory($categoryId);
         $categoryItem = CategoryItem::fromCategory($category, null, []);
 
@@ -51,7 +51,7 @@ final class DisplayCategoryTest extends TestCase
     public function testHandleThrowsWhenCategoryNotFound(): void
     {
         $categoryId = CategoryId::fromString(self::CATEGORY_ID);
-        $query = new DisplayCategoryQuery($categoryId);
+        $query = new DisplayCategoryQuery($categoryId->toString());
 
         $this->repository->expects($this->once())
             ->method('findItemById')

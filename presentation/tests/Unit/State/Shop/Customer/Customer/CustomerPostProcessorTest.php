@@ -56,7 +56,7 @@ final class CustomerPostProcessorTest extends TestCase
             ->method('dispatch')
             ->willReturnCallback(function ($command) use ($expectedUserAccountId): CustomerItem {
                 $this->assertInstanceOf(CreateCustomerCommand::class, $command);
-                $this->assertTrue($command->userAccountId->equals($expectedUserAccountId));
+                $this->assertSame($expectedUserAccountId->toString(), $command->userAccountId);
 
                 return CustomerItem::fromCustomer(Customer::reconstitute(
                     id: CustomerId::fromString('550e8400-e29b-41d4-a716-446655440701'),

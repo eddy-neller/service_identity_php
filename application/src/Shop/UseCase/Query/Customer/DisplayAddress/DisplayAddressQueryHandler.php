@@ -8,6 +8,8 @@ use App\Application\Shared\CQRS\Query\QueryHandlerInterface;
 use App\Application\Shop\Port\AddressRepositoryInterface;
 use App\Application\Shop\ReadModel\Customer\AddressItem;
 use App\Domain\Shop\Customer\Exception\AddressNotFoundException;
+use App\Domain\Shop\Customer\ValueObject\AddressId;
+use App\Domain\Shop\Customer\ValueObject\CustomerId;
 
 final readonly class DisplayAddressQueryHandler implements QueryHandlerInterface
 {
@@ -18,9 +20,9 @@ final readonly class DisplayAddressQueryHandler implements QueryHandlerInterface
 
     public function handle(DisplayAddressQuery $query): AddressItem
     {
-        $address = $this->repository->findById($query->addressId);
+        $address = $this->repository->findById(AddressId::fromString($query->addressId));
 
-        if (null === $address || !$address->belongsTo($query->ownerId)) {
+        if (null === $address || !$address->belongsTo(CustomerId::fromString($query->ownerId))) {
             throw new AddressNotFoundException();
         }
 

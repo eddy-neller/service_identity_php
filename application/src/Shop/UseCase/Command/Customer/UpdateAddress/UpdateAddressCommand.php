@@ -5,14 +5,12 @@ declare(strict_types=1);
 namespace App\Application\Shop\UseCase\Command\Customer\UpdateAddress;
 
 use App\Application\Shared\CQRS\Command\CommandInterface;
-use App\Domain\Shop\Customer\ValueObject\AddressId;
-use App\Domain\Shop\Customer\ValueObject\CustomerId;
 
 final readonly class UpdateAddressCommand implements CommandInterface
 {
     public function __construct(
-        public AddressId $addressId,
-        public CustomerId $ownerId,
+        public string $addressId,
+        public string $ownerId,
         public ?string $label,
         public ?string $firstname,
         public ?string $lastname,

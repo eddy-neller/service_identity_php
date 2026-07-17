@@ -6,12 +6,11 @@ namespace App\Application\Shop\UseCase\Query\Customer\DisplayListAddress;
 
 use App\Application\Shared\CQRS\Query\QueryInterface;
 use App\Application\Shared\ReadModel\Pagination;
-use App\Domain\Shop\Customer\ValueObject\CustomerId;
 
 final readonly class DisplayListAddressQuery implements QueryInterface
 {
     public function __construct(
-        public CustomerId $ownerId,
+        public string $ownerId,
         public Pagination $pagination,
         public array $orderBy,
         public array $filters,

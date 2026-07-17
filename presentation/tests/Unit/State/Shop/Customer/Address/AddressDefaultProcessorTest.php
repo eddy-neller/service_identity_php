@@ -14,7 +14,6 @@ use App\Application\Shop\UseCase\Query\Customer\DisplayMyCustomer\DisplayMyCusto
 use App\Domain\Shop\Customer\Model\Address as DomainAddress;
 use App\Domain\Shop\Customer\ValueObject\AddressId;
 use App\Domain\Shop\Customer\ValueObject\CustomerId;
-use App\Domain\Shop\Customer\ValueObject\UserAccountId;
 use App\Presentation\Shared\State\PresentationErrorCode;
 use App\Presentation\Shop\ApiResource\Customer\AddressResource;
 use App\Presentation\Shop\Presenter\Customer\AddressResourcePresenter;
@@ -81,7 +80,7 @@ final class AddressDefaultProcessorTest extends TestCase
             ->method('dispatch')
             ->willReturnCallback(function ($query) use ($customerOutput): CurrentCustomerItem {
                 $this->assertInstanceOf(DisplayMyCustomerQuery::class, $query);
-                $this->assertTrue($query->userAccountId->equals(UserAccountId::fromString('550e8400-e29b-41d4-a716-446655440600')));
+                $this->assertSame('550e8400-e29b-41d4-a716-446655440600', $query->userAccountId);
 
                 return $customerOutput;
             });
@@ -90,8 +89,8 @@ final class AddressDefaultProcessorTest extends TestCase
             ->method('dispatch')
             ->willReturnCallback(function ($command) use ($customerId, $addressId, $output): AddressItem {
                 $this->assertInstanceOf(SetDefaultAddressCommand::class, $command);
-                $this->assertTrue($command->ownerId->equals($customerId));
-                $this->assertTrue($command->addressId->equals($addressId));
+                $this->assertSame($customerId->toString(), $command->ownerId);
+                $this->assertSame($addressId->toString(), $command->addressId);
 
                 return $output;
             });

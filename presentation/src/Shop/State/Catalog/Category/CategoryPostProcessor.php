@@ -8,7 +8,6 @@ use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProcessorInterface;
 use App\Application\Shared\CQRS\Command\CommandBusInterface;
 use App\Application\Shop\UseCase\Command\Catalog\CreateCategoryByAdmin\CreateCategoryByAdminCommand;
-use App\Domain\Shop\Catalog\ValueObject\CategoryId;
 use App\Presentation\Shared\State\PresentationErrorCode;
 use App\Presentation\Shop\ApiResource\Catalog\CategoryResource;
 use App\Presentation\Shop\Dto\Catalog\Category\CategoryPostInput;
@@ -31,7 +30,7 @@ final readonly class CategoryPostProcessor implements ProcessorInterface
 
         $parentId = null;
         if (null !== $data->parent) {
-            $parentId = CategoryId::fromString($data->parent->id);
+            $parentId = $data->parent->id;
         }
 
         $command = new CreateCategoryByAdminCommand(

@@ -61,7 +61,7 @@ final class CreateCustomerTest extends TestCase
         $now = new DateTimeImmutable('2025-01-01 10:00:00');
         $customerId = CustomerId::fromString(self::CUSTOMER_ID);
         $accountId = UserAccountId::fromString(self::ACCOUNT_ID);
-        $command = new CreateCustomerCommand($accountId);
+        $command = new CreateCustomerCommand($accountId->toString());
 
         $this->userRepository->expects($this->once())
             ->method('findById')
@@ -113,7 +113,7 @@ final class CreateCustomerTest extends TestCase
         $customerId = CustomerId::fromString(self::CUSTOMER_ID);
         $accountId = UserAccountId::fromString(self::ACCOUNT_ID);
         $customer = Customer::create($customerId, $createdAt, $accountId);
-        $command = new CreateCustomerCommand($accountId);
+        $command = new CreateCustomerCommand($accountId->toString());
 
         $this->userRepository->expects($this->once())
             ->method('findById')
@@ -127,8 +127,9 @@ final class CreateCustomerTest extends TestCase
             ->with($accountId)
             ->willReturn($customer);
 
-        $this->repository->expects($this->never())
-            ->method('nextIdentity');
+        $this->repository->expects($this->once())
+            ->method('nextIdentity')
+            ->willReturn($customerId);
 
         $this->clock->expects($this->never())
             ->method('now');
@@ -150,8 +151,9 @@ final class CreateCustomerTest extends TestCase
 
     public function testHandleThrowsWhenUserAccountDoesNotExist(): void
     {
+        $customerId = CustomerId::fromString(self::CUSTOMER_ID);
         $accountId = UserAccountId::fromString(self::ACCOUNT_ID);
-        $command = new CreateCustomerCommand($accountId);
+        $command = new CreateCustomerCommand($accountId->toString());
 
         $this->userRepository->expects($this->once())
             ->method('findById')
@@ -163,8 +165,9 @@ final class CreateCustomerTest extends TestCase
         $this->repository->expects($this->never())
             ->method('findByUserAccountId');
 
-        $this->repository->expects($this->never())
-            ->method('nextIdentity');
+        $this->repository->expects($this->once())
+            ->method('nextIdentity')
+            ->willReturn($customerId);
 
         $this->clock->expects($this->never())
             ->method('now');

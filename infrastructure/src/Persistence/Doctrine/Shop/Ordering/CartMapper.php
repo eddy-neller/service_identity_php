@@ -10,6 +10,7 @@ use App\Domain\Shop\Ordering\Model\Cart as DomainCart;
 use App\Domain\Shop\Ordering\Model\CartLine as DomainCartLine;
 use App\Domain\Shop\Ordering\ValueObject\CartId;
 use App\Domain\Shop\Ordering\ValueObject\CartLineId;
+use App\Domain\Shop\Ordering\ValueObject\CartLineQuantity;
 use App\Infrastructure\Entity\Shop\Cart as DoctrineCart;
 
 final readonly class CartMapper
@@ -22,7 +23,7 @@ final readonly class CartMapper
             $lines[] = DomainCartLine::create(
                 CartLineId::fromString($line->getId()->toString()),
                 ProductId::fromString($line->getProduct()->getId()->toString()),
-                $line->getQuantity(),
+                CartLineQuantity::fromInt($line->getQuantity()),
             );
         }
 

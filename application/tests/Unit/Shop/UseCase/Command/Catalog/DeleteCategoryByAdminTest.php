@@ -48,7 +48,7 @@ final class DeleteCategoryByAdminTest extends TestCase
         $categoryId = CategoryId::fromString(self::CATEGORY_ID);
         $category = $this->createCategory($categoryId);
 
-        $command = new DeleteCategoryByAdminCommand($categoryId);
+        $command = new DeleteCategoryByAdminCommand($categoryId->toString());
 
         $this->repository->expects($this->once())
             ->method('findById')
@@ -78,11 +78,12 @@ final class DeleteCategoryByAdminTest extends TestCase
     {
         $this->clock->expects($this->never())
             ->method('now');
-        $this->transactional->expects($this->never())
-            ->method('transactional');
+        $this->transactional->expects($this->once())
+            ->method('transactional')
+            ->willReturnCallback(static fn (callable $callback) => $callback());
 
         $categoryId = CategoryId::fromString(self::CATEGORY_ID);
-        $command = new DeleteCategoryByAdminCommand($categoryId);
+        $command = new DeleteCategoryByAdminCommand($categoryId->toString());
 
         $this->repository->expects($this->once())
             ->method('findById')

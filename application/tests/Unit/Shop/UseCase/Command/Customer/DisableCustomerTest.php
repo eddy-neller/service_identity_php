@@ -48,7 +48,7 @@ final class DisableCustomerTest extends TestCase
     public function testHandleThrowsWhenCustomerMissing(): void
     {
         $customerId = CustomerId::fromString(self::CUSTOMER_ID);
-        $command = new DisableCustomerCommand($customerId);
+        $command = new DisableCustomerCommand($customerId->toString());
 
         $this->repository->expects($this->once())
             ->method('findById')
@@ -58,8 +58,9 @@ final class DisableCustomerTest extends TestCase
         $this->clock->expects($this->never())
             ->method('now');
 
-        $this->transactional->expects($this->never())
-            ->method('transactional');
+        $this->transactional->expects($this->once())
+            ->method('transactional')
+            ->willReturnCallback(static fn (callable $callback) => $callback());
 
         $this->repository->expects($this->never())
             ->method('save');
@@ -74,7 +75,7 @@ final class DisableCustomerTest extends TestCase
     {
         $createdAt = new DateTimeImmutable('2025-01-01 10:00:00');
         $customerId = CustomerId::fromString(self::CUSTOMER_ID);
-        $command = new DisableCustomerCommand($customerId);
+        $command = new DisableCustomerCommand($customerId->toString());
         $customer = Customer::create($customerId, $createdAt);
 
         $this->repository->expects($this->once())
@@ -85,8 +86,9 @@ final class DisableCustomerTest extends TestCase
         $this->clock->expects($this->never())
             ->method('now');
 
-        $this->transactional->expects($this->never())
-            ->method('transactional');
+        $this->transactional->expects($this->once())
+            ->method('transactional')
+            ->willReturnCallback(static fn (callable $callback) => $callback());
 
         $this->repository->expects($this->never())
             ->method('save');
@@ -105,7 +107,7 @@ final class DisableCustomerTest extends TestCase
         $accountId = UserAccountId::fromString(self::ACCOUNT_ID);
         $customer = Customer::create($customerId, $createdAt, $accountId);
 
-        $command = new DisableCustomerCommand($customerId);
+        $command = new DisableCustomerCommand($customerId->toString());
 
         $this->repository->expects($this->once())
             ->method('findById')

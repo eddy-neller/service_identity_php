@@ -6,8 +6,18 @@ namespace App\Domain\Shop\Ordering\Exception;
 
 final class CartQuantityExceededException extends CartDomainException
 {
-    public function __construct()
+    private function __construct(string $message)
     {
-        parent::__construct('Cart line quantity must be between 1 and 99.');
+        parent::__construct($message);
+    }
+
+    public static function forCartLineQuantity(): self
+    {
+        return new self('Cart line quantity must be between 1 and 99.');
+    }
+
+    public static function forCartLineQuantityChange(): self
+    {
+        return new self('Cart line quantity change must be between 0 and 99.');
     }
 }

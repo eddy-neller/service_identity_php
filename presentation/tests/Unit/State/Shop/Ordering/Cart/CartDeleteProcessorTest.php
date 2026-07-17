@@ -11,7 +11,6 @@ use App\Application\Shop\ReadModel\Customer\CurrentCustomerItem;
 use App\Application\Shop\UseCase\Command\Ordering\ClearCart\ClearCartCommand;
 use App\Application\Shop\UseCase\Query\Customer\DisplayMyCustomer\DisplayMyCustomerQuery;
 use App\Domain\Shop\Customer\ValueObject\CustomerId;
-use App\Domain\Shop\Customer\ValueObject\UserAccountId;
 use App\Presentation\Shop\State\Ordering\Cart\CartDeleteProcessor;
 use App\Presentation\Shop\State\Shared\CurrentCustomerResolver;
 use App\Presentation\Tests\Unit\State\Shop\Customer\CustomerUserTrait;
@@ -56,7 +55,7 @@ final class CartDeleteProcessorTest extends TestCase
             ->method('dispatch')
             ->willReturnCallback(function ($query) use ($customerOutput): CurrentCustomerItem {
                 $this->assertInstanceOf(DisplayMyCustomerQuery::class, $query);
-                $this->assertTrue($query->userAccountId->equals(UserAccountId::fromString('550e8400-e29b-41d4-a716-446655441100')));
+                $this->assertSame('550e8400-e29b-41d4-a716-446655441100', $query->userAccountId);
 
                 return $customerOutput;
             });
@@ -65,7 +64,7 @@ final class CartDeleteProcessorTest extends TestCase
             ->method('dispatch')
             ->willReturnCallback(function ($command) use ($customerId): mixed {
                 $this->assertInstanceOf(ClearCartCommand::class, $command);
-                $this->assertTrue($command->customerId->equals($customerId));
+                $this->assertSame($customerId->toString(), $command->customerId);
 
                 return null;
             });

@@ -142,23 +142,26 @@ final class RegisterUserTest extends TestCase
             ->method('nextIdentity')
             ->willReturn($userId);
 
-        $this->clock->expects($this->once())
-            ->method('now')
-            ->willReturn(new DateTimeImmutable());
+        $this->clock->expects($this->never())
+            ->method('now');
 
         $this->uniquenessChecker->expects($this->once())
             ->method('ensureEmailAndUsernameAvailable')
             ->with(EmailAddress::fromString($email), Username::fromString($username))
             ->willThrowException(new EmailAlreadyUsedException());
 
-        $this->passwordHasher->expects($this->never())
-            ->method('hash');
+        $this->passwordHasher->expects($this->once())
+            ->method('hash')
+            ->willReturn(new HashedPassword('hashed-password'));
 
-        $this->tokenProvider->expects($this->never())
-            ->method('generateRandomToken');
+        $this->tokenProvider->expects($this->once())
+            ->method('generateRandomToken')
+            ->willReturn('activation-token');
 
-        $this->config->expects($this->never())
-            ->method('getString');
+        $this->config->expects($this->once())
+            ->method('getString')
+            ->with('register_token_ttl', 'P2D')
+            ->willReturn('P2D');
 
         $this->expectException(EmailAlreadyUsedException::class);
 
@@ -187,23 +190,26 @@ final class RegisterUserTest extends TestCase
             ->method('nextIdentity')
             ->willReturn($userId);
 
-        $this->clock->expects($this->once())
-            ->method('now')
-            ->willReturn(new DateTimeImmutable());
+        $this->clock->expects($this->never())
+            ->method('now');
 
         $this->uniquenessChecker->expects($this->once())
             ->method('ensureEmailAndUsernameAvailable')
             ->with(EmailAddress::fromString($email), Username::fromString($username))
             ->willThrowException(new UsernameAlreadyUsedException());
 
-        $this->passwordHasher->expects($this->never())
-            ->method('hash');
+        $this->passwordHasher->expects($this->once())
+            ->method('hash')
+            ->willReturn(new HashedPassword('hashed-password'));
 
-        $this->tokenProvider->expects($this->never())
-            ->method('generateRandomToken');
+        $this->tokenProvider->expects($this->once())
+            ->method('generateRandomToken')
+            ->willReturn('activation-token');
 
-        $this->config->expects($this->never())
-            ->method('getString');
+        $this->config->expects($this->once())
+            ->method('getString')
+            ->with('register_token_ttl', 'P2D')
+            ->willReturn('P2D');
 
         $this->expectException(UsernameAlreadyUsedException::class);
 

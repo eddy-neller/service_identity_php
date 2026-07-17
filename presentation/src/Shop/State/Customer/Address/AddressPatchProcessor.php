@@ -8,7 +8,6 @@ use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProcessorInterface;
 use App\Application\Shared\CQRS\Command\CommandBusInterface;
 use App\Application\Shop\UseCase\Command\Customer\UpdateAddress\UpdateAddressCommand;
-use App\Domain\Shop\Customer\ValueObject\AddressId;
 use App\Presentation\Shared\State\PresentationErrorCode;
 use App\Presentation\Shop\ApiResource\Customer\AddressResource;
 use App\Presentation\Shop\Dto\Customer\Address\AddressPatchInput;
@@ -31,12 +30,14 @@ final readonly class AddressPatchProcessor implements ProcessorInterface
             throw new LogicException(PresentationErrorCode::INVALID_INPUT->value);
         }
 
-        if (!isset($uriVariables['id']) || !is_string($uriVariables['id'])) {
+        $addressId = $uriVariables['id'] ?? null;
+
+        if (!is_string($addressId) || '' === $addressId) {
             throw new LogicException(PresentationErrorCode::INVALID_INPUT->value);
         }
 
         $command = new UpdateAddressCommand(
-            addressId: AddressId::fromString($uriVariables['id']),
+            addressId: $addressId,
             ownerId: $this->customerResolver->resolve(),
             label: $data->name,
             firstname: $data->firstname,

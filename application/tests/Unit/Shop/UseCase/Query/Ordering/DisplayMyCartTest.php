@@ -48,7 +48,7 @@ final class DisplayMyCartTest extends TestCase
     {
         $customerId = CustomerId::fromString(self::CUSTOMER_ID);
         $cart = Cart::create(CartId::fromString(self::CART_ID), $customerId, new DateTimeImmutable('2025-01-01 09:00:00'));
-        $query = new DisplayMyCartQuery($customerId);
+        $query = new DisplayMyCartQuery($customerId->toString());
 
         $this->repository->expects($this->once())
             ->method('findByOwner')
@@ -66,7 +66,7 @@ final class DisplayMyCartTest extends TestCase
     public function testHandleReturnsEmptyCartWhenNoneExists(): void
     {
         $customerId = CustomerId::fromString(self::CUSTOMER_ID);
-        $query = new DisplayMyCartQuery($customerId);
+        $query = new DisplayMyCartQuery($customerId->toString());
 
         $this->repository->expects($this->once())
             ->method('findByOwner')

@@ -12,6 +12,7 @@ use App\Application\Shop\ReadModel\Customer\CustomerItem;
 use App\Application\User\Port\UserRepositoryInterface;
 use App\Domain\Shop\Customer\Exception\CustomerAlreadyExistsException;
 use App\Domain\Shop\Customer\Model\Customer;
+use App\Domain\Shop\Customer\ValueObject\UserAccountId;
 use App\Domain\User\Exception\UserNotFoundException;
 use App\Domain\User\ValueObject\UserId;
 
@@ -27,24 +28,27 @@ final readonly class CreateCustomerCommandHandler implements CommandHandlerInter
 
     public function handle(CreateCustomerCommand $command): CustomerItem
     {
-        return $this->transactional->transactional(function () use ($command): CustomerItem {
-            $userId = UserId::fromString($command->userAccountId->toString());
+        $userAccountId = UserAccountId::fromString($command->userAccountId);
+        $userId = UserId::fromString($command->userAccountId);
+        $customerId = $this->repository->nextIdentity();
+
+        return $this->transactional->transactional(function () use ($userAccountId, $userId, $customerId): CustomerItem {
             $user = $this->userRepository->findById($userId);
 
             if (null === $user) {
                 throw new UserNotFoundException();
             }
 
-            $customer = $this->repository->findByUserAccountId($command->userAccountId);
+            $customer = $this->repository->findByUserAccountId($userAccountId);
 
             if (null !== $customer) {
                 throw new CustomerAlreadyExistsException();
             }
 
             $customer = Customer::create(
-                id: $this->repository->nextIdentity(),
+                id: $customerId,
                 now: $this->clock->now(),
-                userAccountId: $command->userAccountId,
+                userAccountId: $userAccountId,
             );
 
             $this->repository->save($customer);

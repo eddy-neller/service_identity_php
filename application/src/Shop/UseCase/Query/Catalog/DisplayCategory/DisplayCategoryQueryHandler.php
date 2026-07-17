@@ -8,6 +8,7 @@ use App\Application\Shared\CQRS\Query\QueryHandlerInterface;
 use App\Application\Shop\Port\CategoryRepositoryInterface;
 use App\Application\Shop\ReadModel\Catalog\CategoryItem;
 use App\Domain\Shop\Catalog\Exception\CategoryNotFoundException;
+use App\Domain\Shop\Catalog\ValueObject\CategoryId;
 
 final readonly class DisplayCategoryQueryHandler implements QueryHandlerInterface
 {
@@ -18,7 +19,7 @@ final readonly class DisplayCategoryQueryHandler implements QueryHandlerInterfac
 
     public function handle(DisplayCategoryQuery $query): CategoryItem
     {
-        $categoryItem = $this->categoryRepository->findItemById($query->categoryId);
+        $categoryItem = $this->categoryRepository->findItemById(CategoryId::fromString($query->categoryId));
 
         if (null === $categoryItem) {
             throw new CategoryNotFoundException();

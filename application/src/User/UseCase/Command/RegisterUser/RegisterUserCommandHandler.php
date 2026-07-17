@@ -36,17 +36,18 @@ final readonly class RegisterUserCommandHandler implements CommandHandlerInterfa
 
     public function handle(RegisterUserCommand $command): UserItem
     {
-        return $this->transactional->transactional(function () use ($command): UserItem {
-            $now = $this->clock->now();
-            $userId = $this->repository->nextIdentity();
+        $userId = $this->repository->nextIdentity();
+        $username = Username::fromString($command->username);
+        $email = EmailAddress::fromString($command->email);
+        $preferences = Preferences::fromArray($command->preferences ?? []);
+        $hashedPassword = $this->passwordHasher->hash($command->plainPassword);
+        $token = $this->tokenProvider->generateRandomToken();
+        $activationInterval = $this->createInterval($this->config->getString('register_token_ttl', 'P2D'));
 
-            $username = Username::fromString($command->username);
-            $email = EmailAddress::fromString($command->email);
-
+        $user = $this->transactional->transactional(function () use ($userId, $username, $email, $preferences, $hashedPassword, $token, $activationInterval): User {
             $this->uniquenessChecker->ensureEmailAndUsernameAvailable($email, $username);
 
-            $preferences = Preferences::fromArray($command->preferences ?? []);
-            $hashedPassword = $this->passwordHasher->hash($command->plainPassword);
+            $now = $this->clock->now();
 
             $user = User::register(
                 id: $userId,
@@ -57,15 +58,15 @@ final readonly class RegisterUserCommandHandler implements CommandHandlerInterfa
                 now: $now,
             );
 
-            $token = $this->tokenProvider->generateRandomToken();
-            $activationTtl = $this->config->getString('register_token_ttl', 'P2D');
-            $expiresAt = $now->add($this->createInterval($activationTtl));
+            $expiresAt = $now->add($activationInterval);
 
             $user->requestActivation($token, $expiresAt, $now);
 
             $this->repository->save($user);
 
-            return UserItem::fromUser($user);
+            return $user;
         });
+
+        return UserItem::fromUser($user);
     }
 }

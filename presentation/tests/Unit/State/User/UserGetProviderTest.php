@@ -60,7 +60,7 @@ final class UserGetProviderTest extends KernelTestCase
             ->method('dispatch')
             ->willReturnCallback(function ($query) use ($userId, $output): UserItem {
                 $this->assertInstanceOf(DisplayUserQuery::class, $query);
-                $this->assertSame($userId, $query->userId->toString());
+                $this->assertSame($userId, $query->userId);
 
                 return $output;
             });

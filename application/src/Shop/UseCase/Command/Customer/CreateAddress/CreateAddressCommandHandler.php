@@ -12,6 +12,7 @@ use App\Application\Shop\ReadModel\Customer\AddressItem;
 use App\Domain\Shop\Customer\Exception\AddressLimitReachedException;
 use App\Domain\Shop\Customer\Model\Address;
 use App\Domain\Shop\Customer\Model\Customer;
+use App\Domain\Shop\Customer\ValueObject\CustomerId;
 
 final readonly class CreateAddressCommandHandler implements CommandHandlerInterface
 {
@@ -24,16 +25,19 @@ final readonly class CreateAddressCommandHandler implements CommandHandlerInterf
 
     public function handle(CreateAddressCommand $command): AddressItem
     {
-        return $this->transactional->transactional(function () use ($command): AddressItem {
-            if ($this->repository->countByOwnerForUpdate($command->ownerId) >= Customer::MAX_ADDRESSES) {
+        $ownerId = CustomerId::fromString($command->ownerId);
+        $addressId = $this->repository->nextIdentity();
+
+        return $this->transactional->transactional(function () use ($command, $ownerId, $addressId): AddressItem {
+            if ($this->repository->countByOwnerForUpdate($ownerId) >= Customer::MAX_ADDRESSES) {
                 throw new AddressLimitReachedException();
             }
 
-            $isDefault = !$this->repository->hasDefaultForOwner($command->ownerId);
+            $isDefault = !$this->repository->hasDefaultForOwner($ownerId);
 
             $address = Address::create(
-                id: $this->repository->nextIdentity(),
-                ownerId: $command->ownerId,
+                id: $addressId,
+                ownerId: $ownerId,
                 label: $command->label,
                 firstname: $command->firstname,
                 lastname: $command->lastname,

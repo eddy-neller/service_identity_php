@@ -10,10 +10,12 @@ use App\Application\Shared\Port\SlugGeneratorInterface;
 use App\Application\Shared\Port\TransactionalInterface;
 use App\Application\Shop\Port\CategoryRepositoryInterface;
 use App\Application\Shop\ReadModel\Catalog\CategoryItem;
+use App\Domain\SharedKernel\ValueObject\Slug;
 use App\Domain\Shop\Catalog\Exception\CatalogDomainException;
 use App\Domain\Shop\Catalog\Exception\CategoryNotFoundException;
 use App\Domain\Shop\Catalog\Exception\CategoryTitleAlreadyUsedException;
 use App\Domain\Shop\Catalog\ValueObject\CategoryDescription;
+use App\Domain\Shop\Catalog\ValueObject\CategoryId;
 use App\Domain\Shop\Catalog\ValueObject\CategoryTitle;
 
 final readonly class UpdateCategoryByAdminCommandHandler implements CommandHandlerInterface
@@ -28,52 +30,72 @@ final readonly class UpdateCategoryByAdminCommandHandler implements CommandHandl
 
     public function handle(UpdateCategoryByAdminCommand $command): CategoryItem
     {
-        $category = $this->repository->findById($command->categoryId);
+        $categoryId = CategoryId::fromString($command->categoryId);
+        $parentId = null !== $command->parentId ? CategoryId::fromString($command->parentId) : null;
+        $title = null !== $command->title ? CategoryTitle::fromString($command->title) : null;
+        $slug = null !== $title ? $this->slugGenerator->generate($title->toString()) : null;
+        $description = null !== $command->description
+            ? CategoryDescription::fromString($command->description)
+            : null;
+
+        if (null !== $parentId && $categoryId->equals($parentId)) {
+            throw new CatalogDomainException('Category cannot be its own parent.', 400);
+        }
+
+        return $this->transactional->transactional(
+            fn (): CategoryItem => $this->updateCategory($categoryId, $parentId, $title, $slug, $description),
+        );
+    }
+
+    private function updateCategory(
+        CategoryId $categoryId,
+        ?CategoryId $parentId,
+        ?CategoryTitle $title,
+        ?Slug $slug,
+        ?CategoryDescription $description,
+    ): CategoryItem {
+        $category = $this->repository->findById($categoryId);
 
         if (null === $category) {
             throw new CategoryNotFoundException();
         }
 
-        return $this->transactional->transactional(function () use ($category, $command): CategoryItem {
-            $now = $this->clock->now();
-
-            if (null !== $command->title) {
-                $title = CategoryTitle::fromString($command->title);
-
-                $existing = $this->repository->findByTitle($title);
-                if (null !== $existing && !$existing->getId()->equals($category->getId())) {
-                    throw new CategoryTitleAlreadyUsedException();
-                }
-
-                $slug = $this->slugGenerator->generate($title->toString());
-                $category->rename($title, $slug, $now);
+        if (null !== $title) {
+            $existing = $this->repository->findByTitle($title);
+            if (null !== $existing && !$existing->getId()->equals($category->getId())) {
+                throw new CategoryTitleAlreadyUsedException();
             }
+        }
 
-            if (null !== $command->description) {
-                $category->describe(CategoryDescription::fromString($command->description), $now);
+        if (null !== $parentId) {
+            $parent = $this->repository->findById($parentId);
+            if (null === $parent) {
+                throw new CategoryNotFoundException('Parent category not found.', 404);
             }
+        }
 
-            if (null !== $command->parentId) {
-                if ($command->categoryId->equals($command->parentId)) {
-                    throw new CatalogDomainException('Category cannot be its own parent.', 400);
-                }
+        $now = $this->clock->now();
 
-                $parent = $this->repository->findById($command->parentId);
-                if (null === $parent) {
-                    throw new CategoryNotFoundException('Parent category not found.', 404);
-                }
+        if (null !== $title && null !== $slug) {
+            $category->rename($title, $slug, $now);
+        }
 
-                $category->moveTo($command->parentId, $now);
-            }
+        if (null !== $description) {
+            $category->describe($description, $now);
+        }
 
-            $this->repository->save($category);
+        if (null !== $parentId) {
+            $category->moveTo($parentId, $now);
+        }
 
-            $categoryItem = $this->repository->findItemById($command->categoryId);
-            if (null === $categoryItem) {
-                throw new CategoryNotFoundException();
-            }
+        $this->repository->save($category);
 
-            return $categoryItem;
-        });
+        $categoryItem = $this->repository->findItemById($categoryId);
+
+        if (null === $categoryItem) {
+            throw new CategoryNotFoundException();
+        }
+
+        return $categoryItem;
     }
 }

@@ -10,6 +10,9 @@ use App\Application\Shared\Port\TransactionalInterface;
 use App\Application\Shop\Port\AddressRepositoryInterface;
 use App\Application\Shop\ReadModel\Customer\AddressItem;
 use App\Domain\Shop\Customer\Exception\AddressNotFoundException;
+use App\Domain\Shop\Customer\Model\Address;
+use App\Domain\Shop\Customer\ValueObject\AddressId;
+use App\Domain\Shop\Customer\ValueObject\CustomerId;
 
 final readonly class SetDefaultAddressCommandHandler implements CommandHandlerInterface
 {
@@ -22,20 +25,25 @@ final readonly class SetDefaultAddressCommandHandler implements CommandHandlerIn
 
     public function handle(SetDefaultAddressCommand $command): AddressItem
     {
-        $address = $this->repository->findById($command->addressId);
+        $addressId = AddressId::fromString($command->addressId);
+        $ownerId = CustomerId::fromString($command->ownerId);
 
-        if (null === $address || !$address->belongsTo($command->ownerId)) {
-            throw new AddressNotFoundException();
-        }
+        $address = $this->transactional->transactional(function () use ($addressId, $ownerId): Address {
+            $address = $this->repository->findById($addressId);
 
-        if ($address->isDefault()) {
-            return AddressItem::fromAddress($address);
-        }
+            if (null === $address || !$address->belongsTo($ownerId)) {
+                throw new AddressNotFoundException();
+            }
 
-        $this->transactional->transactional(function () use ($address, $command): void {
-            $this->repository->unsetDefaultForOwner($command->ownerId);
+            if ($address->isDefault()) {
+                return $address;
+            }
+
+            $this->repository->unsetDefaultForOwner($ownerId);
             $address->markAsDefault($this->clock->now());
             $this->repository->save($address);
+
+            return $address;
         });
 
         return AddressItem::fromAddress($address);

@@ -40,7 +40,7 @@ final class CategoryDeleteProcessorTest extends TestCase
             ->method('dispatch')
             ->with($this->callback(function ($command) use ($categoryIdVo): bool {
                 $this->assertInstanceOf(DeleteCategoryByAdminCommand::class, $command);
-                $this->assertTrue($command->categoryId->equals($categoryIdVo));
+                $this->assertSame($categoryIdVo->toString(), $command->categoryId);
 
                 return true;
             }));

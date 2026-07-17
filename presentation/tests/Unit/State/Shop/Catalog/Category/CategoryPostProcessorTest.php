@@ -60,7 +60,7 @@ final class CategoryPostProcessorTest extends TestCase
                 $this->assertInstanceOf(CreateCategoryByAdminCommand::class, $command);
                 $this->assertSame($input->title, $command->title);
                 $this->assertSame($input->description, $command->description);
-                $this->assertTrue($command->parentId->equals(CategoryId::fromString($input->parent->id)));
+                $this->assertSame($input->parent->id, $command->parentId);
 
                 return $output;
             });

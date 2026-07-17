@@ -12,6 +12,7 @@ use App\Application\Shop\ReadModel\Catalog\ProductItem;
 use App\Domain\Shop\Catalog\Exception\CatalogDomainException;
 use App\Domain\Shop\Catalog\Exception\CategoryNotFoundException;
 use App\Domain\Shop\Catalog\Exception\ProductNotFoundException;
+use App\Domain\Shop\Catalog\ValueObject\ProductId;
 
 final readonly class UpdateProductImageByAdminCommandHandler implements CommandHandlerInterface
 {
@@ -24,12 +25,16 @@ final readonly class UpdateProductImageByAdminCommandHandler implements CommandH
 
     public function handle(UpdateProductImageByAdminCommand $command): ProductItem
     {
-        if (!$command->imageFile->isValid()) {
+        $imageFile = $command->imageFile;
+
+        if (!$imageFile->isValid()) {
             throw new CatalogDomainException('Invalid image file.', 400);
         }
 
-        return $this->transactional->transactional(function () use ($command): ProductItem {
-            $product = $this->productRepository->updateImage($command->productId, $command->imageFile);
+        $productId = ProductId::fromString($command->productId);
+
+        return $this->transactional->transactional(function () use ($productId, $imageFile): ProductItem {
+            $product = $this->productRepository->updateImage($productId, $imageFile);
 
             if (null === $product) {
                 throw new ProductNotFoundException();

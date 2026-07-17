@@ -80,7 +80,7 @@ final class DisplayCustomerTest extends TestCase
             )
             ->willReturn(new AddressList([AddressItem::fromAddress($address)], 1, 1));
 
-        $output = $this->handler->handle(new DisplayCustomerQuery($customerId));
+        $output = $this->handler->handle(new DisplayCustomerQuery($customerId->toString()));
 
         $this->assertSame($customer->getId()->toString(), $output->id);
         $this->assertSame($customer->getUserAccountId()?->toString(), $output->userAccountId);
@@ -101,6 +101,6 @@ final class DisplayCustomerTest extends TestCase
 
         $this->expectException(CustomerNotFoundException::class);
 
-        $this->handler->handle(new DisplayCustomerQuery($customerId));
+        $this->handler->handle(new DisplayCustomerQuery($customerId->toString()));
     }
 }

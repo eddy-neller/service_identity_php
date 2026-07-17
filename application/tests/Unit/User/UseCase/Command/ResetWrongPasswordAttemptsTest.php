@@ -84,7 +84,9 @@ final class ResetWrongPasswordAttemptsTest extends TestCase
 
         $this->clock->expects($this->never())->method('now');
         $this->repository->expects($this->never())->method('save');
-        $this->transactional->expects($this->never())->method('transactional');
+        $this->transactional->expects($this->once())
+            ->method('transactional')
+            ->willReturnCallback(static fn (callable $callback) => $callback());
 
         $this->handler->handle($command);
     }

@@ -67,8 +67,8 @@ final class UpdateAddressTest extends TestCase
         );
 
         $command = new UpdateAddressCommand(
-            addressId: $addressId,
-            ownerId: $customerId,
+            addressId: $addressId->toString(),
+            ownerId: $customerId->toString(),
             label: 'Office',
             firstname: 'Jane',
             lastname: 'Doe',
@@ -141,8 +141,8 @@ final class UpdateAddressTest extends TestCase
         );
 
         $command = new UpdateAddressCommand(
-            addressId: $addressId,
-            ownerId: $customerId,
+            addressId: $addressId->toString(),
+            ownerId: $customerId->toString(),
             label: 'Office',
             firstname: null,
             lastname: null,
@@ -192,8 +192,8 @@ final class UpdateAddressTest extends TestCase
         $customerId = CustomerId::fromString(self::CUSTOMER_ID);
 
         $command = new UpdateAddressCommand(
-            addressId: $addressId,
-            ownerId: $customerId,
+            addressId: $addressId->toString(),
+            ownerId: $customerId->toString(),
             label: 'Office',
             firstname: 'Jane',
             lastname: 'Doe',
@@ -216,8 +216,9 @@ final class UpdateAddressTest extends TestCase
         $this->clock->expects($this->never())
             ->method('now');
 
-        $this->transactional->expects($this->never())
-            ->method('transactional');
+        $this->transactional->expects($this->once())
+            ->method('transactional')
+            ->willReturnCallback(static fn (callable $callback) => $callback());
 
         $this->expectException(AddressNotFoundException::class);
 
@@ -246,8 +247,8 @@ final class UpdateAddressTest extends TestCase
         );
 
         $command = new UpdateAddressCommand(
-            addressId: $addressId,
-            ownerId: $customerId,
+            addressId: $addressId->toString(),
+            ownerId: $customerId->toString(),
             label: 'Office',
             firstname: 'Jane',
             lastname: 'Doe',
@@ -270,8 +271,9 @@ final class UpdateAddressTest extends TestCase
         $this->clock->expects($this->never())
             ->method('now');
 
-        $this->transactional->expects($this->never())
-            ->method('transactional');
+        $this->transactional->expects($this->once())
+            ->method('transactional')
+            ->willReturnCallback(static fn (callable $callback) => $callback());
 
         $this->expectException(AddressNotFoundException::class);
 

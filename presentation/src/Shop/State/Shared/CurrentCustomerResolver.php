@@ -6,8 +6,6 @@ namespace App\Presentation\Shop\State\Shared;
 
 use App\Application\Shared\CQRS\Query\QueryBusInterface;
 use App\Application\Shop\UseCase\Query\Customer\DisplayMyCustomer\DisplayMyCustomerQuery;
-use App\Domain\Shop\Customer\ValueObject\CustomerId;
-use App\Domain\Shop\Customer\ValueObject\UserAccountId;
 use App\Presentation\User\Security\UserMeSecurityTrait;
 use Symfony\Bundle\SecurityBundle\Security;
 
@@ -26,14 +24,14 @@ final readonly class CurrentCustomerResolver
         return $this->security;
     }
 
-    public function resolve(): CustomerId
+    public function resolve(): string
     {
         $user = $this->getCurrentUserOrThrow();
         $userId = $this->getUserIdFromAuthenticatedUser($user);
         $output = $this->queryBus->dispatch(new DisplayMyCustomerQuery(
-            UserAccountId::fromString($userId->toString()),
+            $userId,
         ));
 
-        return CustomerId::fromString($output->id);
+        return $output->id;
     }
 }

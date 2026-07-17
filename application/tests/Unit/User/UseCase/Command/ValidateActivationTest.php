@@ -96,8 +96,9 @@ final class ValidateActivationTest extends TestCase
         $this->clock->expects($this->never())
             ->method('now');
 
-        $this->transactional->expects($this->never())
-            ->method('transactional');
+        $this->transactional->expects($this->once())
+            ->method('transactional')
+            ->willReturnCallback(static fn (callable $callback) => $callback());
 
         $this->tokenProvider->expects($this->once())
             ->method('split')
@@ -126,8 +127,9 @@ final class ValidateActivationTest extends TestCase
         $this->clock->expects($this->never())
             ->method('now');
 
-        $this->transactional->expects($this->never())
-            ->method('transactional');
+        $this->transactional->expects($this->once())
+            ->method('transactional')
+            ->willReturnCallback(static fn (callable $callback) => $callback());
 
         $this->tokenProvider->expects($this->once())
             ->method('split')

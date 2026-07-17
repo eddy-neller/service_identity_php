@@ -22,10 +22,12 @@ use App\Domain\Shop\Catalog\ValueObject\ProductId;
 use App\Domain\Shop\Catalog\ValueObject\ProductSubtitle;
 use App\Domain\Shop\Catalog\ValueObject\ProductTitle;
 use App\Domain\Shop\Customer\ValueObject\CustomerId;
+use App\Domain\Shop\Ordering\Exception\CartQuantityExceededException;
 use App\Domain\Shop\Ordering\Model\Cart;
 use App\Domain\Shop\Ordering\Model\CartLine;
 use App\Domain\Shop\Ordering\ValueObject\CartId;
 use App\Domain\Shop\Ordering\ValueObject\CartLineId;
+use App\Domain\Shop\Ordering\ValueObject\CartLineQuantity;
 use App\Domain\Shop\Shared\ValueObject\Money;
 use DateTimeImmutable;
 use PHPUnit\Framework\MockObject\MockObject;
@@ -73,8 +75,8 @@ final class AddToCartTest extends TestCase
     public function testHandleThrowsWhenProductNotFound(): void
     {
         $command = new AddToCartCommand(
-            CustomerId::fromString(self::CUSTOMER_ID),
-            ProductId::fromString(self::PRODUCT_ID),
+            self::CUSTOMER_ID,
+            self::PRODUCT_ID,
             2,
         );
 
@@ -83,6 +85,12 @@ final class AddToCartTest extends TestCase
             ->with($command->productId)
             ->willReturn(null);
 
+        $this->cartRepository->expects($this->once())
+            ->method('nextIdentity')
+            ->willReturn(CartId::fromString(self::CART_ID));
+        $this->cartRepository->expects($this->once())
+            ->method('nextLineIdentity')
+            ->willReturn(CartLineId::fromString(self::CART_LINE_ID));
         $this->clock->expects($this->never())->method('now');
         $this->cartRepository->expects($this->never())->method('save');
         $this->expectTransaction();
@@ -93,13 +101,29 @@ final class AddToCartTest extends TestCase
         $this->handler->handle($command);
     }
 
+    public function testHandleRejectsInvalidQuantityBeforeTransaction(): void
+    {
+        $command = new AddToCartCommand(self::CUSTOMER_ID, self::PRODUCT_ID, 100);
+
+        $this->cartRepository->expects($this->never())->method('nextIdentity');
+        $this->cartRepository->expects($this->never())->method('nextLineIdentity');
+        $this->productRepository->expects($this->never())->method('findById');
+        $this->clock->expects($this->never())->method('now');
+        $this->transactional->expects($this->never())->method('transactional');
+
+        $this->expectException(CartQuantityExceededException::class);
+        $this->expectExceptionMessage('Cart line quantity must be between 1 and 99.');
+
+        $this->handler->handle($command);
+    }
+
     public function testHandleCreatesCartWhenNoneExists(): void
     {
         $now = new DateTimeImmutable('2025-01-01 10:00:00');
         $cartId = CartId::fromString(self::CART_ID);
         $customerId = CustomerId::fromString(self::CUSTOMER_ID);
         $productId = ProductId::fromString(self::PRODUCT_ID);
-        $command = new AddToCartCommand($customerId, $productId, 3);
+        $command = new AddToCartCommand($customerId->toString(), $productId->toString(), 3);
 
         $this->productRepository->expects($this->once())
             ->method('findById')
@@ -128,7 +152,7 @@ final class AddToCartTest extends TestCase
                     && $cart->getOwnerId()->equals($customerId)
                     && 1 === count($lines)
                     && $lines[0]->getProductId()->equals($productId)
-                    && 3 === $lines[0]->getQuantity()
+                    && 3 === $lines[0]->getQuantity()->toInt()
                     && $cart->getCreatedAt() === $now
                     && $cart->getUpdatedAt() === $now;
             }));
@@ -147,7 +171,7 @@ final class AddToCartTest extends TestCase
         $customerId = CustomerId::fromString(self::CUSTOMER_ID);
         $productId = ProductId::fromString(self::PRODUCT_ID);
         $cart = Cart::create(CartId::fromString(self::CART_ID), $customerId, new DateTimeImmutable('2025-01-01 09:00:00'));
-        $command = new AddToCartCommand($customerId, $productId, 2);
+        $command = new AddToCartCommand($customerId->toString(), $productId->toString(), 2);
 
         $this->productRepository->expects($this->once())
             ->method('findById')
@@ -161,7 +185,9 @@ final class AddToCartTest extends TestCase
             ->with($customerId)
             ->willReturn($cart);
 
-        $this->cartRepository->expects($this->never())->method('nextIdentity');
+        $this->cartRepository->expects($this->once())
+            ->method('nextIdentity')
+            ->willReturn(CartId::fromString(self::CART_ID));
         $this->cartRepository->expects($this->once())
             ->method('nextLineIdentity')
             ->willReturn(CartLineId::fromString(self::CART_LINE_ID));
@@ -175,7 +201,7 @@ final class AddToCartTest extends TestCase
                 return $saved === $cart
                     && 1 === count($lines)
                     && $lines[0]->getProductId()->equals($productId)
-                    && 2 === $lines[0]->getQuantity()
+                    && 2 === $lines[0]->getQuantity()->toInt()
                     && $saved->getUpdatedAt() === $now;
             }));
 
@@ -192,11 +218,11 @@ final class AddToCartTest extends TestCase
         $cart = Cart::reconstitute(
             CartId::fromString(self::CART_ID),
             $customerId,
-            [CartLine::create(CartLineId::fromString(self::CART_LINE_ID), $productId, 2)],
+            [CartLine::create(CartLineId::fromString(self::CART_LINE_ID), $productId, CartLineQuantity::fromInt(2))],
             new DateTimeImmutable('2025-01-01 09:00:00'),
             new DateTimeImmutable('2025-01-01 09:00:00'),
         );
-        $command = new AddToCartCommand($customerId, $productId, 3);
+        $command = new AddToCartCommand($customerId->toString(), $productId->toString(), 3);
 
         $this->productRepository->expects($this->once())
             ->method('findById')
@@ -211,6 +237,9 @@ final class AddToCartTest extends TestCase
             ->willReturn($cart);
 
         $this->cartRepository->expects($this->once())
+            ->method('nextIdentity')
+            ->willReturn(CartId::fromString(self::CART_ID));
+        $this->cartRepository->expects($this->once())
             ->method('nextLineIdentity')
             ->willReturn(CartLineId::fromString(self::CART_LINE_ID));
         $this->clock->expects($this->atLeastOnce())->method('now')->willReturn($now);
@@ -222,7 +251,7 @@ final class AddToCartTest extends TestCase
 
                 return 1 === count($lines)
                     && $lines[0]->getProductId()->equals($productId)
-                    && 5 === $lines[0]->getQuantity();
+                    && 5 === $lines[0]->getQuantity()->toInt();
             }));
 
         $this->expectTransaction();

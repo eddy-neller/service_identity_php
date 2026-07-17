@@ -8,7 +8,6 @@ use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProcessorInterface;
 use App\Application\Shared\CQRS\Command\CommandBusInterface;
 use App\Application\Shop\UseCase\Command\Ordering\AddToCart\AddToCartCommand;
-use App\Domain\Shop\Catalog\ValueObject\ProductId;
 use App\Presentation\Shared\State\PresentationErrorCode;
 use App\Presentation\Shop\ApiResource\Ordering\CartResource;
 use App\Presentation\Shop\Dto\Ordering\Cart\CartLinePostInput;
@@ -33,7 +32,7 @@ final readonly class CartLinePostProcessor implements ProcessorInterface
 
         $output = $this->commandBus->dispatch(new AddToCartCommand(
             $this->customerResolver->resolve(),
-            ProductId::fromString($data->productId),
+            $data->productId,
             $data->quantity,
         ));
 

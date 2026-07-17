@@ -53,7 +53,7 @@ final class SetDefaultAddressTest extends TestCase
         $customerId = CustomerId::fromString(self::CUSTOMER_ID);
         $address = $this->createAddress($addressId, $customerId, $createdAt);
 
-        $command = new SetDefaultAddressCommand($addressId, $customerId);
+        $command = new SetDefaultAddressCommand($addressId->toString(), $customerId->toString());
 
         $this->repository->expects($this->once())
             ->method('findById')
@@ -100,8 +100,9 @@ final class SetDefaultAddressTest extends TestCase
             ->with($addressId)
             ->willReturn($address);
 
-        $this->transactional->expects($this->never())
-            ->method('transactional');
+        $this->transactional->expects($this->once())
+            ->method('transactional')
+            ->willReturnCallback(static fn (callable $callback) => $callback());
 
         $this->repository->expects($this->never())
             ->method('unsetDefaultForOwner');
@@ -112,7 +113,7 @@ final class SetDefaultAddressTest extends TestCase
         $this->clock->expects($this->never())
             ->method('now');
 
-        $output = $this->handler->handle(new SetDefaultAddressCommand($addressId, $customerId));
+        $output = $this->handler->handle(new SetDefaultAddressCommand($addressId->toString(), $customerId->toString()));
 
         $this->assertSame($address->getId()->toString(), $output->id);
         $this->assertTrue($output->isDefault);
@@ -131,12 +132,13 @@ final class SetDefaultAddressTest extends TestCase
         $this->clock->expects($this->never())
             ->method('now');
 
-        $this->transactional->expects($this->never())
-            ->method('transactional');
+        $this->transactional->expects($this->once())
+            ->method('transactional')
+            ->willReturnCallback(static fn (callable $callback) => $callback());
 
         $this->expectException(AddressNotFoundException::class);
 
-        $this->handler->handle(new SetDefaultAddressCommand($addressId, $customerId));
+        $this->handler->handle(new SetDefaultAddressCommand($addressId->toString(), $customerId->toString()));
     }
 
     public function testHandleThrowsWhenAddressOwnedByAnotherCustomer(): void
@@ -155,12 +157,13 @@ final class SetDefaultAddressTest extends TestCase
         $this->clock->expects($this->never())
             ->method('now');
 
-        $this->transactional->expects($this->never())
-            ->method('transactional');
+        $this->transactional->expects($this->once())
+            ->method('transactional')
+            ->willReturnCallback(static fn (callable $callback) => $callback());
 
         $this->expectException(AddressNotFoundException::class);
 
-        $this->handler->handle(new SetDefaultAddressCommand($addressId, $customerId));
+        $this->handler->handle(new SetDefaultAddressCommand($addressId->toString(), $customerId->toString()));
     }
 
     private function createAddress(

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Domain\Shop\Ordering\Model;
 
 use App\Domain\Shop\Ordering\ValueObject\OrderLineId;
+use App\Domain\Shop\Ordering\ValueObject\OrderLineQuantity;
 use App\Domain\Shop\Shared\ValueObject\Money;
 use InvalidArgumentException;
 
@@ -13,7 +14,7 @@ final class OrderLine
     private function __construct(
         private readonly OrderLineId $id,
         private readonly string $productName,
-        private readonly int $quantity,
+        private readonly OrderLineQuantity $quantity,
         private readonly Money $unitPrice,
     ) {
     }
@@ -22,16 +23,12 @@ final class OrderLine
         OrderLineId $id,
         string $productName,
         Money $unitPrice,
-        int $quantity,
+        OrderLineQuantity $quantity,
     ): self {
         $trimmedName = trim($productName);
 
         if ('' === $trimmedName) {
             throw new InvalidArgumentException('Order line product name cannot be empty.');
-        }
-
-        if ($quantity <= 0) {
-            throw new InvalidArgumentException('Order line quantity must be greater than zero.');
         }
 
         return new self(
@@ -52,7 +49,7 @@ final class OrderLine
         return $this->productName;
     }
 
-    public function getQuantity(): int
+    public function getQuantity(): OrderLineQuantity
     {
         return $this->quantity;
     }
@@ -64,6 +61,6 @@ final class OrderLine
 
     public function total(): Money
     {
-        return $this->unitPrice->multiply($this->quantity);
+        return $this->unitPrice->multiply($this->quantity->toInt());
     }
 }

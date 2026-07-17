@@ -14,6 +14,7 @@ use App\Application\Shop\ReadModel\Catalog\ProductItem;
 use App\Domain\Shop\Catalog\Exception\CategoryNotFoundException;
 use App\Domain\Shop\Catalog\Exception\ProductTitleAlreadyUsedException;
 use App\Domain\Shop\Catalog\Model\Product;
+use App\Domain\Shop\Catalog\ValueObject\CategoryId;
 use App\Domain\Shop\Catalog\ValueObject\ProductDescription;
 use App\Domain\Shop\Catalog\ValueObject\ProductSubtitle;
 use App\Domain\Shop\Catalog\ValueObject\ProductTitle;
@@ -32,25 +33,25 @@ final readonly class CreateProductByAdminCommandHandler implements CommandHandle
 
     public function handle(CreateProductByAdminCommand $command): ProductItem
     {
-        return $this->transactional->transactional(function () use ($command): ProductItem {
-            $now = $this->clock->now();
-            $id = $this->productRepository->nextIdentity();
-            $title = ProductTitle::fromString($command->title);
+        $id = $this->productRepository->nextIdentity();
+        $title = ProductTitle::fromString($command->title);
+        $subtitle = ProductSubtitle::fromString($command->subtitle);
+        $description = ProductDescription::fromString($command->description);
+        $price = Money::fromEuros($command->price);
+        $slug = $this->slugGenerator->generate($title->toString());
+        $categoryId = CategoryId::fromString($command->categoryId);
+
+        return $this->transactional->transactional(function () use ($id, $title, $subtitle, $description, $price, $slug, $categoryId): ProductItem {
             if (null !== $this->productRepository->findByTitle($title)) {
                 throw new ProductTitleAlreadyUsedException();
             }
-
-            $subtitle = ProductSubtitle::fromString($command->subtitle);
-            $description = ProductDescription::fromString($command->description);
-            $price = Money::fromEuros($command->price);
-            $slug = $this->slugGenerator->generate($title->toString());
-
-            $categoryId = $command->categoryId;
 
             $category = $this->categoryRepository->findById($categoryId);
             if (null === $category) {
                 throw new CategoryNotFoundException();
             }
+
+            $now = $this->clock->now();
 
             $product = Product::create(
                 id: $id,

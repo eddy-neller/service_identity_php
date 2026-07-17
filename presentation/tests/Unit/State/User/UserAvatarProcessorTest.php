@@ -58,16 +58,15 @@ final class UserAvatarProcessorTest extends KernelTestCase
     {
         $input = $this->createValidUserAvatarInput(true);
         $userId = Uuid::uuid4()->toString();
-        $userIdVO = UserId::fromString($userId);
         $uriVariables = ['id' => $userId];
         $domainUser = $this->createDomainUser();
         $output = UserItem::fromUser($domainUser);
 
         $this->commandBus->expects($this->once())
             ->method('dispatch')
-            ->willReturnCallback(function ($command) use ($userIdVO, $output): UserItem {
+            ->willReturnCallback(function ($command) use ($userId, $output): UserItem {
                 $this->assertInstanceOf(UpdateAvatarCommand::class, $command);
-                $this->assertTrue($command->userId->equals($userIdVO));
+                $this->assertSame($userId, $command->userId);
                 $this->assertInstanceOf(FileInterface::class, $command->avatarFile);
                 $this->assertSame('avatar.jpg', $command->avatarFile->getClientOriginalName());
                 $this->assertTrue($command->avatarFile->isValid());

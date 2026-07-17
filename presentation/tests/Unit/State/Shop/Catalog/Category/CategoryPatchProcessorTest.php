@@ -61,8 +61,8 @@ final class CategoryPatchProcessorTest extends TestCase
                 $this->assertInstanceOf(UpdateCategoryByAdminCommand::class, $command);
                 $this->assertSame($input->title, $command->title);
                 $this->assertSame($input->description, $command->description);
-                $this->assertTrue($command->categoryId->equals(CategoryId::fromString($categoryId)));
-                $this->assertTrue($command->parentId->equals(CategoryId::fromString($input->parent->id)));
+                $this->assertSame($categoryId, $command->categoryId);
+                $this->assertSame($input->parent->id, $command->parentId);
 
                 return $output;
             });

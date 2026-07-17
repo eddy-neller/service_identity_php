@@ -51,7 +51,7 @@ final class CreateAddressTest extends TestCase
         $customerId = CustomerId::fromString(self::CUSTOMER_ID);
 
         $command = new CreateAddressCommand(
-            ownerId: $customerId,
+            ownerId: $customerId->toString(),
             label: 'Home',
             firstname: 'John',
             lastname: 'Doe',
@@ -118,7 +118,7 @@ final class CreateAddressTest extends TestCase
         $customerId = CustomerId::fromString(self::CUSTOMER_ID);
 
         $command = new CreateAddressCommand(
-            ownerId: $customerId,
+            ownerId: $customerId->toString(),
             label: 'Office',
             firstname: 'John',
             lastname: 'Doe',
@@ -163,9 +163,10 @@ final class CreateAddressTest extends TestCase
 
     public function testHandleThrowsWhenOwnerAlreadyHasFiveAddresses(): void
     {
+        $addressId = AddressId::fromString(self::ADDRESS_ID);
         $customerId = CustomerId::fromString(self::CUSTOMER_ID);
         $command = new CreateAddressCommand(
-            ownerId: $customerId,
+            ownerId: $customerId->toString(),
             label: 'Office',
             firstname: 'John',
             lastname: 'Doe',
@@ -183,7 +184,9 @@ final class CreateAddressTest extends TestCase
             ->willReturn(Customer::MAX_ADDRESSES);
 
         $this->clock->expects($this->never())->method('now');
-        $this->repository->expects($this->never())->method('nextIdentity');
+        $this->repository->expects($this->once())
+            ->method('nextIdentity')
+            ->willReturn($addressId);
         $this->repository->expects($this->never())->method('hasDefaultForOwner');
         $this->repository->expects($this->never())->method('save');
         $this->transactional->expects($this->once())

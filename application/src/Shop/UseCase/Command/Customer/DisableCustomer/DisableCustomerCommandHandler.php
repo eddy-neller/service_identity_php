@@ -11,6 +11,8 @@ use App\Application\Shop\Port\CustomerRepositoryInterface;
 use App\Application\Shop\ReadModel\Customer\CustomerItem;
 use App\Domain\Shop\Customer\Exception\CustomerDomainException;
 use App\Domain\Shop\Customer\Exception\CustomerNotFoundException;
+use App\Domain\Shop\Customer\Model\Customer;
+use App\Domain\Shop\Customer\ValueObject\CustomerId;
 
 final readonly class DisableCustomerCommandHandler implements CommandHandlerInterface
 {
@@ -23,20 +25,24 @@ final readonly class DisableCustomerCommandHandler implements CommandHandlerInte
 
     public function handle(DisableCustomerCommand $command): CustomerItem
     {
-        $customer = $this->repository->findById($command->customerId);
+        $customerId = CustomerId::fromString($command->customerId);
 
-        if (null === $customer) {
-            throw new CustomerNotFoundException();
-        }
+        $customer = $this->transactional->transactional(function () use ($customerId): Customer {
+            $customer = $this->repository->findById($customerId);
 
-        if (null === $customer->getUserAccountId()) {
-            throw new CustomerDomainException('Customer has no user account linked.');
-        }
+            if (null === $customer) {
+                throw new CustomerNotFoundException();
+            }
 
-        $this->transactional->transactional(function () use ($customer): void {
+            if (null === $customer->getUserAccountId()) {
+                throw new CustomerDomainException('Customer has no user account linked.');
+            }
+
             $customer->disable($this->clock->now());
 
             $this->repository->save($customer);
+
+            return $customer;
         });
 
         return CustomerItem::fromCustomer($customer);

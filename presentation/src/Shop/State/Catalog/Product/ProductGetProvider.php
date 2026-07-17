@@ -8,7 +8,6 @@ use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProviderInterface;
 use App\Application\Shared\CQRS\Query\QueryBusInterface;
 use App\Application\Shop\UseCase\Query\Catalog\DisplayProduct\DisplayProductQuery;
-use App\Domain\Shop\Catalog\ValueObject\ProductId;
 use App\Presentation\Shared\State\PresentationErrorCode;
 use App\Presentation\Shop\ApiResource\Catalog\ProductResource;
 use App\Presentation\Shop\Presenter\Catalog\ProductResourcePresenter;
@@ -24,11 +23,12 @@ final readonly class ProductGetProvider implements ProviderInterface
 
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): ProductResource
     {
-        if (!isset($uriVariables['id']) || !is_string($uriVariables['id'])) {
+        $productId = $uriVariables['id'] ?? null;
+
+        if (!is_string($productId) || '' === $productId) {
             throw new LogicException(PresentationErrorCode::INVALID_INPUT->value);
         }
 
-        $productId = ProductId::fromString($uriVariables['id']);
         $output = $this->queryBus->dispatch(new DisplayProductQuery($productId));
 
         return $this->productResourcePresenter->toResource($output);

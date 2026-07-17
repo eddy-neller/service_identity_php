@@ -12,7 +12,10 @@ use App\Application\Shop\Port\ProductRepositoryInterface;
 use App\Application\Shop\ReadModel\Ordering\CartItem;
 use App\Application\Shop\Service\CartItemFactory;
 use App\Domain\Shop\Catalog\Exception\ProductNotFoundException;
+use App\Domain\Shop\Catalog\ValueObject\ProductId;
+use App\Domain\Shop\Customer\ValueObject\CustomerId;
 use App\Domain\Shop\Ordering\Model\Cart;
+use App\Domain\Shop\Ordering\ValueObject\CartLineQuantity;
 
 final readonly class AddToCartCommandHandler implements CommandHandlerInterface
 {
@@ -27,22 +30,33 @@ final readonly class AddToCartCommandHandler implements CommandHandlerInterface
 
     public function handle(AddToCartCommand $command): CartItem
     {
-        return $this->transactional->transactional(function () use ($command): CartItem {
-            if (null === $this->productRepository->findById($command->productId)) {
+        $productId = ProductId::fromString($command->productId);
+        $customerId = CustomerId::fromString($command->customerId);
+        $quantity = CartLineQuantity::fromInt($command->quantity);
+        $cartId = $this->cartRepository->nextIdentity();
+        $cartLineId = $this->cartRepository->nextLineIdentity();
+
+        $cart = $this->transactional->transactional(function () use ($productId, $customerId, $cartId, $cartLineId, $quantity): Cart {
+            if (null === $this->productRepository->findById($productId)) {
                 throw new ProductNotFoundException();
             }
 
-            $cart = $this->cartRepository->findByOwnerForUpdate($command->customerId)
-                ?? Cart::create($this->cartRepository->nextIdentity(), $command->customerId, $this->clock->now());
+            $now = $this->clock->now();
+
+            $cart = $this->cartRepository->findByOwnerForUpdate($customerId)
+                ?? Cart::create($cartId, $customerId, $now);
+
             $cart->addLine(
-                $this->cartRepository->nextLineIdentity(),
-                $command->productId,
-                $command->quantity,
-                $this->clock->now(),
+                $cartLineId,
+                $productId,
+                $quantity,
+                $now,
             );
             $this->cartRepository->save($cart);
 
-            return $this->cartItemFactory->create($cart);
+            return $cart;
         });
+
+        return $this->cartItemFactory->create($cart);
     }
 }

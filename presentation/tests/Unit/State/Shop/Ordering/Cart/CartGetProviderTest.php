@@ -12,7 +12,6 @@ use App\Application\Shop\ReadModel\Ordering\CartLineItem;
 use App\Application\Shop\UseCase\Query\Customer\DisplayMyCustomer\DisplayMyCustomerQuery;
 use App\Application\Shop\UseCase\Query\Ordering\DisplayMyCart\DisplayMyCartQuery;
 use App\Domain\Shop\Customer\ValueObject\CustomerId;
-use App\Domain\Shop\Customer\ValueObject\UserAccountId;
 use App\Presentation\Shop\ApiResource\Ordering\CartResource;
 use App\Presentation\Shop\Presenter\Ordering\CartResourcePresenter;
 use App\Presentation\Shop\State\Ordering\Cart\CartGetProvider;
@@ -43,13 +42,13 @@ final class CartGetProviderTest extends TestCase
             ->method('dispatch')
             ->willReturnCallback(function ($query) use ($customerId, $customerOutput, $cartOutput): CurrentCustomerItem|CartItem {
                 if ($query instanceof DisplayMyCustomerQuery) {
-                    $this->assertTrue($query->userAccountId->equals(UserAccountId::fromString('550e8400-e29b-41d4-a716-446655440700')));
+                    $this->assertSame('550e8400-e29b-41d4-a716-446655440700', $query->userAccountId);
 
                     return $customerOutput;
                 }
 
                 if ($query instanceof DisplayMyCartQuery) {
-                    $this->assertTrue($query->customerId->equals($customerId));
+                    $this->assertSame($customerId->toString(), $query->customerId);
 
                     return $cartOutput;
                 }

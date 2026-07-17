@@ -11,7 +11,6 @@ use App\Application\Shop\ReadModel\Customer\CurrentCustomerItem;
 use App\Application\Shop\UseCase\Command\Customer\DeleteAddress\DeleteAddressCommand;
 use App\Application\Shop\UseCase\Query\Customer\DisplayMyCustomer\DisplayMyCustomerQuery;
 use App\Domain\Shop\Customer\ValueObject\CustomerId;
-use App\Domain\Shop\Customer\ValueObject\UserAccountId;
 use App\Presentation\Shared\State\PresentationErrorCode;
 use App\Presentation\Shop\State\Customer\Address\AddressDeleteProcessor;
 use App\Presentation\Shop\State\Shared\CurrentCustomerResolver;
@@ -58,7 +57,7 @@ final class AddressDeleteProcessorTest extends TestCase
             ->method('dispatch')
             ->willReturnCallback(function ($query) use ($customerOutput): CurrentCustomerItem {
                 $this->assertInstanceOf(DisplayMyCustomerQuery::class, $query);
-                $this->assertTrue($query->userAccountId->equals(UserAccountId::fromString('550e8400-e29b-41d4-a716-446655440600')));
+                $this->assertSame('550e8400-e29b-41d4-a716-446655440600', $query->userAccountId);
 
                 return $customerOutput;
             });
@@ -67,8 +66,8 @@ final class AddressDeleteProcessorTest extends TestCase
             ->method('dispatch')
             ->willReturnCallback(function ($command) use ($customerId): mixed {
                 $this->assertInstanceOf(DeleteAddressCommand::class, $command);
-                $this->assertTrue($command->ownerId->equals($customerId));
-                $this->assertSame('550e8400-e29b-41d4-a716-446655440602', $command->addressId->toString());
+                $this->assertSame($customerId->toString(), $command->ownerId);
+                $this->assertSame('550e8400-e29b-41d4-a716-446655440602', $command->addressId);
 
                 return null;
             });

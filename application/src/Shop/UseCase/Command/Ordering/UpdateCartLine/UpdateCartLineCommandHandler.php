@@ -10,7 +10,11 @@ use App\Application\Shared\Port\TransactionalInterface;
 use App\Application\Shop\Port\CartRepositoryInterface;
 use App\Application\Shop\ReadModel\Ordering\CartItem;
 use App\Application\Shop\Service\CartItemFactory;
+use App\Domain\Shop\Catalog\ValueObject\ProductId;
+use App\Domain\Shop\Customer\ValueObject\CustomerId;
 use App\Domain\Shop\Ordering\Exception\CartLineNotFoundException;
+use App\Domain\Shop\Ordering\Model\Cart;
+use App\Domain\Shop\Ordering\ValueObject\CartLineQuantityChange;
 
 final readonly class UpdateCartLineCommandHandler implements CommandHandlerInterface
 {
@@ -24,15 +28,21 @@ final readonly class UpdateCartLineCommandHandler implements CommandHandlerInter
 
     public function handle(UpdateCartLineCommand $command): CartItem
     {
-        return $this->transactional->transactional(function () use ($command): CartItem {
-            $cart = $this->repository->findByOwnerForUpdate($command->customerId)
+        $customerId = CustomerId::fromString($command->customerId);
+        $productId = ProductId::fromString($command->productId);
+        $quantity = CartLineQuantityChange::fromInt($command->quantity);
+
+        $cart = $this->transactional->transactional(function () use ($customerId, $productId, $quantity): Cart {
+            $cart = $this->repository->findByOwnerForUpdate($customerId)
                 ?? throw new CartLineNotFoundException();
 
-            $cart->changeLineQuantity($command->productId, $command->quantity, $this->clock->now());
+            $cart->changeLineQuantity($productId, $quantity, $this->clock->now());
 
             $this->repository->save($cart);
 
-            return $this->cartItemFactory->create($cart);
+            return $cart;
         });
+
+        return $this->cartItemFactory->create($cart);
     }
 }

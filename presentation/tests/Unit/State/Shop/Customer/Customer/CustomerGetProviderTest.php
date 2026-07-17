@@ -45,7 +45,7 @@ final class CustomerGetProviderTest extends TestCase
             ->method('dispatch')
             ->willReturnCallback(function ($query) use ($customerId, $customer, $address): CustomerItem {
                 $this->assertInstanceOf(DisplayCustomerQuery::class, $query);
-                $this->assertSame($customerId, $query->customerId->toString());
+                $this->assertSame($customerId, $query->customerId);
 
                 return CustomerItem::fromCustomer($customer, [AddressItem::fromAddress($address)]);
             });

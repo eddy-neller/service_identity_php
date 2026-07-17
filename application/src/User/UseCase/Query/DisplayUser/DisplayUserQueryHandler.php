@@ -8,6 +8,7 @@ use App\Application\Shared\CQRS\Query\QueryHandlerInterface;
 use App\Application\User\Port\UserRepositoryInterface;
 use App\Application\User\ReadModel\UserItem;
 use App\Domain\User\Exception\UserNotFoundException;
+use App\Domain\User\ValueObject\UserId;
 
 final readonly class DisplayUserQueryHandler implements QueryHandlerInterface
 {
@@ -18,7 +19,7 @@ final readonly class DisplayUserQueryHandler implements QueryHandlerInterface
 
     public function handle(DisplayUserQuery $query): UserItem
     {
-        $user = $this->repository->findById($query->userId);
+        $user = $this->repository->findById(UserId::fromString($query->userId));
 
         if (null === $user) {
             throw new UserNotFoundException();

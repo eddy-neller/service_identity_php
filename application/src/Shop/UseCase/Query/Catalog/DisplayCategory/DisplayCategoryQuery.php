@@ -5,12 +5,11 @@ declare(strict_types=1);
 namespace App\Application\Shop\UseCase\Query\Catalog\DisplayCategory;
 
 use App\Application\Shared\CQRS\Query\QueryInterface;
-use App\Domain\Shop\Catalog\ValueObject\CategoryId;
 
 final readonly class DisplayCategoryQuery implements QueryInterface
 {
     public function __construct(
-        public CategoryId $categoryId,
+        public string $categoryId,
     ) {
     }
 }

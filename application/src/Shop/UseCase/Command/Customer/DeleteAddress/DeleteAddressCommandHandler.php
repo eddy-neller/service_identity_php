@@ -9,6 +9,8 @@ use App\Application\Shared\Port\ClockInterface;
 use App\Application\Shared\Port\TransactionalInterface;
 use App\Application\Shop\Port\AddressRepositoryInterface;
 use App\Domain\Shop\Customer\Exception\AddressNotFoundException;
+use App\Domain\Shop\Customer\ValueObject\AddressId;
+use App\Domain\Shop\Customer\ValueObject\CustomerId;
 
 final readonly class DeleteAddressCommandHandler implements CommandHandlerInterface
 {
@@ -21,13 +23,16 @@ final readonly class DeleteAddressCommandHandler implements CommandHandlerInterf
 
     public function handle(DeleteAddressCommand $command): void
     {
-        $address = $this->repository->findById($command->addressId);
+        $addressId = AddressId::fromString($command->addressId);
+        $ownerId = CustomerId::fromString($command->ownerId);
 
-        if (null === $address || !$address->belongsTo($command->ownerId)) {
-            throw new AddressNotFoundException();
-        }
+        $this->transactional->transactional(function () use ($addressId, $ownerId): void {
+            $address = $this->repository->findById($addressId);
 
-        $this->transactional->transactional(function () use ($address, $command): void {
+            if (null === $address || !$address->belongsTo($ownerId)) {
+                throw new AddressNotFoundException();
+            }
+
             $wasDefault = $address->isDefault();
 
             $this->repository->delete($address);
@@ -36,7 +41,7 @@ final readonly class DeleteAddressCommandHandler implements CommandHandlerInterf
                 return;
             }
 
-            $replacement = $this->repository->findDefaultReplacementForOwner($command->ownerId, $command->addressId);
+            $replacement = $this->repository->findDefaultReplacementForOwner($ownerId, $addressId);
             if (null === $replacement) {
                 return;
             }

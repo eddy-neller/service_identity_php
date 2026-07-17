@@ -81,7 +81,7 @@ final class ProductPostProcessorTest extends TestCase
                 $this->assertSame($input->subtitle, $command->subtitle);
                 $this->assertSame($input->description, $command->description);
                 $this->assertSame($input->price, $command->price);
-                $this->assertTrue($command->categoryId->equals(CategoryId::fromString($input->category->id)));
+                $this->assertSame($input->category->id, $command->categoryId);
 
                 return $output;
             });

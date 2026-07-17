@@ -70,7 +70,7 @@ final class UpdateUserByAdminTest extends TestCase
         $hashedPassword = new HashedPassword('hashed-new-password');
 
         $command = new UpdateUserByAdminCommand(
-            userId: $userId,
+            userId: $userId->toString(),
             email: $newEmail,
             username: $newUsername,
             plainPassword: $newPassword,
@@ -137,7 +137,7 @@ final class UpdateUserByAdminTest extends TestCase
         $newUsername = 'newusername';
 
         $command = new UpdateUserByAdminCommand(
-            userId: $userId,
+            userId: $userId->toString(),
             email: null,
             username: $newUsername,
         );
@@ -184,7 +184,7 @@ final class UpdateUserByAdminTest extends TestCase
     {
         $userId = UserId::fromString('550e8400-e29b-41d4-a716-446655440002');
         $command = new UpdateUserByAdminCommand(
-            userId: $userId,
+            userId: $userId->toString(),
         );
 
         $this->uniquenessChecker->expects($this->never())
@@ -199,8 +199,9 @@ final class UpdateUserByAdminTest extends TestCase
         $this->clock->expects($this->never())
             ->method('now');
 
-        $this->transactional->expects($this->never())
-            ->method('transactional');
+        $this->transactional->expects($this->once())
+            ->method('transactional')
+            ->willReturnCallback(static fn (callable $callback) => $callback());
 
         $this->repository->expects($this->once())
             ->method('findById')
@@ -220,7 +221,7 @@ final class UpdateUserByAdminTest extends TestCase
         $conflictingEmail = 'taken@example.com';
 
         $command = new UpdateUserByAdminCommand(
-            userId: $userId,
+            userId: $userId->toString(),
             email: $conflictingEmail,
         );
 
@@ -243,8 +244,9 @@ final class UpdateUserByAdminTest extends TestCase
         $this->clock->expects($this->never())
             ->method('now');
 
-        $this->transactional->expects($this->never())
-            ->method('transactional');
+        $this->transactional->expects($this->once())
+            ->method('transactional')
+            ->willReturnCallback(static fn (callable $callback) => $callback());
 
         $this->repository->expects($this->never())
             ->method('save');
@@ -261,7 +263,7 @@ final class UpdateUserByAdminTest extends TestCase
         $conflictingUsername = 'taken';
 
         $command = new UpdateUserByAdminCommand(
-            userId: $userId,
+            userId: $userId->toString(),
             username: $conflictingUsername,
         );
 
@@ -284,8 +286,9 @@ final class UpdateUserByAdminTest extends TestCase
         $this->clock->expects($this->never())
             ->method('now');
 
-        $this->transactional->expects($this->never())
-            ->method('transactional');
+        $this->transactional->expects($this->once())
+            ->method('transactional')
+            ->willReturnCallback(static fn (callable $callback) => $callback());
 
         $this->repository->expects($this->never())
             ->method('save');

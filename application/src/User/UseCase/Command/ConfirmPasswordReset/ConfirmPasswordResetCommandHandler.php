@@ -29,16 +29,15 @@ final readonly class ConfirmPasswordResetCommandHandler implements CommandHandle
         $split = $this->tokenProvider->split($command->token);
         $email = EmailAddress::fromString($split['email'] ?? '');
         $rawToken = $split['token'] ?? '';
-
-        $user = $this->repository->findByResetPasswordToken($rawToken);
-
-        if (null === $user || !$user->getEmail()->equals($email)) {
-            throw new UserDomainException('Token de réinitialisation invalide.');
-        }
-
         $hashed = $this->passwordHasher->hash($command->newPassword);
 
-        $this->transactional->transactional(function () use ($user, $hashed, $rawToken): void {
+        $this->transactional->transactional(function () use ($email, $hashed, $rawToken): void {
+            $user = $this->repository->findByResetPasswordToken($rawToken);
+
+            if (null === $user || !$user->getEmail()->equals($email)) {
+                throw new UserDomainException('Password reset token is invalid.');
+            }
+
             $user->completePasswordReset($rawToken, $hashed, $this->clock->now());
 
             $this->repository->save($user);

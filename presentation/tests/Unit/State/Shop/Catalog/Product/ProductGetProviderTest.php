@@ -65,7 +65,7 @@ final class ProductGetProviderTest extends TestCase
             ->method('dispatch')
             ->willReturnCallback(function ($query) use ($productId, $output): ProductItem {
                 $this->assertInstanceOf(DisplayProductQuery::class, $query);
-                $this->assertSame($productId, $query->productId->toString());
+                $this->assertSame($productId, $query->productId);
 
                 return $output;
             });

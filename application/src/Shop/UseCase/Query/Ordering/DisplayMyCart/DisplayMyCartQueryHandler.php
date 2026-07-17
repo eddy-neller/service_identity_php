@@ -8,6 +8,7 @@ use App\Application\Shared\CQRS\Query\QueryHandlerInterface;
 use App\Application\Shop\Port\CartRepositoryInterface;
 use App\Application\Shop\ReadModel\Ordering\CartItem;
 use App\Application\Shop\Service\CartItemFactory;
+use App\Domain\Shop\Customer\ValueObject\CustomerId;
 
 final readonly class DisplayMyCartQueryHandler implements QueryHandlerInterface
 {
@@ -19,6 +20,6 @@ final readonly class DisplayMyCartQueryHandler implements QueryHandlerInterface
 
     public function handle(DisplayMyCartQuery $query): CartItem
     {
-        return $this->factory->create($this->repository->findByOwner($query->customerId));
+        return $this->factory->create($this->repository->findByOwner(CustomerId::fromString($query->customerId)));
     }
 }

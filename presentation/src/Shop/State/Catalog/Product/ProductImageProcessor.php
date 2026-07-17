@@ -8,7 +8,6 @@ use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProcessorInterface;
 use App\Application\Shared\CQRS\Command\CommandBusInterface;
 use App\Application\Shop\UseCase\Command\Catalog\UpdateProductImageByAdmin\UpdateProductImageByAdminCommand;
-use App\Domain\Shop\Catalog\ValueObject\ProductId;
 use App\Presentation\Shared\Adapter\SymfonyFileAdapter;
 use App\Presentation\Shared\State\PresentationErrorCode;
 use App\Presentation\Shop\ApiResource\Catalog\ProductResource;
@@ -34,11 +33,12 @@ final readonly class ProductImageProcessor implements ProcessorInterface
             throw new LogicException(PresentationErrorCode::INVALID_INPUT->value);
         }
 
-        if (!isset($uriVariables['id']) || !is_string($uriVariables['id'])) {
+        $productId = $uriVariables['id'] ?? null;
+
+        if (!is_string($productId) || '' === $productId) {
             throw new LogicException(PresentationErrorCode::INVALID_INPUT->value);
         }
 
-        $productId = ProductId::fromString($uriVariables['id']);
         $imageFile = new SymfonyFileAdapter($data->imageFile);
 
         $command = new UpdateProductImageByAdminCommand(

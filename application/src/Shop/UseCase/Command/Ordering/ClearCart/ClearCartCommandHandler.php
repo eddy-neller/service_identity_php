@@ -8,6 +8,7 @@ use App\Application\Shared\CQRS\Command\CommandHandlerInterface;
 use App\Application\Shared\Port\ClockInterface;
 use App\Application\Shared\Port\TransactionalInterface;
 use App\Application\Shop\Port\CartRepositoryInterface;
+use App\Domain\Shop\Customer\ValueObject\CustomerId;
 
 final readonly class ClearCartCommandHandler implements CommandHandlerInterface
 {
@@ -20,13 +21,17 @@ final readonly class ClearCartCommandHandler implements CommandHandlerInterface
 
     public function handle(ClearCartCommand $command): void
     {
-        $this->transactional->transactional(function () use ($command): void {
-            $cart = $this->repository->findByOwnerForUpdate($command->customerId);
+        $customerId = CustomerId::fromString($command->customerId);
+
+        $this->transactional->transactional(function () use ($customerId): void {
+            $cart = $this->repository->findByOwnerForUpdate($customerId);
+
             if (null === $cart) {
                 return;
             }
 
             $cart->clear($this->clock->now());
+
             $this->repository->save($cart);
         });
     }

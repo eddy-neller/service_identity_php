@@ -104,14 +104,16 @@ final class ConfirmPasswordResetTest extends TestCase
         $newPassword = 'new-password';
         $command = new ConfirmPasswordResetCommand($token, $newPassword);
 
-        $this->passwordHasher->expects($this->never())
-            ->method('hash');
+        $this->passwordHasher->expects($this->once())
+            ->method('hash')
+            ->willReturn(new HashedPassword('hashed-new-password'));
 
         $this->clock->expects($this->never())
             ->method('now');
 
-        $this->transactional->expects($this->never())
-            ->method('transactional');
+        $this->transactional->expects($this->once())
+            ->method('transactional')
+            ->willReturnCallback(static fn (callable $callback) => $callback());
 
         $this->tokenProvider->expects($this->once())
             ->method('split')
@@ -124,7 +126,7 @@ final class ConfirmPasswordResetTest extends TestCase
             ->willReturn(null);
 
         $this->expectException(UserDomainException::class);
-        $this->expectExceptionMessage('Token de réinitialisation invalide.');
+        $this->expectExceptionMessage('Password reset token is invalid.');
 
         $this->handler->handle($command);
     }

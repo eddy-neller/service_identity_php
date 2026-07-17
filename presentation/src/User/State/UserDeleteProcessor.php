@@ -8,7 +8,6 @@ use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProcessorInterface;
 use App\Application\Shared\CQRS\Command\CommandBusInterface;
 use App\Application\User\UseCase\Command\DeleteUserByAdmin\DeleteUserByAdminCommand;
-use App\Domain\User\ValueObject\UserId;
 use App\Presentation\Shared\State\PresentationErrorCode;
 use LogicException;
 
@@ -21,11 +20,12 @@ final readonly class UserDeleteProcessor implements ProcessorInterface
 
     public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): null
     {
-        if (!isset($uriVariables['id']) || !is_string($uriVariables['id'])) {
+        $userId = $uriVariables['id'] ?? null;
+
+        if (!is_string($userId) || '' === $userId) {
             throw new LogicException(PresentationErrorCode::INVALID_INPUT->value);
         }
 
-        $userId = UserId::fromString($uriVariables['id']);
         $this->commandBus->dispatch(new DeleteUserByAdminCommand($userId));
 
         return null;

@@ -33,16 +33,17 @@ final readonly class CreateUserByAdminCommandHandler implements CommandHandlerIn
 
     public function handle(CreateUserByAdminCommand $command): UserItem
     {
-        return $this->transactional->transactional(function () use ($command): UserItem {
-            $userId = $this->repository->nextIdentity();
-            $username = Username::fromString($command->username);
-            $email = EmailAddress::fromString($command->email);
+        $userId = $this->repository->nextIdentity();
+        $username = Username::fromString($command->username);
+        $email = EmailAddress::fromString($command->email);
+        $hashedPassword = $this->passwordHasher->hash($command->plainPassword);
+        $roles = RoleSet::fromArray($command->roles);
+        $status = UserStatus::fromInt($command->status);
+        $firstname = $command->firstname ? Firstname::fromString($command->firstname) : null;
+        $lastname = $command->lastname ? Lastname::fromString($command->lastname) : null;
 
+        $user = $this->transactional->transactional(function () use ($userId, $username, $email, $hashedPassword, $roles, $status, $firstname, $lastname): User {
             $this->uniquenessChecker->ensureEmailAndUsernameAvailable($email, $username);
-
-            $hashedPassword = $this->passwordHasher->hash($command->plainPassword);
-            $roles = RoleSet::fromArray($command->roles);
-            $status = UserStatus::fromInt($command->status);
 
             $user = User::createByAdmin(
                 id: $userId,
@@ -52,14 +53,16 @@ final readonly class CreateUserByAdminCommandHandler implements CommandHandlerIn
                 roles: $roles,
                 status: $status,
                 now: $this->clock->now(),
-                firstname: $command->firstname ? Firstname::fromString($command->firstname) : null,
-                lastname: $command->lastname ? Lastname::fromString($command->lastname) : null,
+                firstname: $firstname,
+                lastname: $lastname,
                 preferences: new Preferences(),
             );
 
             $this->repository->save($user);
 
-            return UserItem::fromUser($user);
+            return $user;
         });
+
+        return UserItem::fromUser($user);
     }
 }

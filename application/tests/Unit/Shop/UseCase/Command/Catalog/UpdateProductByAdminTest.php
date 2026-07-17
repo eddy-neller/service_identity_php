@@ -78,12 +78,12 @@ final class UpdateProductByAdminTest extends TestCase
         $slug = Slug::fromString('new-title');
 
         $command = new UpdateProductByAdminCommand(
-            productId: $productId,
+            productId: $productId->toString(),
             title: 'New title',
             subtitle: 'New subtitle',
             description: 'New description',
             price: 24.99,
-            categoryId: $newCategoryId,
+            categoryId: $newCategoryId->toString(),
         );
 
         $this->productRepository->expects($this->once())
@@ -163,7 +163,7 @@ final class UpdateProductByAdminTest extends TestCase
         $category = $this->createCategory($categoryId, 'Category', 'category');
 
         $command = new UpdateProductByAdminCommand(
-            productId: $productId,
+            productId: $productId->toString(),
             title: null,
             subtitle: null,
             description: 'New description',
@@ -215,7 +215,7 @@ final class UpdateProductByAdminTest extends TestCase
         $category = $this->createCategory($categoryId, 'Category', 'category');
 
         $command = new UpdateProductByAdminCommand(
-            productId: $productId,
+            productId: $productId->toString(),
             title: null,
             subtitle: 'Updated subtitle',
             description: null,
@@ -268,12 +268,12 @@ final class UpdateProductByAdminTest extends TestCase
         $newCategory = $this->createCategory($newCategoryId, 'New category', 'new-category');
 
         $command = new UpdateProductByAdminCommand(
-            productId: $productId,
+            productId: $productId->toString(),
             title: null,
             subtitle: null,
             description: null,
             price: null,
-            categoryId: $newCategoryId,
+            categoryId: $newCategoryId->toString(),
         );
 
         $this->productRepository->expects($this->once())
@@ -326,14 +326,15 @@ final class UpdateProductByAdminTest extends TestCase
             ->method('findById');
         $this->clock->expects($this->never())
             ->method('now');
-        $this->transactional->expects($this->never())
-            ->method('transactional');
+        $this->transactional->expects($this->once())
+            ->method('transactional')
+            ->willReturnCallback(static fn (callable $callback) => $callback());
         $this->slugGenerator->expects($this->never())
             ->method('generate');
 
         $productId = ProductId::fromString(self::PRODUCT_ID);
         $command = new UpdateProductByAdminCommand(
-            productId: $productId,
+            productId: $productId->toString(),
             title: null,
             subtitle: null,
             description: null,
@@ -365,12 +366,12 @@ final class UpdateProductByAdminTest extends TestCase
         $oldCategory = $this->createCategory($oldCategoryId, 'Old category', 'old-category');
 
         $command = new UpdateProductByAdminCommand(
-            productId: $productId,
+            productId: $productId->toString(),
             title: null,
             subtitle: null,
             description: null,
             price: null,
-            categoryId: $newCategoryId,
+            categoryId: $newCategoryId->toString(),
         );
 
         $this->productRepository->expects($this->once())
@@ -419,7 +420,7 @@ final class UpdateProductByAdminTest extends TestCase
         $product = $this->createProduct($productId, $categoryId);
 
         $command = new UpdateProductByAdminCommand(
-            productId: $productId,
+            productId: $productId->toString(),
             title: 'New title',
             subtitle: null,
             description: null,
@@ -479,7 +480,7 @@ final class UpdateProductByAdminTest extends TestCase
         );
 
         $command = new UpdateProductByAdminCommand(
-            productId: $productId,
+            productId: $productId->toString(),
             title: 'New title',
             subtitle: null,
             description: null,
@@ -501,8 +502,10 @@ final class UpdateProductByAdminTest extends TestCase
             ->with(ProductTitle::fromString('New title'))
             ->willReturn($otherProduct);
 
-        $this->slugGenerator->expects($this->never())
-            ->method('generate');
+        $this->slugGenerator->expects($this->once())
+            ->method('generate')
+            ->with('New title')
+            ->willReturn(Slug::fromString('new-title'));
 
         $this->productRepository->expects($this->never())
             ->method('save');
@@ -533,7 +536,7 @@ final class UpdateProductByAdminTest extends TestCase
         $category = $this->createCategory($categoryId, 'Category', 'category');
 
         $command = new UpdateProductByAdminCommand(
-            productId: $productId,
+            productId: $productId->toString(),
             title: 'New title',
             subtitle: null,
             description: null,

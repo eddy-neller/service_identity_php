@@ -8,6 +8,7 @@ use App\Domain\Shop\Catalog\ValueObject\ProductId;
 use App\Domain\Shop\Ordering\Exception\CartQuantityExceededException;
 use App\Domain\Shop\Ordering\Model\CartLine;
 use App\Domain\Shop\Ordering\ValueObject\CartLineId;
+use App\Domain\Shop\Ordering\ValueObject\CartLineQuantity;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 
@@ -16,9 +17,9 @@ final class CartLineTest extends TestCase
     public function testQuantityCanBeChangedWithinBounds(): void
     {
         $line = $this->createLine(1);
-        $line->setQuantity(99);
+        $line->setQuantity(CartLineQuantity::fromInt(99));
 
-        self::assertSame(99, $line->getQuantity());
+        self::assertSame(99, $line->getQuantity()->toInt());
     }
 
     #[DataProvider('invalidQuantities')]
@@ -41,7 +42,7 @@ final class CartLineTest extends TestCase
         return CartLine::create(
             CartLineId::fromString('550e8400-e29b-41d4-a716-446655440000'),
             ProductId::fromString('550e8400-e29b-41d4-a716-446655440001'),
-            $quantity,
+            CartLineQuantity::fromInt($quantity),
         );
     }
 }

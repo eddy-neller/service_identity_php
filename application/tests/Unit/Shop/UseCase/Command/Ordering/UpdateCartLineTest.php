@@ -16,10 +16,12 @@ use App\Application\Shop\UseCase\Command\Ordering\UpdateCartLine\UpdateCartLineC
 use App\Domain\Shop\Catalog\ValueObject\ProductId;
 use App\Domain\Shop\Customer\ValueObject\CustomerId;
 use App\Domain\Shop\Ordering\Exception\CartLineNotFoundException;
+use App\Domain\Shop\Ordering\Exception\CartQuantityExceededException;
 use App\Domain\Shop\Ordering\Model\Cart;
 use App\Domain\Shop\Ordering\Model\CartLine;
 use App\Domain\Shop\Ordering\ValueObject\CartId;
 use App\Domain\Shop\Ordering\ValueObject\CartLineId;
+use App\Domain\Shop\Ordering\ValueObject\CartLineQuantity;
 use DateTimeImmutable;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
@@ -65,7 +67,7 @@ final class UpdateCartLineTest extends TestCase
     public function testHandleThrowsWhenNoCartExists(): void
     {
         $customerId = CustomerId::fromString(self::CUSTOMER_ID);
-        $command = new UpdateCartLineCommand($customerId, ProductId::fromString(self::PRODUCT_ID), 3);
+        $command = new UpdateCartLineCommand($customerId->toString(), self::PRODUCT_ID, 3);
 
         $this->repository->expects($this->once())
             ->method('findByOwnerForUpdate')
@@ -83,13 +85,28 @@ final class UpdateCartLineTest extends TestCase
         $this->handler->handle($command);
     }
 
+    public function testHandleRejectsInvalidQuantityBeforeTransaction(): void
+    {
+        $command = new UpdateCartLineCommand(self::CUSTOMER_ID, self::PRODUCT_ID, 100);
+
+        $this->repository->expects($this->never())->method('findByOwnerForUpdate');
+        $this->productRepository->expects($this->never())->method('findByIds');
+        $this->clock->expects($this->never())->method('now');
+        $this->transactional->expects($this->never())->method('transactional');
+
+        $this->expectException(CartQuantityExceededException::class);
+        $this->expectExceptionMessage('Cart line quantity change must be between 0 and 99.');
+
+        $this->handler->handle($command);
+    }
+
     public function testHandleUpdatesLineQuantity(): void
     {
         $now = new DateTimeImmutable('2025-01-01 10:00:00');
         $customerId = CustomerId::fromString(self::CUSTOMER_ID);
         $productId = ProductId::fromString(self::PRODUCT_ID);
         $cart = $this->cartWithLine($customerId, $productId);
-        $command = new UpdateCartLineCommand($customerId, $productId, 5);
+        $command = new UpdateCartLineCommand($customerId->toString(), $productId->toString(), 5);
 
         $this->repository->expects($this->once())
             ->method('findByOwnerForUpdate')
@@ -106,7 +123,7 @@ final class UpdateCartLineTest extends TestCase
 
                 return 1 === count($lines)
                     && $lines[0]->getProductId()->equals($productId)
-                    && 5 === $lines[0]->getQuantity()
+                    && 5 === $lines[0]->getQuantity()->toInt()
                     && $saved->getUpdatedAt() === $now;
             }));
 
@@ -124,7 +141,7 @@ final class UpdateCartLineTest extends TestCase
         $customerId = CustomerId::fromString(self::CUSTOMER_ID);
         $productId = ProductId::fromString(self::PRODUCT_ID);
         $cart = $this->cartWithLine($customerId, $productId);
-        $command = new UpdateCartLineCommand($customerId, $productId, 0);
+        $command = new UpdateCartLineCommand($customerId->toString(), $productId->toString(), 0);
 
         $this->repository->expects($this->once())
             ->method('findByOwnerForUpdate')
@@ -153,7 +170,7 @@ final class UpdateCartLineTest extends TestCase
         return Cart::reconstitute(
             CartId::fromString(self::CART_ID),
             $customerId,
-            [CartLine::create(CartLineId::fromString(self::CART_LINE_ID), $productId, 2)],
+            [CartLine::create(CartLineId::fromString(self::CART_LINE_ID), $productId, CartLineQuantity::fromInt(2))],
             new DateTimeImmutable('2025-01-01 09:00:00'),
             new DateTimeImmutable('2025-01-01 09:00:00'),
         );

@@ -56,16 +56,15 @@ final class UserPatchProcessorTest extends KernelTestCase
     {
         $input = $this->createValidUserPatchInput();
         $userId = Uuid::uuid4()->toString();
-        $userIdVO = UserId::fromString($userId);
         $uriVariables = ['id' => $userId];
         $domainUser = $this->createDomainUser();
         $output = UserItem::fromUser($domainUser);
 
         $this->commandBus->expects($this->once())
             ->method('dispatch')
-            ->willReturnCallback(function ($command) use ($userIdVO, $input, $output): UserItem {
+            ->willReturnCallback(function ($command) use ($userId, $input, $output): UserItem {
                 $this->assertInstanceOf(UpdateUserByAdminCommand::class, $command);
-                $this->assertTrue($command->userId->equals($userIdVO));
+                $this->assertSame($userId, $command->userId);
                 $this->assertSame($input->email, $command->email);
                 $this->assertSame($input->username, $command->username);
                 $this->assertSame($input->roles, $command->roles);

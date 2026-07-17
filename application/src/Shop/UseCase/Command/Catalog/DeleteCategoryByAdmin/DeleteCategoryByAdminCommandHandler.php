@@ -9,6 +9,7 @@ use App\Application\Shared\Port\ClockInterface;
 use App\Application\Shared\Port\TransactionalInterface;
 use App\Application\Shop\Port\CategoryRepositoryInterface;
 use App\Domain\Shop\Catalog\Exception\CategoryNotFoundException;
+use App\Domain\Shop\Catalog\ValueObject\CategoryId;
 
 final readonly class DeleteCategoryByAdminCommandHandler implements CommandHandlerInterface
 {
@@ -21,13 +22,15 @@ final readonly class DeleteCategoryByAdminCommandHandler implements CommandHandl
 
     public function handle(DeleteCategoryByAdminCommand $command): void
     {
-        $category = $this->repository->findById($command->categoryId);
+        $categoryId = CategoryId::fromString($command->categoryId);
 
-        if (null === $category) {
-            throw new CategoryNotFoundException();
-        }
+        $this->transactional->transactional(function () use ($categoryId): void {
+            $category = $this->repository->findById($categoryId);
 
-        $this->transactional->transactional(function () use ($category): void {
+            if (null === $category) {
+                throw new CategoryNotFoundException();
+            }
+
             $category->delete($this->clock->now());
 
             $this->repository->delete($category);

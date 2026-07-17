@@ -14,7 +14,6 @@ use App\Application\Shop\UseCase\Query\Customer\DisplayMyCustomer\DisplayMyCusto
 use App\Domain\Shop\Customer\Model\Address as DomainAddress;
 use App\Domain\Shop\Customer\ValueObject\AddressId;
 use App\Domain\Shop\Customer\ValueObject\CustomerId;
-use App\Domain\Shop\Customer\ValueObject\UserAccountId;
 use App\Presentation\Shared\State\PresentationErrorCode;
 use App\Presentation\Shop\ApiResource\Customer\AddressResource;
 use App\Presentation\Shop\Dto\Customer\Address\AddressPatchInput;
@@ -81,7 +80,7 @@ final class AddressPatchProcessorTest extends TestCase
             ->method('dispatch')
             ->willReturnCallback(function ($query) use ($customerOutput): CurrentCustomerItem {
                 $this->assertInstanceOf(DisplayMyCustomerQuery::class, $query);
-                $this->assertTrue($query->userAccountId->equals(UserAccountId::fromString('550e8400-e29b-41d4-a716-446655440500')));
+                $this->assertSame('550e8400-e29b-41d4-a716-446655440500', $query->userAccountId);
 
                 return $customerOutput;
             });
@@ -90,8 +89,8 @@ final class AddressPatchProcessorTest extends TestCase
             ->method('dispatch')
             ->willReturnCallback(function ($command) use ($input, $customerId, $output): AddressItem {
                 $this->assertInstanceOf(UpdateAddressCommand::class, $command);
-                $this->assertTrue($command->ownerId->equals($customerId));
-                $this->assertSame('550e8400-e29b-41d4-a716-446655440502', $command->addressId->toString());
+                $this->assertSame($customerId->toString(), $command->ownerId);
+                $this->assertSame('550e8400-e29b-41d4-a716-446655440502', $command->addressId);
                 $this->assertSame($input->name, $command->label);
                 $this->assertSame($input->firstname, $command->firstname);
                 $this->assertSame($input->lastname, $command->lastname);

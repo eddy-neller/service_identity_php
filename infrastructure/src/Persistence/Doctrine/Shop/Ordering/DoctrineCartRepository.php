@@ -87,7 +87,7 @@ final readonly class DoctrineCartRepository implements CartRepositoryInterface
             $lineEntity = $existing[$id] ?? new DoctrineCartLine();
             $lineEntity->setId(Uuid::fromString($id));
             $lineEntity->setProduct($this->em->getReference(DoctrineProduct::class, $line->getProductId()->toString()));
-            $lineEntity->setQuantity($line->getQuantity());
+            $lineEntity->setQuantity($line->getQuantity()->toInt());
             $entity->addLine($lineEntity);
         }
 

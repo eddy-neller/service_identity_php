@@ -49,7 +49,7 @@ final class CategoryGetProviderTest extends TestCase
             ->method('dispatch')
             ->willReturnCallback(function ($query) use ($categoryId, $output): CategoryItem {
                 $this->assertInstanceOf(DisplayCategoryQuery::class, $query);
-                $this->assertSame($categoryId, $query->categoryId->toString());
+                $this->assertSame($categoryId, $query->categoryId);
 
                 return $output;
             });

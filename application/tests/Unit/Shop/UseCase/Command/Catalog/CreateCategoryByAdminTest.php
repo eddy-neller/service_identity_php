@@ -71,7 +71,7 @@ final class CreateCategoryByAdminTest extends TestCase
         $command = new CreateCategoryByAdminCommand(
             title: $title,
             description: $descriptionValue,
-            parentId: $parentId,
+            parentId: $parentId->toString(),
         );
 
         $this->clock->expects($this->once())
@@ -135,7 +135,7 @@ final class CreateCategoryByAdminTest extends TestCase
         $command = new CreateCategoryByAdminCommand(
             title: 'My category',
             description: null,
-            parentId: $parentId,
+            parentId: $parentId->toString(),
         );
 
         $this->clock->expects($this->never())
@@ -238,8 +238,10 @@ final class CreateCategoryByAdminTest extends TestCase
             ->with(CategoryTitle::fromString($title))
             ->willReturn($this->createCategory(CategoryId::fromString(self::PARENT_ID), $title, 'existing-category'));
 
-        $this->slugGenerator->expects($this->never())
-            ->method('generate');
+        $this->slugGenerator->expects($this->once())
+            ->method('generate')
+            ->with($title)
+            ->willReturn(Slug::fromString('existing-category'));
 
         $this->repository->expects($this->never())
             ->method('save');

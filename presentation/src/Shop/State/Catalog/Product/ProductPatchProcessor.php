@@ -8,8 +8,6 @@ use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProcessorInterface;
 use App\Application\Shared\CQRS\Command\CommandBusInterface;
 use App\Application\Shop\UseCase\Command\Catalog\UpdateProductByAdmin\UpdateProductByAdminCommand;
-use App\Domain\Shop\Catalog\ValueObject\CategoryId;
-use App\Domain\Shop\Catalog\ValueObject\ProductId;
 use App\Presentation\Shared\State\PresentationErrorCode;
 use App\Presentation\Shop\ApiResource\Catalog\ProductResource;
 use App\Presentation\Shop\Dto\Catalog\Product\ProductPatchInput;
@@ -30,17 +28,19 @@ final readonly class ProductPatchProcessor implements ProcessorInterface
             throw new LogicException(PresentationErrorCode::INVALID_INPUT->value);
         }
 
-        if (!isset($uriVariables['id']) || !is_string($uriVariables['id'])) {
+        $productId = $uriVariables['id'] ?? null;
+
+        if (!is_string($productId) || '' === $productId) {
             throw new LogicException(PresentationErrorCode::INVALID_INPUT->value);
         }
 
         $categoryId = null;
         if (null !== $data->category) {
-            $categoryId = CategoryId::fromString($data->category->id);
+            $categoryId = $data->category->id;
         }
 
         $command = new UpdateProductByAdminCommand(
-            productId: ProductId::fromString($uriVariables['id']),
+            productId: $productId,
             title: $data->title,
             subtitle: $data->subtitle,
             description: $data->description,
