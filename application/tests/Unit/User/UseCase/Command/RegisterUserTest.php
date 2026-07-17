@@ -142,8 +142,9 @@ final class RegisterUserTest extends TestCase
             ->method('nextIdentity')
             ->willReturn($userId);
 
-        $this->clock->expects($this->never())
-            ->method('now');
+        $this->clock->expects($this->once())
+            ->method('now')
+            ->willReturn(new DateTimeImmutable('2024-01-01 12:00:00'));
 
         $this->uniquenessChecker->expects($this->once())
             ->method('ensureEmailAndUsernameAvailable')
@@ -190,8 +191,9 @@ final class RegisterUserTest extends TestCase
             ->method('nextIdentity')
             ->willReturn($userId);
 
-        $this->clock->expects($this->never())
-            ->method('now');
+        $this->clock->expects($this->once())
+            ->method('now')
+            ->willReturn(new DateTimeImmutable('2024-01-01 12:00:00'));
 
         $this->uniquenessChecker->expects($this->once())
             ->method('ensureEmailAndUsernameAvailable')

@@ -37,31 +37,27 @@ final readonly class RegisterUserCommandHandler implements CommandHandlerInterfa
 
     public function handle(RegisterUserCommand $command): UserItem
     {
-        $userId = $this->repository->nextIdentity();
         $username = Username::fromString($command->username);
         $email = EmailAddress::fromString($command->email);
         $preferences = Preferences::fromArray($command->preferences ?? []);
         $hashedPassword = HashedPassword::fromString($this->passwordHasher->hash($command->plainPassword));
+
+        $now = $this->clock->now();
+        $user = User::register(
+            id: $this->repository->nextIdentity(),
+            username: $username,
+            email: $email,
+            password: $hashedPassword,
+            preferences: $preferences,
+            now: $now,
+        );
         $token = $this->tokenProvider->generateRandomToken();
-        $activationInterval = $this->createInterval($this->config->getString('register_token_ttl', 'P2D'));
+        $expiredAt = $now->add($this->createInterval($this->config->getString('register_token_ttl', 'P2D')));
 
-        $user = $this->transactional->transactional(function () use ($userId, $username, $email, $preferences, $hashedPassword, $token, $activationInterval): User {
+        $user->requestActivation($token, $expiredAt, $now);
+
+        $user = $this->transactional->transactional(function () use ($user, $username, $email): User {
             $this->uniquenessChecker->ensureEmailAndUsernameAvailable($email, $username);
-
-            $now = $this->clock->now();
-
-            $user = User::register(
-                id: $userId,
-                username: $username,
-                email: $email,
-                password: $hashedPassword,
-                preferences: $preferences,
-                now: $now,
-            );
-
-            $expiresAt = $now->add($activationInterval);
-
-            $user->requestActivation($token, $expiresAt, $now);
 
             $this->repository->save($user);
 

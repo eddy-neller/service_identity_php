@@ -37,11 +37,12 @@ final readonly class UpdatePasswordCommandHandler implements CommandHandlerInter
                 throw new UserNotFoundException();
             }
 
-            if (!$this->passwordHasher->verify($user->getPassword()->toString(), $command->currentPassword)) {
+            $currentPasswordHash = $user->getPassword()->toString();
+            if (!$this->passwordHasher->verify($currentPasswordHash, $command->currentPassword)) {
                 throw new InvalidCurrentPasswordException();
             }
 
-            if ($this->passwordHasher->verify($user->getPassword()->toString(), $command->newPassword)) {
+            if ($this->passwordHasher->verify($currentPasswordHash, $command->newPassword)) {
                 throw new SamePasswordException();
             }
 

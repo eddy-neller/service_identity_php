@@ -59,7 +59,7 @@ final class UpdateAvatarTest extends TestCase
         $file->method('isValid')->willReturn(true);
         $file->method('getClientOriginalName')->willReturn($avatarFileName);
 
-        $command = new UpdateAvatarCommand($userId, $file);
+        $command = new UpdateAvatarCommand($userId->toString(), $file);
 
         $this->repository->expects($this->once())
             ->method('findById')
@@ -99,7 +99,7 @@ final class UpdateAvatarTest extends TestCase
         $file->method('isValid')->willReturn(true);
         $file->method('getClientOriginalName')->willReturn('avatar.jpg');
 
-        $command = new UpdateAvatarCommand($userId, $file);
+        $command = new UpdateAvatarCommand($userId->toString(), $file);
 
         $this->repository->expects($this->once())
             ->method('findById')
@@ -112,8 +112,9 @@ final class UpdateAvatarTest extends TestCase
         $this->avatarUploader->expects($this->never())
             ->method('upload');
 
-        $this->transactional->expects($this->never())
-            ->method('transactional');
+        $this->transactional->expects($this->once())
+            ->method('transactional')
+            ->willReturnCallback(static fn (callable $callback) => $callback());
 
         $this->expectException(UserNotFoundException::class);
         $this->expectExceptionMessage('User not found.');
@@ -127,7 +128,7 @@ final class UpdateAvatarTest extends TestCase
         $file = $this->createStub(FileInterface::class);
         $file->method('isValid')->willReturn(false);
 
-        $command = new UpdateAvatarCommand($userId, $file);
+        $command = new UpdateAvatarCommand($userId->toString(), $file);
 
         $this->repository->expects($this->never())
             ->method('findById');

@@ -34,7 +34,6 @@ final readonly class CreateUserByAdminCommandHandler implements CommandHandlerIn
 
     public function handle(CreateUserByAdminCommand $command): UserItem
     {
-        $userId = $this->repository->nextIdentity();
         $username = Username::fromString($command->username);
         $email = EmailAddress::fromString($command->email);
         $hashedPassword = HashedPassword::fromString($this->passwordHasher->hash($command->plainPassword));
@@ -43,21 +42,21 @@ final readonly class CreateUserByAdminCommandHandler implements CommandHandlerIn
         $firstname = $command->firstname ? Firstname::fromString($command->firstname) : null;
         $lastname = $command->lastname ? Lastname::fromString($command->lastname) : null;
 
-        $user = $this->transactional->transactional(function () use ($userId, $username, $email, $hashedPassword, $roles, $status, $firstname, $lastname): User {
-            $this->uniquenessChecker->ensureEmailAndUsernameAvailable($email, $username);
+        $user = User::createByAdmin(
+            id: $this->repository->nextIdentity(),
+            username: $username,
+            email: $email,
+            password: $hashedPassword,
+            roles: $roles,
+            status: $status,
+            now: $this->clock->now(),
+            firstname: $firstname,
+            lastname: $lastname,
+            preferences: new Preferences(),
+        );
 
-            $user = User::createByAdmin(
-                id: $userId,
-                username: $username,
-                email: $email,
-                password: $hashedPassword,
-                roles: $roles,
-                status: $status,
-                now: $this->clock->now(),
-                firstname: $firstname,
-                lastname: $lastname,
-                preferences: new Preferences(),
-            );
+        $user = $this->transactional->transactional(function () use ($user, $username, $email): User {
+            $this->uniquenessChecker->ensureEmailAndUsernameAvailable($email, $username);
 
             $this->repository->save($user);
 

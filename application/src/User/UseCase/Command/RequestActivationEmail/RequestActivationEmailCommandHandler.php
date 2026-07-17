@@ -30,19 +30,17 @@ final readonly class RequestActivationEmailCommandHandler implements CommandHand
     {
         $email = EmailAddress::fromString($command->email);
         $token = $this->tokenProvider->generateRandomToken();
-        $activationInterval = $this->createInterval($this->config->getString('register_token_ttl', 'P2D'));
+        $now = $this->clock->now();
+        $expiredAt = $now->add($this->createInterval($this->config->getString('register_token_ttl', 'P2D')));
 
-        $this->transactional->transactional(function () use ($email, $token, $activationInterval): void {
+        $this->transactional->transactional(function () use ($email, $token, $expiredAt, $now): void {
             $user = $this->repository->findByEmail($email);
 
             if (null === $user) {
                 return;
             }
 
-            $now = $this->clock->now();
-            $expiresAt = $now->add($activationInterval);
-
-            $user->requestActivation($token, $expiresAt, $now);
+            $user->requestActivation($token, $expiredAt, $now);
 
             $this->repository->save($user);
         });

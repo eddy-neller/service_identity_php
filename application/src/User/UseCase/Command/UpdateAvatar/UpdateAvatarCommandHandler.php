@@ -26,23 +26,22 @@ final readonly class UpdateAvatarCommandHandler implements CommandHandlerInterfa
 
     public function handle(UpdateAvatarCommand $command): UserItem
     {
+        $userId = UserId::fromString($command->userId);
+
         if (!$command->avatarFile->isValid()) {
             throw new UserDomainException('Fichier avatar invalide.');
         }
 
-        // On garde un lookup Domain ici pour appliquer l'update métier + save (events),
-        // même si l'uploader récupère une référence Doctrine pour l'upload Vich.
-        $user = $this->repository->findById(UserId::fromString($command->userId));
+        return $this->transactional->transactional(function () use ($userId, $command): UserItem {
+            $user = $this->repository->findById($userId);
 
-        if (null === $user) {
-            throw new UserNotFoundException();
-        }
+            if (null === $user) {
+                throw new UserNotFoundException();
+            }
 
-        return $this->transactional->transactional(function () use ($user, $command): UserItem {
-            $avatar = $this->avatarUploader->upload($command->userId, $command->avatarFile);
+            $avatar = $this->avatarUploader->upload($userId, $command->avatarFile);
 
-            $now = $this->clock->now();
-            $user->updateAvatar($avatar, $now);
+            $user->updateAvatar($avatar, $this->clock->now());
 
             $this->repository->save($user);
 
