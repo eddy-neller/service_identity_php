@@ -16,6 +16,7 @@ use App\Domain\User\Model\User;
 use App\Domain\User\ValueObject\EmailAddress;
 use App\Domain\User\ValueObject\Firstname;
 use App\Domain\User\ValueObject\Lastname;
+use App\Domain\User\ValueObject\Security\HashedPassword;
 use App\Domain\User\ValueObject\Security\RoleSet;
 use App\Domain\User\ValueObject\Security\UserStatus;
 use App\Domain\User\ValueObject\UserId;
@@ -42,7 +43,7 @@ final readonly class UpdateUserByAdminCommandHandler implements CommandHandlerIn
         $roles = $command->roles ? RoleSet::fromArray($command->roles) : null;
         $status = $command->status ? UserStatus::fromInt($command->status) : null;
         $hashedPassword = null !== $command->plainPassword && '' !== trim($command->plainPassword)
-            ? $this->passwordHasher->hash($command->plainPassword)
+            ? HashedPassword::fromString($this->passwordHasher->hash($command->plainPassword))
             : null;
 
         $user = $this->transactional->transactional(function () use ($userId, $email, $username, $firstname, $lastname, $roles, $status, $hashedPassword): User {

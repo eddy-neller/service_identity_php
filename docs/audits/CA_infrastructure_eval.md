@@ -257,7 +257,7 @@ final class UserMapper
             id: UserId::fromString($entity->getId()->toString()),
             username: new Username($entity->getUsername()),
             email: new EmailAddress($entity->getEmail()),
-            password: new HashedPassword($entity->getPassword()),
+            password: HashedPassword::fromString($entity->getPassword()),
             // ... autres propriétés ...
             createdAt: $entity->getCreatedAt(),     // ✅ Timestamp préservé
             updatedAt: $entity->getUpdatedAt(),     // ✅ Timestamp préservé

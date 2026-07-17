@@ -104,7 +104,7 @@ Lancer la suite correspondante **avant chaque livraison** si le périmètre est 
 | `domain/Shop` | `domain.shop` |
 | `domain/User` | `domain.user` |
 | `domain/SharedKernel` | `domain.shared` |
-| `application/**/User/UseCase` | `appli.usecase.user` |
+| `application/**/User/UseCase` | `appli.user` |
 | `application/**/Shop/UseCase` + `Shared` | `appli.shop` |
 | `infrastructure/**/Persistence` | `infra.persist` |
 | `infrastructure/**/Command/User` | `infra.command.user` |

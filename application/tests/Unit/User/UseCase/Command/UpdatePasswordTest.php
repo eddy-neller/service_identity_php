@@ -55,7 +55,7 @@ final class UpdatePasswordTest extends TestCase
         $user = $this->createUser($userId);
         $currentPassword = 'current-password';
         $newPassword = 'new-password';
-        $hashedPassword = new HashedPassword('hashed-new-password');
+        $hashedPassword = 'hashed-new-password';
         $command = new UpdatePasswordCommand($userId->toString(), $currentPassword, $newPassword);
 
         $this->repository->expects($this->once())
@@ -66,8 +66,8 @@ final class UpdatePasswordTest extends TestCase
         $this->passwordHasher->expects($this->exactly(2))
             ->method('verify')
             ->willReturnMap([
-                [$user->getPassword(), $currentPassword, true],
-                [$user->getPassword(), $newPassword, false],
+                [$user->getPassword()->toString(), $currentPassword, true],
+                [$user->getPassword()->toString(), $newPassword, false],
             ]);
 
         $this->passwordHasher->expects($this->once())
@@ -90,6 +90,8 @@ final class UpdatePasswordTest extends TestCase
             });
 
         $this->handler->handle($command);
+
+        $this->assertSame($hashedPassword, $user->getPassword()->toString());
     }
 
     public function testHandleThrowsExceptionWhenUserNotFound(): void
@@ -103,7 +105,7 @@ final class UpdatePasswordTest extends TestCase
         $this->passwordHasher->expects($this->once())
             ->method('hash')
             ->with('new-password')
-            ->willReturn(new HashedPassword('hashed-new-password'));
+            ->willReturn('hashed-new-password');
 
         $this->clock->expects($this->never())
             ->method('now');
@@ -136,13 +138,13 @@ final class UpdatePasswordTest extends TestCase
 
         $this->passwordHasher->expects($this->once())
             ->method('verify')
-            ->with($user->getPassword(), 'wrong-password')
+            ->with($user->getPassword()->toString(), 'wrong-password')
             ->willReturn(false);
 
         $this->passwordHasher->expects($this->once())
             ->method('hash')
             ->with('new-password')
-            ->willReturn(new HashedPassword('hashed-new-password'));
+            ->willReturn('hashed-new-password');
 
         $this->clock->expects($this->never())
             ->method('now');
@@ -174,14 +176,14 @@ final class UpdatePasswordTest extends TestCase
         $this->passwordHasher->expects($this->exactly(2))
             ->method('verify')
             ->willReturnMap([
-                [$user->getPassword(), $password, true],
-                [$user->getPassword(), $password, true],
+                [$user->getPassword()->toString(), $password, true],
+                [$user->getPassword()->toString(), $password, true],
             ]);
 
         $this->passwordHasher->expects($this->once())
             ->method('hash')
             ->with($password)
-            ->willReturn(new HashedPassword('hashed-new-password'));
+            ->willReturn('hashed-new-password');
 
         $this->clock->expects($this->never())
             ->method('now');
@@ -205,7 +207,7 @@ final class UpdatePasswordTest extends TestCase
             id: $userId,
             username: Username::fromString('testuser'),
             email: EmailAddress::fromString('test@example.com'),
-            password: new HashedPassword('hash'),
+            password: HashedPassword::fromString('hash'),
             preferences: Preferences::fromArray(['lang' => 'fr']),
             now: new DateTimeImmutable(),
         );

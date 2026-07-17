@@ -17,7 +17,6 @@ use App\Domain\User\Exception\Uniqueness\EmailAlreadyUsedException;
 use App\Domain\User\Exception\Uniqueness\UsernameAlreadyUsedException;
 use App\Domain\User\Model\User;
 use App\Domain\User\ValueObject\EmailAddress;
-use App\Domain\User\ValueObject\Security\HashedPassword;
 use App\Domain\User\ValueObject\UserId;
 use App\Domain\User\ValueObject\Username;
 use DateTimeImmutable;
@@ -69,7 +68,7 @@ final class RegisterUserTest extends TestCase
         $email = 'test@example.com';
         $username = 'testuser';
         $plainPassword = 'password123';
-        $hashedPassword = new HashedPassword('hashed-password');
+        $hashedPassword = 'hashed-password';
         $token = 'activation-token';
 
         $command = new RegisterUserCommand(
@@ -107,10 +106,11 @@ final class RegisterUserTest extends TestCase
 
         $this->repository->expects($this->once())
             ->method('save')
-            ->with($this->callback(function (User $user) use ($userId, $username, $email) {
+            ->with($this->callback(function (User $user) use ($userId, $username, $email, $hashedPassword) {
                 return $user->getId()->equals($userId)
                     && $user->getUsername()->toString() === $username
-                    && $user->getEmail()->equals(EmailAddress::fromString($email));
+                    && $user->getEmail()->equals(EmailAddress::fromString($email))
+                    && $user->getPassword()->toString() === $hashedPassword;
             }));
 
         $this->transactional->expects($this->once())
@@ -152,7 +152,7 @@ final class RegisterUserTest extends TestCase
 
         $this->passwordHasher->expects($this->once())
             ->method('hash')
-            ->willReturn(new HashedPassword('hashed-password'));
+            ->willReturn('hashed-password');
 
         $this->tokenProvider->expects($this->once())
             ->method('generateRandomToken')
@@ -200,7 +200,7 @@ final class RegisterUserTest extends TestCase
 
         $this->passwordHasher->expects($this->once())
             ->method('hash')
-            ->willReturn(new HashedPassword('hashed-password'));
+            ->willReturn('hashed-password');
 
         $this->tokenProvider->expects($this->once())
             ->method('generateRandomToken')

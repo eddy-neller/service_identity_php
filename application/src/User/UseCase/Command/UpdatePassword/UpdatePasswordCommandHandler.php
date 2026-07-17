@@ -12,6 +12,7 @@ use App\Application\User\Port\UserRepositoryInterface;
 use App\Domain\User\Exception\Security\InvalidCurrentPasswordException;
 use App\Domain\User\Exception\Security\SamePasswordException;
 use App\Domain\User\Exception\UserNotFoundException;
+use App\Domain\User\ValueObject\Security\HashedPassword;
 use App\Domain\User\ValueObject\UserId;
 
 final readonly class UpdatePasswordCommandHandler implements CommandHandlerInterface
@@ -27,7 +28,7 @@ final readonly class UpdatePasswordCommandHandler implements CommandHandlerInter
     public function handle(UpdatePasswordCommand $command): void
     {
         $userId = UserId::fromString($command->userId);
-        $hashedPassword = $this->passwordHasher->hash($command->newPassword);
+        $hashedPassword = HashedPassword::fromString($this->passwordHasher->hash($command->newPassword));
 
         $this->transactional->transactional(function () use ($userId, $hashedPassword, $command): void {
             $user = $this->repository->findById($userId);
@@ -36,11 +37,11 @@ final readonly class UpdatePasswordCommandHandler implements CommandHandlerInter
                 throw new UserNotFoundException();
             }
 
-            if (!$this->passwordHasher->verify($user->getPassword(), $command->currentPassword)) {
+            if (!$this->passwordHasher->verify($user->getPassword()->toString(), $command->currentPassword)) {
                 throw new InvalidCurrentPasswordException();
             }
 
-            if ($this->passwordHasher->verify($user->getPassword(), $command->newPassword)) {
+            if ($this->passwordHasher->verify($user->getPassword()->toString(), $command->newPassword)) {
                 throw new SamePasswordException();
             }
 

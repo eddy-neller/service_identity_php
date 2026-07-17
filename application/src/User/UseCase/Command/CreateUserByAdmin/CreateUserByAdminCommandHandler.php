@@ -16,6 +16,7 @@ use App\Domain\User\ValueObject\EmailAddress;
 use App\Domain\User\ValueObject\Firstname;
 use App\Domain\User\ValueObject\Lastname;
 use App\Domain\User\ValueObject\Preferences;
+use App\Domain\User\ValueObject\Security\HashedPassword;
 use App\Domain\User\ValueObject\Security\RoleSet;
 use App\Domain\User\ValueObject\Security\UserStatus;
 use App\Domain\User\ValueObject\Username;
@@ -36,7 +37,7 @@ final readonly class CreateUserByAdminCommandHandler implements CommandHandlerIn
         $userId = $this->repository->nextIdentity();
         $username = Username::fromString($command->username);
         $email = EmailAddress::fromString($command->email);
-        $hashedPassword = $this->passwordHasher->hash($command->plainPassword);
+        $hashedPassword = HashedPassword::fromString($this->passwordHasher->hash($command->plainPassword));
         $roles = RoleSet::fromArray($command->roles);
         $status = UserStatus::fromInt($command->status);
         $firstname = $command->firstname ? Firstname::fromString($command->firstname) : null;

@@ -111,7 +111,7 @@ final class RegisterWrongPasswordAttemptTest extends TestCase
             id: UserId::fromString('550e8400-e29b-41d4-a716-446655440000'),
             username: Username::fromString('john'),
             email: EmailAddress::fromString('john@example.com'),
-            password: new HashedPassword('hash'),
+            password: HashedPassword::fromString('hash'),
             preferences: Preferences::fromArray(['lang' => 'fr']),
             now: new DateTimeImmutable(),
         );

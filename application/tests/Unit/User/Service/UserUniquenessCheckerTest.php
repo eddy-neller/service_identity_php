@@ -212,7 +212,7 @@ final class UserUniquenessCheckerTest extends TestCase
             $id ?? UserId::fromString('00000000-0000-4000-8000-000000000000'),
             Username::fromString($username),
             EmailAddress::fromString($email),
-            new HashedPassword('hashed-password'),
+            HashedPassword::fromString('hashed-password'),
             new Preferences(),
             new DateTimeImmutable('2024-01-01T00:00:00Z'),
         );

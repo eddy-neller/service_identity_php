@@ -67,7 +67,7 @@ final class UpdateUserByAdminTest extends TestCase
         $newStatusInt = UserStatus::BLOCKED;
         $newStatus = UserStatus::fromInt($newStatusInt);
         $newPassword = 'newpassword';
-        $hashedPassword = new HashedPassword('hashed-new-password');
+        $hashedPassword = 'hashed-new-password';
 
         $command = new UpdateUserByAdminCommand(
             userId: $userId->toString(),
@@ -125,6 +125,7 @@ final class UpdateUserByAdminTest extends TestCase
         $this->assertTrue($user->getEmail()->equals(EmailAddress::fromString($newEmail)));
         $this->assertSame($newFirstname, $user->getFirstname()?->toString());
         $this->assertSame($newLastname, $user->getLastname()?->toString());
+        $this->assertSame($hashedPassword, $user->getPassword()->toString());
         $this->assertSame($newRoles, $user->getRoles()->all());
         $this->assertSame($newStatus->toInt(), $user->getStatus()->toInt());
     }
@@ -304,7 +305,7 @@ final class UpdateUserByAdminTest extends TestCase
             id: $userId,
             username: Username::fromString('testuser'),
             email: EmailAddress::fromString('test@example.com'),
-            password: new HashedPassword('hash'),
+            password: HashedPassword::fromString('hash'),
             preferences: Preferences::fromArray(['lang' => 'fr']),
             now: new DateTimeImmutable(),
         );

@@ -4,48 +4,62 @@ declare(strict_types=1);
 
 namespace App\Domain\User\Tests\Unit\ValueObject\Security;
 
+use App\Domain\User\Exception\Security\InvalidPasswordHashException;
 use App\Domain\User\ValueObject\Security\HashedPassword;
-use InvalidArgumentException;
 use PHPUnit\Framework\TestCase;
 
 final class HashedPasswordTest extends TestCase
 {
-    public function testConstructCreatesValidHashedPassword(): void
+    public function testFromStringCreatesValidHashedPassword(): void
     {
         $hash = '$2y$10$abcdefghijklmnopqrstuv';
-        $password = new HashedPassword($hash);
+        $password = HashedPassword::fromString($hash);
 
         $this->assertSame($hash, $password->toString());
     }
 
-    public function testConstructThrowsExceptionWhenEmpty(): void
+    public function testFromStringThrowsWhenEmpty(): void
     {
-        $this->expectException(InvalidArgumentException::class);
-        $this->expectExceptionMessage('Le mot de passe haché ne peut pas être vide.');
+        $this->expectException(InvalidPasswordHashException::class);
+        $this->expectExceptionMessage('Password hash cannot be empty.');
 
-        new HashedPassword('');
+        HashedPassword::fromString('');
     }
 
-    public function testConstructThrowsExceptionWhenOnlyWhitespace(): void
+    public function testFromStringThrowsWhenOnlyWhitespace(): void
     {
-        $this->expectException(InvalidArgumentException::class);
-        $this->expectExceptionMessage('Le mot de passe haché ne peut pas être vide.');
+        $this->expectException(InvalidPasswordHashException::class);
+        $this->expectExceptionMessage('Password hash cannot be empty.');
 
-        new HashedPassword('   ');
+        HashedPassword::fromString('   ');
     }
 
-    public function testConstructAcceptsAnyNonEmptyString(): void
+    public function testFromStringAcceptsAnyNonEmptyString(): void
     {
-        $password = new HashedPassword('simple-hash');
+        $password = HashedPassword::fromString('simple-hash');
 
         $this->assertSame('simple-hash', $password->toString());
     }
 
-    public function testToStringReturnsValue(): void
+    public function testEqualsReturnsTrueForSameValue(): void
+    {
+        $this->assertTrue(
+            HashedPassword::fromString('hash')->equals(HashedPassword::fromString('hash')),
+        );
+    }
+
+    public function testEqualsReturnsFalseForDifferentValue(): void
+    {
+        $this->assertFalse(
+            HashedPassword::fromString('first-hash')->equals(HashedPassword::fromString('second-hash')),
+        );
+    }
+
+    public function testToStringCastsToString(): void
     {
         $hash = '$2y$10$abcdefghijklmnopqrstuv';
-        $password = new HashedPassword($hash);
+        $password = HashedPassword::fromString($hash);
 
-        $this->assertSame($hash, $password->toString());
+        $this->assertSame($hash, (string) $password);
     }
 }

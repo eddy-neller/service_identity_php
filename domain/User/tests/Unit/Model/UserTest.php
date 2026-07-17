@@ -53,7 +53,7 @@ final class UserTest extends TestCase
             id: $userId,
             username: Username::fromString('john'),
             email: EmailAddress::fromString('john@example.com'),
-            password: new HashedPassword('hash'),
+            password: HashedPassword::fromString('hash'),
             preferences: Preferences::fromArray(['lang' => 'fr']),
             now: new DateTimeImmutable(),
         );
@@ -70,7 +70,7 @@ final class UserTest extends TestCase
             id: UserId::fromString('550e8400-e29b-41d4-a716-446655440000'),
             username: Username::fromString('admin'),
             email: EmailAddress::fromString('admin@example.com'),
-            password: new HashedPassword('hash'),
+            password: HashedPassword::fromString('hash'),
             roles: RoleSet::fromArray($roles),
             status: UserStatus::fromInt(UserStatus::ACTIVE),
             now: new DateTimeImmutable(),
@@ -160,7 +160,7 @@ final class UserTest extends TestCase
             id: $userId,
             username: Username::fromString('john'),
             email: $email,
-            password: new HashedPassword('hash'),
+            password: HashedPassword::fromString('hash'),
             preferences: Preferences::fromArray(['lang' => 'fr']),
             now: new DateTimeImmutable(),
         );
@@ -234,7 +234,7 @@ final class UserTest extends TestCase
         $user->requestPasswordReset($token, $expiresAt, new DateTimeImmutable());
         $user->clearDomainEvents();
 
-        $newPassword = new HashedPassword('new-hashed-password');
+        $newPassword = HashedPassword::fromString('new-hashed-password');
         $now = new DateTimeImmutable();
 
         $user->completePasswordReset($token, $newPassword, $now);
@@ -257,7 +257,7 @@ final class UserTest extends TestCase
     {
         $user = $this->createActiveUser();
         $oldPassword = $user->getPassword();
-        $newPassword = new HashedPassword('new-password');
+        $newPassword = HashedPassword::fromString('new-password');
         $now = new DateTimeImmutable();
 
         $user->changePassword($newPassword, $now);
@@ -319,7 +319,7 @@ final class UserTest extends TestCase
             id: $userId,
             username: Username::fromString('john'),
             email: EmailAddress::fromString('john@example.com'),
-            password: new HashedPassword('hash'),
+            password: HashedPassword::fromString('hash'),
             preferences: Preferences::fromArray(['lang' => 'fr']),
             now: new DateTimeImmutable(),
         );
@@ -381,7 +381,7 @@ final class UserTest extends TestCase
             id: $userId,
             username: Username::fromString('john'),
             email: EmailAddress::fromString('john@example.com'),
-            password: new HashedPassword('hash'),
+            password: HashedPassword::fromString('hash'),
             preferences: Preferences::fromArray(['lang' => 'fr']),
             now: new DateTimeImmutable(),
         );
@@ -389,7 +389,7 @@ final class UserTest extends TestCase
             id: $userId,
             username: Username::fromString('jane'),
             email: EmailAddress::fromString('jane@example.com'),
-            password: new HashedPassword('hash'),
+            password: HashedPassword::fromString('hash'),
             preferences: Preferences::fromArray(['lang' => 'en']),
             now: new DateTimeImmutable(),
         );
@@ -403,7 +403,7 @@ final class UserTest extends TestCase
             id: UserId::fromString('550e8400-e29b-41d4-a716-446655440000'),
             username: Username::fromString('john'),
             email: EmailAddress::fromString('john@example.com'),
-            password: new HashedPassword('hash'),
+            password: HashedPassword::fromString('hash'),
             preferences: Preferences::fromArray(['lang' => 'fr']),
             now: new DateTimeImmutable(),
         );
@@ -411,7 +411,7 @@ final class UserTest extends TestCase
             id: UserId::fromString('550e8400-e29b-41d4-a716-446655440001'),
             username: Username::fromString('jane'),
             email: EmailAddress::fromString('jane@example.com'),
-            password: new HashedPassword('hash'),
+            password: HashedPassword::fromString('hash'),
             preferences: Preferences::fromArray(['lang' => 'en']),
             now: new DateTimeImmutable(),
         );
@@ -425,7 +425,7 @@ final class UserTest extends TestCase
             id: UserId::fromString('550e8400-e29b-41d4-a716-446655440000'),
             username: Username::fromString('john'),
             email: EmailAddress::fromString('john@example.com'),
-            password: new HashedPassword('hash'),
+            password: HashedPassword::fromString('hash'),
             preferences: Preferences::fromArray(['lang' => 'fr']),
             now: new DateTimeImmutable(),
         );

@@ -15,7 +15,6 @@ use App\Domain\User\Exception\Uniqueness\EmailAlreadyUsedException;
 use App\Domain\User\Exception\Uniqueness\UsernameAlreadyUsedException;
 use App\Domain\User\Model\User;
 use App\Domain\User\ValueObject\EmailAddress;
-use App\Domain\User\ValueObject\Security\HashedPassword;
 use App\Domain\User\ValueObject\Security\UserStatus;
 use App\Domain\User\ValueObject\UserId;
 use App\Domain\User\ValueObject\Username;
@@ -62,7 +61,7 @@ final class CreateUserByAdminTest extends TestCase
         $firstname = 'Admin';
         $lastname = 'User';
         $plainPassword = 'password123';
-        $hashedPassword = new HashedPassword('hashed-password');
+        $hashedPassword = 'hashed-password';
         $roles = ['ROLE_ADMIN', 'ROLE_USER'];
         $statusInt = UserStatus::ACTIVE;
         $status = UserStatus::fromInt($statusInt);
@@ -96,12 +95,13 @@ final class CreateUserByAdminTest extends TestCase
 
         $this->repository->expects($this->once())
             ->method('save')
-            ->with($this->callback(function (User $user) use ($userId, $username, $email, $firstname, $lastname, $status, $roles) {
+            ->with($this->callback(function (User $user) use ($userId, $username, $email, $firstname, $lastname, $hashedPassword, $status, $roles) {
                 return $user->getId()->equals($userId)
                     && $user->getUsername()->toString() === $username
                     && $user->getEmail()->equals(EmailAddress::fromString($email))
                     && $user->getFirstname()?->toString() === $firstname
                     && $user->getLastname()?->toString() === $lastname
+                    && $user->getPassword()->toString() === $hashedPassword
                     && $user->getStatus()->toInt() === $status->toInt()
                     && $user->getRoles()->all() === array_values(array_unique($roles));
             }));
@@ -151,7 +151,7 @@ final class CreateUserByAdminTest extends TestCase
 
         $this->passwordHasher->expects($this->once())
             ->method('hash')
-            ->willReturn(new HashedPassword('hashed-password'));
+            ->willReturn('hashed-password');
 
         $this->expectException(EmailAlreadyUsedException::class);
 
@@ -192,7 +192,7 @@ final class CreateUserByAdminTest extends TestCase
 
         $this->passwordHasher->expects($this->once())
             ->method('hash')
-            ->willReturn(new HashedPassword('hashed-password'));
+            ->willReturn('hashed-password');
 
         $this->expectException(UsernameAlreadyUsedException::class);
 

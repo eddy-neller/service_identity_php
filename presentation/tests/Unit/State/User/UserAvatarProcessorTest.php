@@ -209,7 +209,7 @@ final class UserAvatarProcessorTest extends KernelTestCase
             id: UserId::fromString(Uuid::uuid4()->toString()),
             username: Username::fromString('testuser'),
             email: EmailAddress::fromString('test@example.com'),
-            password: new HashedPassword('hash'),
+            password: HashedPassword::fromString('hash'),
             preferences: Preferences::fromArray(['lang' => 'fr']),
             now: new DateTimeImmutable(),
         );

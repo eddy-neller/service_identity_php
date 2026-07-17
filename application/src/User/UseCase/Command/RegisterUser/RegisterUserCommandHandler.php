@@ -17,6 +17,7 @@ use App\Application\User\ReadModel\UserItem;
 use App\Domain\User\Model\User;
 use App\Domain\User\ValueObject\EmailAddress;
 use App\Domain\User\ValueObject\Preferences;
+use App\Domain\User\ValueObject\Security\HashedPassword;
 use App\Domain\User\ValueObject\Username;
 
 final readonly class RegisterUserCommandHandler implements CommandHandlerInterface
@@ -40,7 +41,7 @@ final readonly class RegisterUserCommandHandler implements CommandHandlerInterfa
         $username = Username::fromString($command->username);
         $email = EmailAddress::fromString($command->email);
         $preferences = Preferences::fromArray($command->preferences ?? []);
-        $hashedPassword = $this->passwordHasher->hash($command->plainPassword);
+        $hashedPassword = HashedPassword::fromString($this->passwordHasher->hash($command->plainPassword));
         $token = $this->tokenProvider->generateRandomToken();
         $activationInterval = $this->createInterval($this->config->getString('register_token_ttl', 'P2D'));
 

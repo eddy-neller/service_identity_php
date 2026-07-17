@@ -60,7 +60,7 @@ final class ConfirmPasswordResetTest extends TestCase
         $email = 'test@example.com';
         $rawToken = 'raw-token';
         $newPassword = 'new-password';
-        $hashedPassword = new HashedPassword('hashed-new-password');
+        $hashedPassword = 'hashed-new-password';
         $command = new ConfirmPasswordResetCommand($token, $newPassword);
         $user = $this->createUserWithResetToken($email, $rawToken, time() + 3600);
 
@@ -94,6 +94,8 @@ final class ConfirmPasswordResetTest extends TestCase
             ->willReturn(new DateTimeImmutable());
 
         $this->handler->handle($command);
+
+        $this->assertSame($hashedPassword, $user->getPassword()->toString());
     }
 
     public function testHandleThrowsExceptionWhenUserNotFound(): void
@@ -106,7 +108,7 @@ final class ConfirmPasswordResetTest extends TestCase
 
         $this->passwordHasher->expects($this->once())
             ->method('hash')
-            ->willReturn(new HashedPassword('hashed-new-password'));
+            ->willReturn('hashed-new-password');
 
         $this->clock->expects($this->never())
             ->method('now');
@@ -153,7 +155,7 @@ final class ConfirmPasswordResetTest extends TestCase
         $this->passwordHasher->expects($this->once())
             ->method('hash')
             ->with($newPassword)
-            ->willReturn(new HashedPassword('hashed-new-password'));
+            ->willReturn('hashed-new-password');
 
         $this->transactional->expects($this->once())
             ->method('transactional')
@@ -193,7 +195,7 @@ final class ConfirmPasswordResetTest extends TestCase
         $this->passwordHasher->expects($this->once())
             ->method('hash')
             ->with($newPassword)
-            ->willReturn(new HashedPassword('hashed-new-password'));
+            ->willReturn('hashed-new-password');
 
         $this->transactional->expects($this->once())
             ->method('transactional')
@@ -217,7 +219,7 @@ final class ConfirmPasswordResetTest extends TestCase
             id: UserId::fromString('550e8400-e29b-41d4-a716-446655440000'),
             username: Username::fromString('testuser'),
             email: EmailAddress::fromString($email),
-            password: new HashedPassword('hash'),
+            password: HashedPassword::fromString('hash'),
             preferences: Preferences::fromArray(['lang' => 'fr']),
             now: new DateTimeImmutable(),
         );

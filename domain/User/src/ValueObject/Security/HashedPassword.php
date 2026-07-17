@@ -4,19 +4,35 @@ declare(strict_types=1);
 
 namespace App\Domain\User\ValueObject\Security;
 
-use InvalidArgumentException;
+use App\Domain\User\Exception\Security\InvalidPasswordHashException;
 
 final readonly class HashedPassword
 {
-    public function __construct(
+    private function __construct(
         private string $value,
     ) {
+    }
+
+    public static function fromString(string $value): self
+    {
         if ('' === trim($value)) {
-            throw new InvalidArgumentException('Le mot de passe haché ne peut pas être vide.');
+            throw new InvalidPasswordHashException();
         }
+
+        return new self($value);
+    }
+
+    public function equals(self $other): bool
+    {
+        return $this->value === $other->value;
     }
 
     public function toString(): string
+    {
+        return $this->value;
+    }
+
+    public function __toString(): string
     {
         return $this->value;
     }

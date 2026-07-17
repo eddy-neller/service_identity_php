@@ -193,7 +193,7 @@ final class CreateCustomerTest extends TestCase
             id: $userId,
             username: Username::fromString('testuser'),
             email: EmailAddress::fromString('test@example.com'),
-            password: new HashedPassword('hash'),
+            password: HashedPassword::fromString('hash'),
             preferences: Preferences::fromArray(['lang' => 'fr']),
             now: new DateTimeImmutable(),
         );

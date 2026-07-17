@@ -26,7 +26,7 @@ final class UserMapper
             id: UserId::fromString($entity->getId()->toString()),
             username: Username::fromString($entity->getUsername()),
             email: EmailAddress::fromString($entity->getEmail()),
-            password: new HashedPassword($entity->getPassword()),
+            password: HashedPassword::fromString($entity->getPassword()),
             roles: RoleSet::fromArray($entity->getRoles()),
             status: UserStatus::fromInt($entity->getStatus()),
             security: $entity->getSecurity(),

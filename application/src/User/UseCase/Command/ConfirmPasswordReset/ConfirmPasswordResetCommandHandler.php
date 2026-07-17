@@ -12,6 +12,7 @@ use App\Application\User\Port\TokenProviderInterface;
 use App\Application\User\Port\UserRepositoryInterface;
 use App\Domain\User\Exception\UserDomainException;
 use App\Domain\User\ValueObject\EmailAddress;
+use App\Domain\User\ValueObject\Security\HashedPassword;
 
 final readonly class ConfirmPasswordResetCommandHandler implements CommandHandlerInterface
 {
@@ -29,7 +30,7 @@ final readonly class ConfirmPasswordResetCommandHandler implements CommandHandle
         $split = $this->tokenProvider->split($command->token);
         $email = EmailAddress::fromString($split['email'] ?? '');
         $rawToken = $split['token'] ?? '';
-        $hashed = $this->passwordHasher->hash($command->newPassword);
+        $hashed = HashedPassword::fromString($this->passwordHasher->hash($command->newPassword));
 
         $this->transactional->transactional(function () use ($email, $hashed, $rawToken): void {
             $user = $this->repository->findByResetPasswordToken($rawToken);
