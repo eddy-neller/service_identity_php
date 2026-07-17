@@ -16,7 +16,6 @@ use Doctrine\ORM\EntityManagerInterface;
 use Lexik\Bundle\JWTAuthenticationBundle\Event\AuthenticationFailureEvent;
 use Lexik\Bundle\JWTAuthenticationBundle\Event\AuthenticationSuccessEvent;
 use Lexik\Bundle\JWTAuthenticationBundle\Event\JWTCreatedEvent;
-use Lexik\Bundle\JWTAuthenticationBundle\Event\JWTDecodedEvent;
 use Lexik\Bundle\JWTAuthenticationBundle\Event\JWTExpiredEvent;
 use Lexik\Bundle\JWTAuthenticationBundle\Event\JWTInvalidEvent;
 use Lexik\Bundle\JWTAuthenticationBundle\Event\JWTNotFoundEvent;
@@ -25,13 +24,11 @@ use Lexik\Bundle\JWTAuthenticationBundle\Response\JWTAuthenticationFailureRespon
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\HttpFoundation\Response;
 
 final readonly class JWTSubscriber implements EventSubscriberInterface
 {
     public function __construct(
-        private RequestStack $requestStack,
         private EntityManagerInterface $em,
         private CommandBusInterface $commandBus,
         private UserRepositoryInterface $userRepository,
@@ -44,7 +41,6 @@ final readonly class JWTSubscriber implements EventSubscriberInterface
             Events::AUTHENTICATION_SUCCESS => ['onAuthenticationSuccessResponse'],
             Events::AUTHENTICATION_FAILURE => ['onAuthenticationFailureResponse'],
             Events::JWT_CREATED => ['onJWTCreated'],
-            Events::JWT_DECODED => ['onJWTDecoded'],
             Events::JWT_INVALID => ['onJWTInvalid'],
             Events::JWT_NOT_FOUND => ['onJWTNotFound'],
             Events::JWT_EXPIRED => ['onJWTExpired'],
@@ -111,25 +107,7 @@ final readonly class JWTSubscriber implements EventSubscriberInterface
         $payload['id'] = $user->getId();
         $payload['username'] = $user->getUsername();
 
-        $request = $this->requestStack->getCurrentRequest();
-        if ($request instanceof Request) {
-            $payload['ip'] = $request->getClientIp();
-        }
-
         $event->setData($payload);
-    }
-
-    public function onJWTDecoded(JWTDecodedEvent $event): void
-    {
-        $payload = $event->getPayload();
-
-        $request = $this->requestStack->getCurrentRequest();
-
-        if ($request instanceof Request) {
-            if (!isset($payload['ip']) || $payload['ip'] !== $request->getClientIp()) {
-                $event->markAsInvalid();
-            }
-        }
     }
 
     public function onJWTInvalid(JWTInvalidEvent $event): void
