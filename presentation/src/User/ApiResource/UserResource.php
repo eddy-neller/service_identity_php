@@ -110,7 +110,7 @@ use Symfony\Component\Serializer\Attribute\Groups;
                                     'avatarFile' => [
                                         'type' => 'string',
                                         'format' => 'binary',
-                                        'description' => 'My avatar image',
+                                        'description' => 'Avatar image (JPEG, PNG or WebP; max 2 MiB, max 512×512px)',
                                     ],
                                 ],
                             ],
@@ -139,7 +139,7 @@ use Symfony\Component\Serializer\Attribute\Groups;
                                     'avatarFile' => [
                                         'type' => 'string',
                                         'format' => 'binary',
-                                        'description' => 'Avatar image (max 2MB, max 512×512px)',
+                                        'description' => 'Avatar image (JPEG, PNG or WebP; max 2 MiB, max 512×512px)',
                                     ],
                                 ],
                             ],

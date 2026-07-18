@@ -19,17 +19,14 @@ use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Gedmo\Mapping\Annotation as Gedmo;
 use Ramsey\Uuid\UuidInterface;
-use Symfony\Component\HttpFoundation\File\File;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
-use Vich\UploaderBundle\Mapping\Attribute as Vich;
 
 #[ORM\Table(name: '`user`')]
 #[ORM\Index(name: 'UserUsernameIdx', columns: ['username'])]
 #[ORM\Index(name: 'UserEmailIdx', columns: ['email'])]
 #[ORM\Index(name: 'UserCreatedAtIdx', columns: ['created_at'])]
 #[ORM\Entity(repositoryClass: UserRepository::class)]
-#[Vich\Uploadable]
 class User implements UserInterface, PasswordAuthenticatedUserInterface
 {
     #[ORM\Id]
@@ -71,11 +68,6 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
     #[ORM\Column(type: Types::STRING, length: 255, nullable: true)]
     private ?string $avatarName = null;
-
-    #[Vich\UploadableField(mapping: 'user_avatar_image', fileNameProperty: 'avatarName')]
-    public ?File $avatarFile = null;
-
-    public ?string $avatarUrl = null;
 
     #[ORM\Column(type: Types::DATETIME_IMMUTABLE)]
     private DateTimeImmutable $lastVisit;
@@ -272,35 +264,6 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         $this->preferences = $preferences;
 
         return $this;
-    }
-
-    public function getAvatarUrl(): ?string
-    {
-        return $this->avatarUrl;
-    }
-
-    public function setAvatarUrl(?string $avatarUrl): self
-    {
-        $this->avatarUrl = $avatarUrl;
-
-        return $this;
-    }
-
-    public function setAvatarFile(?File $avatarFile = null): self
-    {
-        $this->avatarFile = $avatarFile;
-
-        if (null !== $avatarFile) {
-            // It is required that at least one field changes if you are using doctrine otherwise the event listeners won't be called and the file is lost.
-            $this->updatedAt = new DateTimeImmutable();
-        }
-
-        return $this;
-    }
-
-    public function getAvatarFile(): ?File
-    {
-        return $this->avatarFile;
     }
 
     public function setAvatarName(?string $avatarName): self

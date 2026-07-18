@@ -70,7 +70,6 @@ Les commandes d'écriture utilisent `TransactionalInterface`, avec des transacti
 - **Avant la transaction** : préparer tout ce qui est pur et indépendant de l'état persistant : validation de format, parsing d'identifiants, construction de Value Objects, calculs, génération locale de slug/UUID et validation de fichier. Une erreur à ce stade ne doit pas ouvrir de transaction.
 - **Dans la transaction** : toute lecture de repository qui conditionne une écriture, puis les mutations et persistance associées. Cela couvre les contrôles d'existence, d'appartenance, de stock, de parenté, d'unicité applicative et les relectures nécessaires au résultat de la commande.
 - **Hors transaction** : les lectures réellement indépendantes de l'écriture (par exemple un use case de lecture) et tout I/O externe ou potentiellement long (HTTP, stockage de fichier, queue). Ces effets doivent être coordonnés par un mécanisme adapté, pas maintenus sous verrou DB.
-- Un contrôle d'unicité par repository réduit la fenêtre de concurrence mais ne remplace jamais une contrainte `UNIQUE` en base. La violation de cette contrainte doit être traduite en exception applicative/domaine appropriée.
 
 Les tests de commande reflètent ce découpage : une erreur de validation pure attend que `transactional()` ne soit pas appelé ; un échec issu d'une lecture DB décisionnelle attend l'exécution du callback transactionnel.
 

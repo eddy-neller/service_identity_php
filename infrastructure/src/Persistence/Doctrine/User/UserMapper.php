@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Infrastructure\Persistence\Doctrine\User;
 
 use App\Domain\User\Model\User as DomainUser;
-use App\Domain\User\ValueObject\Avatar;
 use App\Domain\User\ValueObject\EmailAddress;
 use App\Domain\User\ValueObject\Firstname;
 use App\Domain\User\ValueObject\Lastname;
@@ -33,9 +32,7 @@ final class UserMapper
             activeEmail: $entity->getActiveEmail(),
             resetPassword: $entity->getResetPassword(),
             preferences: Preferences::fromArray($entity->getPreferences() ?? []),
-            avatar: new Avatar(
-                fileName: $entity->getAvatarName(),
-            ),
+            avatarName: $entity->getAvatarName(),
             lastVisit: $entity->getLastVisit(),
             loginCount: $entity->getNbLogin(),
             createdAt: $entity->getCreatedAt(),
@@ -61,7 +58,7 @@ final class UserMapper
         $entity->setActiveEmail($user->getActiveEmail());
         $entity->setResetPassword($user->getResetPassword());
         $entity->setPreferences($user->getPreferences()->toArray());
-        $entity->setAvatarName($user->getAvatar()->fileName());
+        $entity->setAvatarName($user->getAvatarName());
         $entity->setLastVisit($user->getLastVisit());
         $entity->setNbLogin($user->getLoginCount());
         $entity->setCreatedAt($user->getCreatedAt());

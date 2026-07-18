@@ -11,7 +11,6 @@ use App\Application\User\ReadModel\UserItem;
 use App\Application\User\ReadModel\UserList;
 use App\Application\User\UseCase\Query\DisplayListUser\DisplayListUserQuery;
 use App\Domain\User\Model\User as DomainUser;
-use App\Domain\User\ValueObject\Avatar;
 use App\Domain\User\ValueObject\EmailAddress;
 use App\Domain\User\ValueObject\Preferences;
 use App\Domain\User\ValueObject\Security\HashedPassword;
@@ -53,8 +52,8 @@ final class UserAdminCollectionProviderTest extends TestCase
         $avatarUrlResolver
             ->expects($this->once())
             ->method('resolve')
-            ->with(self::callback(static function (Avatar $avatar): bool {
-                return 'avatar.jpg' === $avatar->fileName();
+            ->with(self::callback(static function (?string $avatarName): bool {
+                return 'avatar.jpg' === $avatarName;
             }))
             ->willReturn('/uploads/images/user/avatar/avatar.jpg');
 
@@ -107,8 +106,8 @@ final class UserAdminCollectionProviderTest extends TestCase
         $avatarUrlResolver
             ->expects($this->once())
             ->method('resolve')
-            ->with(self::callback(static function (Avatar $avatar): bool {
-                return 'avatar.jpg' === $avatar->fileName();
+            ->with(self::callback(static function (?string $avatarName): bool {
+                return 'avatar.jpg' === $avatarName;
             }))
             ->willReturn('/uploads/images/user/avatar/avatar.jpg');
 
@@ -139,7 +138,7 @@ final class UserAdminCollectionProviderTest extends TestCase
             now: $now,
         );
 
-        $user->updateAvatar(new Avatar('avatar.jpg'), $now);
+        $user->updateAvatar('avatar.jpg', $now);
 
         return $user;
     }

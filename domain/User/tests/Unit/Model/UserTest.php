@@ -20,7 +20,6 @@ use App\Domain\User\Exception\RateLimit\ActivationLimitReachedException;
 use App\Domain\User\Exception\RateLimit\ResetPasswordLimitReachedException;
 use App\Domain\User\Exception\Security\UserLockedException;
 use App\Domain\User\Model\User;
-use App\Domain\User\ValueObject\Avatar;
 use App\Domain\User\ValueObject\EmailAddress;
 use App\Domain\User\ValueObject\Preferences;
 use App\Domain\User\ValueObject\Security\ActiveEmail;
@@ -278,12 +277,12 @@ final class UserTest extends TestCase
     public function testUpdateAvatarRecordsEvent(): void
     {
         $user = $this->createActiveUser();
-        $avatar = (new Avatar())->withFile('avatar.png');
+        $avatar = 'avatar.png';
         $now = new DateTimeImmutable();
 
         $user->updateAvatar($avatar, $now);
 
-        $this->assertSame($avatar, $user->getAvatar());
+        $this->assertSame($avatar, $user->getAvatarName());
 
         $events = $user->getDomainEvents();
         $this->assertCount(1, $events);

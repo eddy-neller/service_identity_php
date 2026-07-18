@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Application\User\ReadModel;
 
 use App\Domain\User\Model\User;
-use App\Domain\User\ValueObject\Avatar;
 use DateTimeImmutable;
 
 final readonly class UserItem
@@ -21,7 +20,7 @@ final readonly class UserItem
         public string $email,
         public array $roles,
         public int $status,
-        public Avatar $avatar,
+        public ?string $avatar,
         public DateTimeImmutable $lastVisit,
         public int $loginCount,
         public DateTimeImmutable $createdAt,
@@ -39,7 +38,7 @@ final readonly class UserItem
             email: $user->getEmail()->toString(),
             roles: $user->getRoles()->all(),
             status: $user->getStatus()->toInt(),
-            avatar: $user->getAvatar(),
+            avatar: $user->getAvatarName(),
             lastVisit: $user->getLastVisit(),
             loginCount: $user->getLoginCount(),
             createdAt: $user->getCreatedAt(),

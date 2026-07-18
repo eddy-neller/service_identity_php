@@ -7,18 +7,20 @@ namespace App\Application\User\UseCase\Command\UpdateAvatar;
 use App\Application\Shared\CQRS\Command\CommandHandlerInterface;
 use App\Application\Shared\Port\ClockInterface;
 use App\Application\Shared\Port\TransactionalInterface;
-use App\Application\User\Port\AvatarUploaderInterface;
+use App\Application\User\Port\AvatarImageValidatorInterface;
+use App\Application\User\Port\AvatarStorageInterface;
 use App\Application\User\Port\UserRepositoryInterface;
 use App\Application\User\ReadModel\UserItem;
-use App\Domain\User\Exception\UserDomainException;
 use App\Domain\User\Exception\UserNotFoundException;
 use App\Domain\User\ValueObject\UserId;
+use Exception;
 
 final readonly class UpdateAvatarCommandHandler implements CommandHandlerInterface
 {
     public function __construct(
         private UserRepositoryInterface $repository,
-        private AvatarUploaderInterface $avatarUploader,
+        private AvatarImageValidatorInterface $avatarImageValidator,
+        private AvatarStorageInterface $avatarStorage,
         private ClockInterface $clock,
         private TransactionalInterface $transactional,
     ) {
@@ -27,25 +29,41 @@ final readonly class UpdateAvatarCommandHandler implements CommandHandlerInterfa
     public function handle(UpdateAvatarCommand $command): UserItem
     {
         $userId = UserId::fromString($command->userId);
+        $this->avatarImageValidator->validate($command->avatarFile);
 
-        if (!$command->avatarFile->isValid()) {
-            throw new UserDomainException('Fichier avatar invalide.');
+        $avatar = $this->avatarStorage->store($command->avatarFile);
+
+        try {
+            $update = $this->transactional->transactional(function () use ($userId, $avatar): array {
+                $user = $this->repository->findById($userId);
+
+                if (null === $user) {
+                    throw new UserNotFoundException();
+                }
+
+                $previousAvatarName = $user->getAvatarName();
+                $user->updateAvatar($avatar, $this->clock->now());
+
+                $this->repository->save($user);
+
+                return [
+                    'previousAvatarName' => $previousAvatarName,
+                    'userItem' => UserItem::fromUser($user),
+                ];
+            });
+        } catch (Exception $exception) {
+            $this->avatarStorage->delete($avatar);
+
+            throw $exception;
         }
 
-        return $this->transactional->transactional(function () use ($userId, $command): UserItem {
-            $user = $this->repository->findById($userId);
+        if (
+            null !== $update['previousAvatarName']
+            && $update['previousAvatarName'] !== $avatar
+        ) {
+            $this->avatarStorage->delete($update['previousAvatarName']);
+        }
 
-            if (null === $user) {
-                throw new UserNotFoundException();
-            }
-
-            $avatar = $this->avatarUploader->upload($userId, $command->avatarFile);
-
-            $user->updateAvatar($avatar, $this->clock->now());
-
-            $this->repository->save($user);
-
-            return UserItem::fromUser($user);
-        });
+        return $update['userItem'];
     }
 }

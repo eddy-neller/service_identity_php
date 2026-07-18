@@ -7,14 +7,14 @@ namespace App\Application\Tests\Unit\User\UseCase\Command;
 use App\Application\Shared\Port\ClockInterface;
 use App\Application\Shared\Port\FileInterface;
 use App\Application\Shared\Port\TransactionalInterface;
-use App\Application\User\Port\AvatarUploaderInterface;
+use App\Application\User\Port\AvatarImageValidatorInterface;
+use App\Application\User\Port\AvatarStorageInterface;
 use App\Application\User\Port\UserRepositoryInterface;
 use App\Application\User\UseCase\Command\UpdateAvatar\UpdateAvatarCommand;
 use App\Application\User\UseCase\Command\UpdateAvatar\UpdateAvatarCommandHandler;
-use App\Domain\User\Exception\UserDomainException;
+use App\Domain\User\Exception\Profile\InvalidAvatarException;
 use App\Domain\User\Exception\UserNotFoundException;
 use App\Domain\User\Model\User;
-use App\Domain\User\ValueObject\Avatar;
 use App\Domain\User\ValueObject\EmailAddress;
 use App\Domain\User\ValueObject\Preferences;
 use App\Domain\User\ValueObject\Security\HashedPassword;
@@ -28,7 +28,9 @@ final class UpdateAvatarTest extends TestCase
 {
     private UserRepositoryInterface&MockObject $repository;
 
-    private AvatarUploaderInterface&MockObject $avatarUploader;
+    private AvatarImageValidatorInterface&MockObject $avatarImageValidator;
+
+    private AvatarStorageInterface&MockObject $avatarStorage;
 
     private ClockInterface&MockObject $clock;
 
@@ -39,12 +41,14 @@ final class UpdateAvatarTest extends TestCase
     protected function setUp(): void
     {
         $this->repository = $this->createMock(UserRepositoryInterface::class);
-        $this->avatarUploader = $this->createMock(AvatarUploaderInterface::class);
+        $this->avatarImageValidator = $this->createMock(AvatarImageValidatorInterface::class);
+        $this->avatarStorage = $this->createMock(AvatarStorageInterface::class);
         $this->clock = $this->createMock(ClockInterface::class);
         $this->transactional = $this->createMock(TransactionalInterface::class);
         $this->handler = new UpdateAvatarCommandHandler(
             $this->repository,
-            $this->avatarUploader,
+            $this->avatarImageValidator,
+            $this->avatarStorage,
             $this->clock,
             $this->transactional,
         );
@@ -54,6 +58,10 @@ final class UpdateAvatarTest extends TestCase
     {
         $userId = UserId::fromString('550e8400-e29b-41d4-a716-446655440000');
         $user = $this->createUser($userId);
+        $previousAvatar = '0123456789abcdef0123456789abcdef.jpg';
+        $user->updateAvatar($previousAvatar, new DateTimeImmutable('2025-01-01 10:00:00'));
+        $user->clearDomainEvents();
+
         $avatarFileName = 'avatar.jpg';
         $file = $this->createStub(FileInterface::class);
         $file->method('isValid')->willReturn(true);
@@ -66,10 +74,18 @@ final class UpdateAvatarTest extends TestCase
             ->with($userId)
             ->willReturn($user);
 
-        $this->avatarUploader->expects($this->once())
-            ->method('upload')
-            ->with($userId, $file)
-            ->willReturn(new Avatar($avatarFileName));
+        $this->avatarImageValidator->expects($this->once())
+            ->method('validate')
+            ->with($file);
+
+        $this->avatarStorage->expects($this->once())
+            ->method('store')
+            ->with($file)
+            ->willReturn($avatarFileName);
+
+        $this->avatarStorage->expects($this->once())
+            ->method('delete')
+            ->with($previousAvatar);
 
         $this->clock->expects($this->once())
             ->method('now')
@@ -88,11 +104,11 @@ final class UpdateAvatarTest extends TestCase
         $output = $this->handler->handle($command);
 
         $this->assertSame($userId->toString(), $output->id);
-        $this->assertSame($avatarFileName, $output->avatar->fileName());
-        $this->assertSame($avatarFileName, $user->getAvatar()->fileName());
+        $this->assertSame($avatarFileName, $output->avatar);
+        $this->assertSame($avatarFileName, $user->getAvatarName());
     }
 
-    public function testHandleThrowsExceptionWhenUserNotFound(): void
+    public function testHandleDeletesStoredAvatarWhenUserIsNotFoundInTransaction(): void
     {
         $userId = UserId::fromString('550e8400-e29b-41d4-a716-446655440001');
         $file = $this->createStub(FileInterface::class);
@@ -109,8 +125,19 @@ final class UpdateAvatarTest extends TestCase
         $this->clock->expects($this->never())
             ->method('now');
 
-        $this->avatarUploader->expects($this->never())
-            ->method('upload');
+        $this->avatarImageValidator->expects($this->once())
+            ->method('validate');
+
+        $avatar = 'stored-avatar.jpg';
+
+        $this->avatarStorage->expects($this->once())
+            ->method('store')
+            ->with($file)
+            ->willReturn($avatar);
+
+        $this->avatarStorage->expects($this->once())
+            ->method('delete')
+            ->with($avatar);
 
         $this->transactional->expects($this->once())
             ->method('transactional')
@@ -126,15 +153,20 @@ final class UpdateAvatarTest extends TestCase
     {
         $userId = UserId::fromString('550e8400-e29b-41d4-a716-446655440002');
         $file = $this->createStub(FileInterface::class);
-        $file->method('isValid')->willReturn(false);
 
         $command = new UpdateAvatarCommand($userId->toString(), $file);
 
         $this->repository->expects($this->never())
-            ->method('findById');
+            ->method('findById')
+            ->with($userId);
 
-        $this->avatarUploader->expects($this->never())
-            ->method('upload');
+        $this->avatarImageValidator->expects($this->once())
+            ->method('validate')
+            ->with($file)
+            ->willThrowException(InvalidAvatarException::invalidMimeType('text/plain'));
+
+        $this->avatarStorage->expects($this->never())
+            ->method('store');
 
         $this->clock->expects($this->never())
             ->method('now');
@@ -142,8 +174,49 @@ final class UpdateAvatarTest extends TestCase
         $this->transactional->expects($this->never())
             ->method('transactional');
 
-        $this->expectException(UserDomainException::class);
-        $this->expectExceptionMessage('Fichier avatar invalide.');
+        $this->expectException(InvalidAvatarException::class);
+        $this->expectExceptionMessage('Invalid avatar file type: text/plain.');
+
+        $this->handler->handle($command);
+    }
+
+    public function testHandleDeletesStoredAvatarWhenTransactionFails(): void
+    {
+        $userId = UserId::fromString('550e8400-e29b-41d4-a716-446655440003');
+        $file = $this->createStub(FileInterface::class);
+        $file->method('isValid')->willReturn(true);
+        $command = new UpdateAvatarCommand($userId->toString(), $file);
+        $avatar = 'stored-avatar.jpg';
+
+        $this->repository->expects($this->never())
+            ->method('findById')
+            ->with($userId);
+
+        $this->avatarImageValidator->expects($this->once())
+            ->method('validate')
+            ->with($file);
+
+        $this->avatarStorage->expects($this->once())
+            ->method('store')
+            ->with($file)
+            ->willReturn($avatar);
+
+        $this->avatarStorage->expects($this->once())
+            ->method('delete')
+            ->with($avatar);
+
+        $this->transactional->expects($this->once())
+            ->method('transactional')
+            ->willThrowException(new \RuntimeException('Database failure.'));
+
+        $this->repository->expects($this->never())
+            ->method('save');
+
+        $this->clock->expects($this->never())
+            ->method('now');
+
+        $this->expectException(\RuntimeException::class);
+        $this->expectExceptionMessage('Database failure.');
 
         $this->handler->handle($command);
     }

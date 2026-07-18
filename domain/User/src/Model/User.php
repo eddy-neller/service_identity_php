@@ -21,7 +21,6 @@ use App\Domain\User\Exception\RateLimit\ActivationLimitReachedException;
 use App\Domain\User\Exception\RateLimit\ResetPasswordLimitReachedException;
 use App\Domain\User\Exception\Security\UserLockedException;
 use App\Domain\User\Exception\UserDomainException;
-use App\Domain\User\ValueObject\Avatar;
 use App\Domain\User\ValueObject\EmailAddress;
 use App\Domain\User\ValueObject\Firstname;
 use App\Domain\User\ValueObject\Lastname;
@@ -55,7 +54,7 @@ final class User
         private ActiveEmail $activeEmail,
         private ResetPassword $resetPassword,
         private Preferences $preferences,
-        private Avatar $avatar,
+        private ?string $avatarName,
         private DateTimeImmutable $lastVisit,
         private int $loginCount,
         private DateTimeImmutable $createdAt,
@@ -91,7 +90,7 @@ final class User
             activeEmail: new ActiveEmail(),
             resetPassword: new ResetPassword(),
             preferences: $preferences,
-            avatar: new Avatar(),
+            avatarName: null,
             lastVisit: $now,
             loginCount: 0,
             createdAt: $now,
@@ -132,7 +131,7 @@ final class User
             activeEmail: new ActiveEmail(),
             resetPassword: new ResetPassword(),
             preferences: $preferences ?? new Preferences(),
-            avatar: new Avatar(),
+            avatarName: null,
             lastVisit: $now,
             loginCount: 0,
             createdAt: $now,
@@ -159,7 +158,7 @@ final class User
         ActiveEmail $activeEmail,
         ResetPassword $resetPassword,
         Preferences $preferences,
-        Avatar $avatar,
+        ?string $avatarName,
         DateTimeImmutable $lastVisit,
         int $loginCount,
         DateTimeImmutable $createdAt,
@@ -180,7 +179,7 @@ final class User
             activeEmail: $activeEmail,
             resetPassword: $resetPassword,
             preferences: $preferences,
-            avatar: $avatar,
+            avatarName: $avatarName,
             lastVisit: $lastVisit,
             loginCount: $loginCount,
             createdAt: $createdAt,
@@ -312,9 +311,9 @@ final class User
         ));
     }
 
-    public function updateAvatar(Avatar $avatar, DateTimeImmutable $now): void
+    public function updateAvatar(string $avatarName, DateTimeImmutable $now): void
     {
-        $this->avatar = $avatar;
+        $this->avatarName = $avatarName;
         $this->touch($now);
 
         $this->recordEvent(new UserAvatarUpdatedEvent(
@@ -403,11 +402,6 @@ final class User
         return $this->id;
     }
 
-    public function getUsername(): Username
-    {
-        return $this->username;
-    }
-
     public function getFirstname(): ?Firstname
     {
         return $this->firstname;
@@ -416,6 +410,11 @@ final class User
     public function getLastname(): ?Lastname
     {
         return $this->lastname;
+    }
+
+    public function getUsername(): Username
+    {
+        return $this->username;
     }
 
     public function getEmail(): EmailAddress
@@ -458,9 +457,9 @@ final class User
         return $this->preferences;
     }
 
-    public function getAvatar(): Avatar
+    public function getAvatarName(): ?string
     {
-        return $this->avatar;
+        return $this->avatarName;
     }
 
     public function getLastVisit(): DateTimeImmutable

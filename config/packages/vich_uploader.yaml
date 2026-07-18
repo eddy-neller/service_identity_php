@@ -1,15 +1,6 @@
 vich_uploader:
     db_driver: orm
     mappings:
-        user_avatar_image:
-            uri_prefix:         '%app.path.images%/user/avatar'
-            upload_destination: '%kernel.project_dir%/public%app.path.images%/user/avatar'
-            inject_on_load:     false
-            delete_on_update:   true
-            delete_on_remove:   true
-            namer:
-                service: vich_uploader.namer_hash
-                options: { algorithm: 'sha256', length: 32 }
         shop_product_image:
             uri_prefix:         '%app.path.images%/shop/product'
             upload_destination: '%kernel.project_dir%/public%app.path.images%/shop/product'

@@ -37,6 +37,7 @@ api_platform:
         App\Domain\User\Exception\Security\InvalidCurrentPasswordException: 422
         App\Domain\User\Exception\Security\InvalidPasswordHashException: 422
         App\Domain\User\Exception\Security\SamePasswordException: 422
+        App\Domain\User\Exception\Profile\InvalidAvatarException: 422
         App\Domain\User\Exception\Security\UserLockedException: 423
         App\Domain\User\Exception\RateLimit\ActivationLimitReachedException: 429
         App\Domain\User\Exception\RateLimit\ResetPasswordLimitReachedException: 429

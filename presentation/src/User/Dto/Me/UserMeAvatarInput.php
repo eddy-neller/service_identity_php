@@ -15,14 +15,8 @@ final class UserMeAvatarInput
     #[Groups(['user:write'])]
     #[Assert\NotNull(message: 'Please upload an avatar.')]
     #[Assert\File(
-        maxSize: '200k',
-        mimeTypes: ['image/png', 'image/gif', 'image/jpeg', 'image/pjpeg']
-    )]
-    #[Assert\Image(
-        minWidth: 96,
-        maxWidth: 96,
-        maxHeight: 96,
-        minHeight: 96
+        maxSize: '3M',
+        mimeTypes: ['image/jpeg', 'image/png', 'image/webp']
     )]
     public ?UploadedFile $avatarFile = null;
 }

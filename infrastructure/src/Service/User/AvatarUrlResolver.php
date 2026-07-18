@@ -5,18 +5,21 @@ declare(strict_types=1);
 namespace App\Infrastructure\Service\User;
 
 use App\Application\User\Port\AvatarUrlResolverInterface;
-use App\Domain\User\ValueObject\Avatar;
+use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 
-final class AvatarUrlResolver implements AvatarUrlResolverInterface
+final readonly class AvatarUrlResolver implements AvatarUrlResolverInterface
 {
-    private const string AVATAR_BASE_URL = '/uploads/images/user/avatar';
+    public function __construct(
+        private ParameterBagInterface $parameterBag,
+    ) {
+    }
 
-    public function resolve(Avatar $avatar): ?string
+    public function resolve(?string $avatarName): ?string
     {
-        if (null === $avatar->fileName() || '' === $avatar->fileName()) {
+        if (null === $avatarName || '' === $avatarName) {
             return null;
         }
 
-        return rtrim(self::AVATAR_BASE_URL, '/') . '/' . ltrim($avatar->fileName(), '/');
+        return rtrim((string) $this->parameterBag->get('app.avatar.uploadUrl'), '/') . '/' . ltrim($avatarName, '/');
     }
 }
