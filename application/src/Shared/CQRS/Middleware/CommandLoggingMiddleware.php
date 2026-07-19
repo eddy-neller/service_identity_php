@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Application\Shared\CQRS\Middleware;
 
 use App\Application\Shared\CQRS\Command\CommandInterface;
+use Exception;
 use Psr\Log\LoggerInterface;
-use Throwable;
 
 final readonly class CommandLoggingMiddleware implements CommandMiddlewareInterface
 {
@@ -35,17 +35,17 @@ final readonly class CommandLoggingMiddleware implements CommandMiddlewareInterf
             ]);
 
             return $result;
-        } catch (Throwable $throwable) {
+        } catch (Exception $exception) {
             $duration = (microtime(true) - $startTime) * 1000;
 
             $this->logger->error('Command failed', [
                 'command' => $commandClass,
                 'duration_ms' => round($duration, 2),
-                'exception' => $throwable::class,
-                'message' => $throwable->getMessage(),
+                'exception' => $exception::class,
+                'message' => $exception->getMessage(),
             ]);
 
-            throw $throwable;
+            throw $exception;
         }
     }
 }

@@ -9,10 +9,3 @@
 
 #controllers:
 #    resource: routing.controllers
-
-login:
-    path: /api/login
-    methods: ['POST']
-
-api_token_invalidate:
-    path: /api/token/invalidate

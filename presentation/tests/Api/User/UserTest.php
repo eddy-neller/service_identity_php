@@ -8,8 +8,7 @@ use App\Domain\User\ValueObject\Security\RoleSet;
 use App\Domain\User\ValueObject\Security\UserStatus;
 use App\Infrastructure\DataFixtures\test\User\UserFixtures;
 use App\Infrastructure\Entity\User\User;
-use App\Infrastructure\Service\InfoCodes;
-use App\Infrastructure\Service\User\TokenManager;
+use App\Infrastructure\Service\Token\TokenProvider;
 use App\Presentation\Tests\Api\BaseTest;
 use Faker\Factory;
 use Generator;
@@ -21,6 +20,12 @@ use Symfony\Contracts\HttpClient\Exception\ClientExceptionInterface;
 final class UserTest extends BaseTest
 {
     protected const string URL_API_OPE = self::URL_API . 'users';
+
+    protected const string URL_LOGIN = self::URL_API . 'auth/login';
+
+    protected const string URL_REFRESH = self::URL_API . 'auth/token/refresh';
+
+    protected const string URL_LOGOUT = self::URL_API . 'auth/token/invalidate';
 
     protected const string USER_DATA = 'user_member';
 
@@ -53,11 +58,15 @@ final class UserTest extends BaseTest
             [
                 BaseTest::ASSERTION_TYPE['SERIALIZATION'] => [
                     'hasKey' => [
-                        'token',
+                        'accessToken',
+                        'refreshToken',
+                        'tokenType',
+                        'expiresIn',
                     ],
                 ],
                 BaseTest::ASSERTION_TYPE['NOT_NULL'] => [
-                    'token',
+                    'accessToken',
+                    'refreshToken',
                 ],
             ],
         ];
@@ -92,7 +101,7 @@ final class UserTest extends BaseTest
             [
                 'class' => ClientExceptionInterface::class,
                 'code' => Response::HTTP_UNAUTHORIZED,
-                'message' => 'HTTP 401 returned',
+                'message' => 'Invalid credentials.',
             ],
         ];
     }
@@ -141,18 +150,179 @@ final class UserTest extends BaseTest
             $this->assertNotNull($response);
 
             $status = $response->getStatusCode();
-            $payload = json_decode($response->getContent(false), true, 512, JSON_THROW_ON_ERROR);
-
             if ($attempt < $maxAttempts) {
                 $this->assertSame(Response::HTTP_UNAUTHORIZED, $status);
-                $this->assertSame(InfoCodes::JWT['BAD_CREDENTIALS'], $payload['message'] ?? null);
 
                 continue;
             }
 
             $this->assertSame(Response::HTTP_LOCKED, $status);
-            $this->assertSame(InfoCodes::JWT['ACCOUNT_LOCKED'], $payload['message'] ?? null);
         }
+    }
+
+    public function testRefreshTokenSuccess(): void
+    {
+        $login = $this->login(self::USER_DATA);
+
+        self::assertArrayHasKey('refreshToken', $login);
+
+        $this->testSuccess(
+            Request::METHOD_POST,
+            self::URL_REFRESH,
+            [
+                'headers' => [
+                    'Content-Type' => 'application/json',
+                ],
+                'json' => [
+                    'refreshToken' => $login['refreshToken'],
+                ],
+            ],
+            Response::HTTP_OK,
+            [
+                BaseTest::ASSERTION_TYPE['SERIALIZATION'] => [
+                    'hasKey' => [
+                        'accessToken',
+                        'refreshToken',
+                        'tokenType',
+                        'expiresIn',
+                    ],
+                ],
+                BaseTest::ASSERTION_TYPE['NOT_NULL'] => [
+                    'accessToken',
+                    'refreshToken',
+                ],
+            ],
+        );
+    }
+
+    public static function provideRefreshTokenException(): Generator
+    {
+        yield 'Empty request' => [
+            [
+                'json' => [],
+            ],
+            [
+                'class' => ClientExceptionInterface::class,
+                'code' => Response::HTTP_UNPROCESSABLE_ENTITY,
+                'message' => 'refreshToken: This value should not be blank.',
+            ],
+        ];
+        yield 'Empty string token' => [
+            [
+                'json' => [
+                    'refreshToken' => '',
+                ],
+            ],
+            [
+                'class' => ClientExceptionInterface::class,
+                'code' => Response::HTTP_UNPROCESSABLE_ENTITY,
+                'message' => 'refreshToken: This value should not be blank.',
+            ],
+        ];
+        yield 'Unknown token' => [
+            [
+                'json' => [
+                    'refreshToken' => 'unknown-refresh-token',
+                ],
+            ],
+            [
+                'class' => ClientExceptionInterface::class,
+                'code' => Response::HTTP_UNAUTHORIZED,
+                'message' => 'Invalid refresh token.',
+            ],
+        ];
+    }
+
+    #[DataProvider('provideRefreshTokenException')]
+    public function testRefreshTokenException(
+        array $options,
+        array $exception,
+    ): void {
+        $this->testException(
+            Request::METHOD_POST,
+            self::URL_REFRESH,
+            $options,
+            $exception,
+        );
+    }
+
+    public function testLogoutSuccess(): void
+    {
+        $login = $this->login(self::USER_DATA);
+
+        self::assertArrayHasKey('refreshToken', $login);
+
+        $this->testSuccess(
+            Request::METHOD_POST,
+            self::URL_LOGOUT,
+            [
+                'auth_bearer' => $login['accessToken'],
+                'headers' => [
+                    'Content-Type' => 'application/json',
+                ],
+                'json' => [
+                    'refreshToken' => $login['refreshToken'],
+                ],
+            ],
+            Response::HTTP_NO_CONTENT,
+        );
+    }
+
+    public static function provideLogoutException(): Generator
+    {
+        yield 'No role' => [
+            [
+                'json' => [],
+            ],
+            [
+                'class' => ClientExceptionInterface::class,
+                'code' => Response::HTTP_UNAUTHORIZED,
+                'message' => 'HTTP 401 returned',
+            ],
+        ];
+        yield 'Missing refresh token' => [
+            [
+                'auth_bearer' => self::PLACEHOLDERS['TOKENS']['MEMBER'],
+                'headers' => [
+                    'Content-Type' => 'application/json',
+                ],
+                'json' => [],
+            ],
+            [
+                'class' => ClientExceptionInterface::class,
+                'code' => Response::HTTP_UNPROCESSABLE_ENTITY,
+                'message' => 'refreshToken: This value should not be blank.',
+            ],
+        ];
+        yield 'Empty string refresh token' => [
+            [
+                'auth_bearer' => self::PLACEHOLDERS['TOKENS']['MEMBER'],
+                'headers' => [
+                    'Content-Type' => 'application/json',
+                ],
+                'json' => [
+                    'refreshToken' => '',
+                ],
+            ],
+            [
+                'class' => ClientExceptionInterface::class,
+                'code' => Response::HTTP_UNPROCESSABLE_ENTITY,
+                'message' => 'refreshToken: This value should not be blank.',
+            ],
+        ];
+    }
+
+    #[DataProvider('provideLogoutException')]
+    public function testLogoutException(
+        array $options,
+        array $exception,
+    ): void {
+        $this->testException(
+            Request::METHOD_POST,
+            self::URL_LOGOUT,
+            $options,
+            $exception,
+        );
     }
 
     public static function provideColUser(): Generator
@@ -456,7 +626,7 @@ preferences: This value should not be blank.',
 
     public static function provideEmailActivationValidationSuccess(): Generator
     {
-        $encoded = base64_encode(UserFixtures::ACTIVATION_EMAIL . TokenManager::TOKEN_SEPARATOR . UserFixtures::ACTIVATION_RAW_TOKEN);
+        $encoded = base64_encode(UserFixtures::ACTIVATION_EMAIL . TokenProvider::TOKEN_SEPARATOR . UserFixtures::ACTIVATION_RAW_TOKEN);
 
         yield 'Valid token' => [
             [
@@ -632,7 +802,7 @@ preferences: This value should not be blank.',
 
     public static function providePasswordResetCheckSuccess(): Generator
     {
-        $encoded = base64_encode(UserFixtures::ACTIVATION_EMAIL . TokenManager::TOKEN_SEPARATOR . UserFixtures::ACTIVATION_RAW_TOKEN);
+        $encoded = base64_encode(UserFixtures::ACTIVATION_EMAIL . TokenProvider::TOKEN_SEPARATOR . UserFixtures::ACTIVATION_RAW_TOKEN);
 
         yield 'Valid token' => [
             [
@@ -708,7 +878,7 @@ preferences: This value should not be blank.',
 
     public static function providePasswordResetConfirmSuccess(): Generator
     {
-        $encoded = base64_encode(UserFixtures::ACTIVATION_EMAIL . TokenManager::TOKEN_SEPARATOR . UserFixtures::ACTIVATION_RAW_TOKEN);
+        $encoded = base64_encode(UserFixtures::ACTIVATION_EMAIL . TokenProvider::TOKEN_SEPARATOR . UserFixtures::ACTIVATION_RAW_TOKEN);
 
         yield 'Valid token and password' => [
             [

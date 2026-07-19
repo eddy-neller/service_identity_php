@@ -55,8 +55,8 @@
         <testsuite name="infra.service.token">
             <directory>infrastructure/tests/Unit/Service/Token</directory>
         </testsuite>
-        <testsuite name="infra.service.user">
-            <directory>infrastructure/tests/Unit/Service/User</directory>
+        <testsuite name="infra.service.storage">
+            <directory>infrastructure/tests/Unit/Service/Storage</directory>
         </testsuite>
 
         <testsuite name="pres.state.sendmail">

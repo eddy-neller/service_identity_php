@@ -27,22 +27,36 @@ api_platform:
         App\Domain\Shop\Catalog\Exception\CategoryTitleAlreadyUsedException: 409
         App\Domain\Shop\Catalog\Exception\ProductNotFoundException: 404
         App\Domain\Shop\Catalog\Exception\ProductTitleAlreadyUsedException: 409
+        App\Domain\Shop\Catalog\Exception\CatalogDomainException: 400
         App\Domain\Shop\Customer\Exception\AddressLimitReachedException: 409
         App\Domain\Shop\Customer\Exception\AddressNotFoundException: 404
         App\Domain\Shop\Customer\Exception\CustomerAlreadyExistsException: 409
         App\Domain\Shop\Customer\Exception\CustomerNotFoundException: 404
+        App\Domain\Shop\Customer\Exception\CustomerDomainException: 400
         App\Domain\User\Exception\UserNotFoundException: 404
+        App\Domain\User\Exception\InvalidEmailAddressException: 422
+        App\Domain\User\Exception\InvalidFirstnameException: 422
+        App\Domain\User\Exception\InvalidLastnameException: 422
+        App\Domain\User\Exception\InvalidRoleException: 422
+        App\Domain\User\Exception\InvalidUsernameException: 422
         App\Domain\User\Exception\Uniqueness\EmailAlreadyUsedException: 409
         App\Domain\User\Exception\Uniqueness\UsernameAlreadyUsedException: 409
         App\Domain\User\Exception\Security\InvalidCurrentPasswordException: 422
         App\Domain\User\Exception\Security\InvalidPasswordHashException: 422
+        App\Domain\User\Exception\Security\InvalidRefreshTokenHashException: 422
         App\Domain\User\Exception\Security\SamePasswordException: 422
         App\Domain\User\Exception\Profile\InvalidAvatarException: 422
         App\Domain\User\Exception\Security\UserLockedException: 423
+        App\Domain\User\Exception\Security\InvalidCredentialsException: 401
+        App\Domain\User\Exception\Security\InvalidRefreshTokenException: 401
+        App\Domain\User\Exception\Security\AccountNotActivatedException: 403
         App\Domain\User\Exception\RateLimit\ActivationLimitReachedException: 429
         App\Domain\User\Exception\RateLimit\ResetPasswordLimitReachedException: 429
+        App\Domain\Shop\Ordering\Exception\CartDomainException: 400
         App\Domain\User\Exception\UserDomainException: 400
         App\Domain\Shop\Exception\ShopDomainException: 400
+        App\Domain\SharedKernel\Exception\InvalidUuidException: 422
+        App\Domain\SharedKernel\Exception\DomainException: 400
 
 when@dev:
     api_platform:

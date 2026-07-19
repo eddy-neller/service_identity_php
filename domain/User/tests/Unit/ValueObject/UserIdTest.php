@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Domain\User\Tests\Unit\ValueObject;
 
+use App\Domain\SharedKernel\Exception\InvalidUuidException;
 use App\Domain\User\ValueObject\UserId;
-use InvalidArgumentException;
 use PHPUnit\Framework\TestCase;
 
 final class UserIdTest extends TestCase
@@ -18,42 +18,44 @@ final class UserIdTest extends TestCase
         $this->assertSame($uuid, $userId->toString());
     }
 
-    public function testFromStringTrimsWhitespace(): void
+    public function testFromStringRejectsSurroundingWhitespace(): void
     {
         $uuid = '550e8400-e29b-41d4-a716-446655440000';
-        $userId = UserId::fromString(sprintf('  %s  ', $uuid));
 
-        $this->assertSame($uuid, $userId->toString());
+        $this->expectException(InvalidUuidException::class);
+        $this->expectExceptionMessage(sprintf('Invalid UserId:   %s  ', $uuid));
+
+        UserId::fromString(sprintf('  %s  ', $uuid));
     }
 
     public function testFromStringThrowsExceptionWhenEmpty(): void
     {
-        $this->expectException(InvalidArgumentException::class);
-        $this->expectExceptionMessage('UserId cannot be empty.');
+        $this->expectException(InvalidUuidException::class);
+        $this->expectExceptionMessage('Invalid UserId: ');
 
         UserId::fromString('');
     }
 
     public function testFromStringThrowsExceptionWhenOnlyWhitespace(): void
     {
-        $this->expectException(InvalidArgumentException::class);
-        $this->expectExceptionMessage('UserId cannot be empty.');
+        $this->expectException(InvalidUuidException::class);
+        $this->expectExceptionMessage('Invalid UserId:    ');
 
         UserId::fromString('   ');
     }
 
     public function testFromStringThrowsExceptionForInvalidUuid(): void
     {
-        $this->expectException(InvalidArgumentException::class);
-        $this->expectExceptionMessage('UserId must be a valid UUID.');
+        $this->expectException(InvalidUuidException::class);
+        $this->expectExceptionMessage('Invalid UserId: invalid-uuid');
 
         UserId::fromString('invalid-uuid');
     }
 
     public function testFromStringThrowsExceptionForUuidWithInvalidVersion(): void
     {
-        $this->expectException(InvalidArgumentException::class);
-        $this->expectExceptionMessage('UserId must be a valid UUID.');
+        $this->expectException(InvalidUuidException::class);
+        $this->expectExceptionMessage('Invalid UserId: 550e8400-e29b-01d4-0716-446655440000');
 
         // Version 0 n'est pas valide (doit être 1-5)
         UserId::fromString('550e8400-e29b-01d4-0716-446655440000');
@@ -61,8 +63,8 @@ final class UserIdTest extends TestCase
 
     public function testFromStringThrowsExceptionForUuidWithInvalidVariant(): void
     {
-        $this->expectException(InvalidArgumentException::class);
-        $this->expectExceptionMessage('UserId must be a valid UUID.');
+        $this->expectException(InvalidUuidException::class);
+        $this->expectExceptionMessage('Invalid UserId: 550e8400-e29b-41d4-c716-446655440000');
 
         // Variant invalide (doit être 8, 9, a, b, A, B)
         UserId::fromString('550e8400-e29b-41d4-c716-446655440000');

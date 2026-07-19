@@ -15,6 +15,10 @@
 
 ## Ports (interfaces)
 
+Un service applicatif interne, pur et sans dépendance technique (par exemple `AuthTokenIssuer`), est injecté directement par sa classe : ne pas créer de Port ni d'adapter artificiel pour lui.
+
+Un Port représente une dépendance externe ou technique que l'Application doit abstraire : repository, horloge, configuration, chiffrement, fournisseur de token, etc.
+
 **Shared Ports** (`Application/Shared/Port/`) :
 - `ClockInterface` (temps `now()`), `ConfigInterface` (config), `TransactionalInterface` (exécution atomique),
 - `FileInterface` (fichier — pas d'`UploadedFile` Symfony), `EventDispatcherInterface` (events), `UuidGeneratorInterface` (UUID).
@@ -22,7 +26,7 @@
 **Ports métier** (ex. `Application/User/Port/`) :
 - `UserRepositoryInterface`, `PasswordHasherInterface`, `TokenProviderInterface`, `AvatarUploaderInterface`, etc.
 
-> **Règle** : toute dépendance externe (DB, HTTP client, FS, queue…) → un Port dans `application/.../Port`, implémenté dans `infrastructure/...` (cf. `infrastructure/AGENTS.md`).
+> **Règle** : toute dépendance externe (DB, HTTP client, FS, queue…) → un Port dans `application/.../Port`, implémenté dans `infrastructure/...` (cf. `infrastructure/AGENTS.md`). Les services applicatifs purs internes restent des classes concrètes injectées directement.
 
 ---
 
@@ -60,7 +64,7 @@
 ## Command Handlers
 
 - Orchestrent l'écriture : charger des agrégats via repos, appeler les méthodes métier Domain, persister / publier les events via les Ports.
-- Utilisent **uniquement** : Domain + Ports (`UserRepositoryInterface`, `ClockInterface`, `TransactionalInterface`, …).
+- Utilisent **uniquement** : Domain + Ports (`UserRepositoryInterface`, `ClockInterface`, `TransactionalInterface`, …) + services applicatifs purs internes injectés directement.
 - Renvoient : DTOs d'output / read models, ou `void` — **jamais** d'entités Doctrine ni d'objets framework.
 
 ### Transactions — performance et cohérence
@@ -154,7 +158,7 @@ $this->transactional->expects($this->once())
 - [ ] Le DTO s'appelle `...Command` ou `...Query` ; le handler `...CommandHandler` / `...QueryHandler` et expose `handle()`.
 - [ ] Les Commands et Queries ne portent que des primitives sérialisables ; le handler les convertit en Value Objects Domain à l'entrée du use case.
 - [ ] Presentation/Infra n'appellent jamais `handle()` directement — uniquement via les Buses.
-- [ ] Le handler dépend uniquement de Ports + Domain.
+- [ ] Le handler dépend uniquement de Ports, Domain et services applicatifs purs internes injectés directement ; aucun Port/adaptateur artificiel n'est créé pour ces derniers.
 - [ ] Le temps est géré via `ClockInterface`.
 - [ ] **Aucune logique métier** : calculs de montants/totaux, conversions d'unités, arithmétique prix/quantités et décisions métier délégués au Domain (VOs/agrégats).
 - [ ] Aucun attribut framework dans Application.

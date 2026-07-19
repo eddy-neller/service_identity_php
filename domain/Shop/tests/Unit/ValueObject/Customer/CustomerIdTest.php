@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Domain\Shop\Tests\Unit\ValueObject\Customer;
 
+use App\Domain\SharedKernel\Exception\InvalidUuidException;
 use App\Domain\Shop\Customer\ValueObject\CustomerId;
-use InvalidArgumentException;
 use PHPUnit\Framework\TestCase;
 
 final class CustomerIdTest extends TestCase
@@ -28,16 +28,16 @@ final class CustomerIdTest extends TestCase
 
     public function testFromStringThrowsWhenEmpty(): void
     {
-        $this->expectException(InvalidArgumentException::class);
-        $this->expectExceptionMessage('CustomerId cannot be empty.');
+        $this->expectException(InvalidUuidException::class);
+        $this->expectExceptionMessage('Invalid CustomerId: ');
 
         CustomerId::fromString('');
     }
 
     public function testFromStringThrowsWhenInvalidUuid(): void
     {
-        $this->expectException(InvalidArgumentException::class);
-        $this->expectExceptionMessage('CustomerId must be a valid UUID.');
+        $this->expectException(InvalidUuidException::class);
+        $this->expectExceptionMessage('Invalid CustomerId: not-a-uuid');
 
         CustomerId::fromString('not-a-uuid');
     }

@@ -8,6 +8,7 @@ use App\Application\Shared\CQRS\Command\CommandBusInterface;
 use App\Application\Shop\Port\CustomerRepositoryInterface;
 use App\Application\Shop\UseCase\Command\Customer\CreateCustomer\CreateCustomerCommand;
 use App\Application\Shop\UseCase\Command\Customer\DisableCustomer\DisableCustomerCommand;
+use App\Application\User\Port\RefreshTokenRepositoryInterface;
 use App\Application\User\Port\TokenProviderInterface;
 use App\Application\User\Port\UserNotifierInterface;
 use App\Application\User\Port\UserRepositoryInterface;
@@ -20,6 +21,7 @@ use App\Domain\User\Event\UserAvatarUpdatedEvent;
 use App\Domain\User\Event\UserCreatedByAdminEvent;
 use App\Domain\User\Event\UserDeletedByAdminEvent;
 use App\Domain\User\Event\UserPasswordUpdatedEvent;
+use App\Domain\User\Event\UserReauthenticationRequiredEvent;
 use App\Domain\User\Event\UserRegisteredEvent;
 use App\Domain\User\Event\UserUpdatedByAdminEvent;
 use App\Domain\User\Event\UserWrongPasswordAttemptRegisteredEvent;
@@ -34,6 +36,7 @@ final readonly class UserEventSubscriber implements EventSubscriberInterface
         private CustomerRepositoryInterface $customerRepository,
         private TokenProviderInterface $tokenProvider,
         private UserNotifierInterface $notifier,
+        private RefreshTokenRepositoryInterface $refreshTokenRepository,
         private LoggerInterface $logger,
         private CommandBusInterface $commandBus,
     ) {
@@ -52,6 +55,7 @@ final readonly class UserEventSubscriber implements EventSubscriberInterface
             'user.updated_by_admin' => 'onUserUpdatedByAdmin',
             'user.avatar_updated' => 'onUserAvatarUpdated',
             'user.password.updated' => 'onUserPasswordUpdated',
+            'user.reauthentication.required' => 'onUserReauthenticationRequired',
             'user.wrong_password_attempt.registered' => 'onUserWrongPasswordAttemptRegistered',
             'user.wrong_password_attempts.reset' => 'onUserWrongPasswordAttemptsReset',
         ];
@@ -228,6 +232,17 @@ final readonly class UserEventSubscriber implements EventSubscriberInterface
         // - Envoyer un email de confirmation
         // - Invalider les sessions actives
         // - Notifier les systèmes de sécurité
+    }
+
+    public function onUserReauthenticationRequired(UserReauthenticationRequiredEvent $event): void
+    {
+        $this->logger->info('User reauthentication required', [
+            'user_id' => $event->getUserId()->toString(),
+            'reason' => $event->getReason()->value,
+            'occurred_on' => $event->occurredOn()->format('Y-m-d H:i:s'),
+        ]);
+
+        $this->refreshTokenRepository->deleteAllForUser($event->getUserId());
     }
 
     public function onUserWrongPasswordAttemptRegistered(UserWrongPasswordAttemptRegisteredEvent $event): void

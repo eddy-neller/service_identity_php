@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Domain\Shop\Tests\Unit\ValueObject\Ordering;
 
+use App\Domain\SharedKernel\Exception\InvalidUuidException;
 use App\Domain\Shop\Ordering\ValueObject\OrderLineId;
-use InvalidArgumentException;
 use PHPUnit\Framework\TestCase;
 
 final class OrderLineIdTest extends TestCase
@@ -21,16 +21,16 @@ final class OrderLineIdTest extends TestCase
 
     public function testFromStringThrowsWhenEmpty(): void
     {
-        $this->expectException(InvalidArgumentException::class);
-        $this->expectExceptionMessage('OrderLineId cannot be empty.');
+        $this->expectException(InvalidUuidException::class);
+        $this->expectExceptionMessage('Invalid OrderLineId: ');
 
         OrderLineId::fromString('');
     }
 
     public function testFromStringThrowsWhenInvalidUuid(): void
     {
-        $this->expectException(InvalidArgumentException::class);
-        $this->expectExceptionMessage('OrderLineId must be a valid UUID.');
+        $this->expectException(InvalidUuidException::class);
+        $this->expectExceptionMessage('Invalid OrderLineId: not-a-uuid');
 
         OrderLineId::fromString('not-a-uuid');
     }

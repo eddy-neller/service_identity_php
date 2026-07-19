@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Domain\SharedKernel\ValueObject;
 
-use InvalidArgumentException;
+use App\Domain\SharedKernel\Exception\InvalidUuidException;
 
 final class Uuid
 {
@@ -18,17 +18,11 @@ final class Uuid
 
     public static function fromString(string $value, string $label = 'Uuid'): self
     {
-        $trimmed = trim($value);
-
-        if ('' === $trimmed) {
-            throw new InvalidArgumentException(sprintf('%s cannot be empty.', $label));
+        if (!preg_match(self::UUID_PATTERN, $value)) {
+            throw InvalidUuidException::forValue($label, $value);
         }
 
-        if (!preg_match(self::UUID_PATTERN, $trimmed)) {
-            throw new InvalidArgumentException(sprintf('%s must be a valid UUID.', $label));
-        }
-
-        return new self($trimmed);
+        return new self($value);
     }
 
     public function equals(self $other): bool

@@ -11,6 +11,8 @@ parameters:
     mailerFrontLinkResetPassword: "%env(resolve:MAILER_URI_FRONT_RESET_PASSWORD)%"
     mailer_to: "%env(resolve:MAILER_TO)%"
     app.security.max_login_attempts: "%env(resolve:APP_MAX_LOGIN_ATTEMPTS)%"
+    jwt_ttl: "%env(int:JWT_TTL)%"
+    jwt_refresh_ttl: "%env(resolve:JWT_REFRESH_TTL)%"
     app.avatar.max_size: "%env(int:AVATAR_MAX_SIZE)%"
     app.avatar.max_dimension: "%env(int:AVATAR_MAX_DIMENSION)%"
     app.avatar.uploadDirectory: '%kernel.project_dir%/public%app.path.images%/user/avatar'

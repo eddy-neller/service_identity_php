@@ -41,7 +41,7 @@ final readonly class UpdateUserByAdminCommandHandler implements CommandHandlerIn
         $firstname = $command->firstname ? Firstname::fromString($command->firstname) : null;
         $lastname = $command->lastname ? Lastname::fromString($command->lastname) : null;
         $roles = $command->roles ? RoleSet::fromArray($command->roles) : null;
-        $status = $command->status ? UserStatus::fromInt($command->status) : null;
+        $status = null !== $command->status ? UserStatus::fromInt($command->status) : null;
         $hashedPassword = null !== $command->plainPassword && '' !== trim($command->plainPassword)
             ? HashedPassword::fromString($this->passwordHasher->hash($command->plainPassword))
             : null;

@@ -7,11 +7,13 @@ namespace App\Domain\User\Tests\Unit\Model;
 use App\Domain\User\Event\ActivationEmailRequestedEvent;
 use App\Domain\User\Event\PasswordResetCompletedEvent;
 use App\Domain\User\Event\PasswordResetRequestedEvent;
+use App\Domain\User\Event\ReauthenticationReason;
 use App\Domain\User\Event\UserActivatedEvent;
 use App\Domain\User\Event\UserAvatarUpdatedEvent;
 use App\Domain\User\Event\UserCreatedByAdminEvent;
 use App\Domain\User\Event\UserDeletedByAdminEvent;
 use App\Domain\User\Event\UserPasswordUpdatedEvent;
+use App\Domain\User\Event\UserReauthenticationRequiredEvent;
 use App\Domain\User\Event\UserRegisteredEvent;
 use App\Domain\User\Event\UserUpdatedByAdminEvent;
 use App\Domain\User\Event\UserWrongPasswordAttemptRegisteredEvent;
@@ -243,13 +245,16 @@ final class UserTest extends TestCase
         $this->assertSame(0, $user->getResetPassword()->getMailSent());
 
         $events = $user->getDomainEvents();
-        $this->assertCount(1, $events);
+        $this->assertCount(2, $events);
         $this->assertInstanceOf(PasswordResetCompletedEvent::class, $events[0]);
+        $this->assertInstanceOf(UserReauthenticationRequiredEvent::class, $events[1]);
 
         $event = $events[0];
+        $reauthenticationEvent = $events[1];
         $this->assertTrue($user->getId()->equals($event->getUserId()));
         $this->assertSame($now, $event->occurredOn());
         $this->assertSame('user.password_reset.completed', $event->eventName());
+        $this->assertSame(ReauthenticationReason::PASSWORD_RESET, $reauthenticationEvent->getReason());
     }
 
     public function testChangePasswordUpdatesPasswordOnly(): void
@@ -265,13 +270,16 @@ final class UserTest extends TestCase
         $this->assertNotSame($oldPassword, $user->getPassword());
 
         $events = $user->getDomainEvents();
-        $this->assertCount(1, $events);
+        $this->assertCount(2, $events);
         $this->assertInstanceOf(UserPasswordUpdatedEvent::class, $events[0]);
+        $this->assertInstanceOf(UserReauthenticationRequiredEvent::class, $events[1]);
 
         $event = $events[0];
+        $reauthenticationEvent = $events[1];
         $this->assertTrue($user->getId()->equals($event->getUserId()));
         $this->assertSame($now, $event->occurredOn());
         $this->assertSame('user.password.updated', $event->eventName());
+        $this->assertSame(ReauthenticationReason::PASSWORD_CHANGED, $reauthenticationEvent->getReason());
     }
 
     public function testUpdateAvatarRecordsEvent(): void
@@ -302,13 +310,16 @@ final class UserTest extends TestCase
         $user->deleteByAdmin($now);
 
         $events = $user->getDomainEvents();
-        $this->assertCount(1, $events);
+        $this->assertCount(2, $events);
         $this->assertInstanceOf(UserDeletedByAdminEvent::class, $events[0]);
+        $this->assertInstanceOf(UserReauthenticationRequiredEvent::class, $events[1]);
 
         $event = $events[0];
+        $reauthenticationEvent = $events[1];
         $this->assertTrue($user->getId()->equals($event->getUserId()));
         $this->assertSame($now, $event->occurredOn());
         $this->assertSame('user.deleted', $event->eventName());
+        $this->assertSame(ReauthenticationReason::ACCOUNT_DELETED, $reauthenticationEvent->getReason());
     }
 
     public function testUpdateByAdminUpdatesOnlyProvidedFields(): void
@@ -356,6 +367,48 @@ final class UserTest extends TestCase
 
         $events = $user->getDomainEvents();
         $this->assertCount(0, $events);
+    }
+
+    public function testUpdateByAdminRequiresReauthenticationWhenPasswordIsChanged(): void
+    {
+        $user = $this->createActiveUser();
+        $now = new DateTimeImmutable('2025-01-01 10:00:00');
+
+        $user->updateByAdmin(now: $now, password: HashedPassword::fromString('new-hash'));
+
+        $events = $user->getDomainEvents();
+        $this->assertCount(2, $events);
+        $event = $events[1];
+        $this->assertInstanceOf(UserReauthenticationRequiredEvent::class, $event);
+        $this->assertSame(ReauthenticationReason::PASSWORD_CHANGED, $event->getReason());
+    }
+
+    public function testUpdateByAdminRequiresReauthenticationWhenRolesAreChanged(): void
+    {
+        $user = $this->createActiveUser();
+        $now = new DateTimeImmutable('2025-01-01 10:00:00');
+
+        $user->updateByAdmin(now: $now, roles: RoleSet::fromArray([RoleSet::ROLE_ADMIN]));
+
+        $events = $user->getDomainEvents();
+        $this->assertCount(2, $events);
+        $event = $events[1];
+        $this->assertInstanceOf(UserReauthenticationRequiredEvent::class, $event);
+        $this->assertSame(ReauthenticationReason::ROLES_CHANGED, $event->getReason());
+    }
+
+    public function testUpdateByAdminRequiresReauthenticationWhenAccessIsDisabled(): void
+    {
+        $user = $this->createActiveUser();
+        $now = new DateTimeImmutable('2025-01-01 10:00:00');
+
+        $user->updateByAdmin(now: $now, status: UserStatus::blocked());
+
+        $events = $user->getDomainEvents();
+        $this->assertCount(2, $events);
+        $event = $events[1];
+        $this->assertInstanceOf(UserReauthenticationRequiredEvent::class, $event);
+        $this->assertSame(ReauthenticationReason::ACCESS_DISABLED, $event->getReason());
     }
 
     public function testIsLockedReturnsTrueWhenUserBlocked(): void
@@ -453,13 +506,16 @@ final class UserTest extends TestCase
         $this->assertTrue($user->isLocked());
 
         $events = $user->getDomainEvents();
-        $this->assertCount(2, $events);
+        $this->assertCount(3, $events);
         $this->assertInstanceOf(UserWrongPasswordAttemptRegisteredEvent::class, $events[1]);
+        $this->assertInstanceOf(UserReauthenticationRequiredEvent::class, $events[2]);
 
         $event = $events[1];
+        $reauthenticationEvent = $events[2];
         $this->assertTrue($user->getId()->equals($event->getUserId()));
         $this->assertSame($now, $event->occurredOn());
         $this->assertSame('user.wrong_password_attempt.registered', $event->eventName());
+        $this->assertSame(ReauthenticationReason::ACCOUNT_LOCKED, $reauthenticationEvent->getReason());
     }
 
     public function testResetWrongPasswordAttemptsClearsCounter(): void
@@ -509,6 +565,18 @@ final class UserTest extends TestCase
         $this->assertTrue($user->getId()->equals($event->getUserId()));
         $this->assertSame($resetNow, $event->occurredOn());
         $this->assertSame('user.wrong_password_attempts.reset', $event->eventName());
+    }
+
+    public function testRecordSuccessfulLoginUpdatesVisitCountAndTimestamp(): void
+    {
+        $user = $this->createUser();
+        $now = new DateTimeImmutable('2026-07-18 10:00:00');
+
+        $user->recordSuccessfulLogin($now);
+
+        $this->assertSame(1, $user->getLoginCount());
+        $this->assertSame($now, $user->getLastVisit());
+        $this->assertSame($now, $user->getUpdatedAt());
     }
 
     private function setActiveEmail(User $user, ActiveEmail $activeEmail): void

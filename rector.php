@@ -50,6 +50,7 @@ return static function (RectorConfig $rectorConfig): void {
 
     // Skip specific rule
     $rectorConfig->skip([
+        __DIR__ . '/config',
         __DIR__ . '/src/Entity/Translation',
         CatchExceptionNameMatchingTypeRector::class,
         AttributeKeyToClassConstFetchRector::class,

@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Domain\Shop\Exception;
 
-use RuntimeException;
+use App\Domain\SharedKernel\Exception\DomainException;
 
-class ShopDomainException extends RuntimeException
+class ShopDomainException extends DomainException
 {
 }

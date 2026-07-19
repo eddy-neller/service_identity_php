@@ -181,6 +181,46 @@ final class UpdateUserByAdminTest extends TestCase
         $this->assertTrue($user->getEmail()->equals($originalEmail));
     }
 
+    public function testHandleUpdatesInactiveStatusWhenProvided(): void
+    {
+        $userId = UserId::fromString('550e8400-e29b-41d4-a716-446655440009');
+        $user = $this->createUser($userId);
+        $command = new UpdateUserByAdminCommand(
+            userId: $userId->toString(),
+            status: UserStatus::INACTIVE,
+        );
+
+        $this->repository->expects($this->once())
+            ->method('findById')
+            ->with($userId)
+            ->willReturn($user);
+
+        $this->passwordHasher->expects($this->never())
+            ->method('hash');
+
+        $this->uniquenessChecker->expects($this->never())
+            ->method('ensureEmailAvailable');
+
+        $this->uniquenessChecker->expects($this->never())
+            ->method('ensureUsernameAvailable');
+
+        $this->clock->expects($this->once())
+            ->method('now')
+            ->willReturn(new DateTimeImmutable());
+
+        $this->repository->expects($this->once())
+            ->method('save')
+            ->with($user);
+
+        $this->transactional->expects($this->once())
+            ->method('transactional')
+            ->willReturnCallback(static fn (callable $callback) => $callback());
+
+        $this->handler->handle($command);
+
+        $this->assertSame(UserStatus::INACTIVE, $user->getStatus()->toInt());
+    }
+
     public function testHandleThrowsExceptionWhenUserNotFound(): void
     {
         $userId = UserId::fromString('550e8400-e29b-41d4-a716-446655440002');

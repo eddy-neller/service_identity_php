@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Application\Shared;
 
 use DateInterval;
+use Exception;
 use RuntimeException;
-use Throwable;
 
 trait DateIntervalTrait
 {
@@ -14,8 +14,8 @@ trait DateIntervalTrait
     {
         try {
             return new DateInterval($spec);
-        } catch (Throwable $throwable) {
-            throw new RuntimeException(sprintf('Invalid interval spec "%s"', $spec), 0, $throwable);
+        } catch (Exception $exception) {
+            throw new RuntimeException(sprintf('Invalid interval spec "%s"', $spec), 0, $exception);
         }
     }
 }

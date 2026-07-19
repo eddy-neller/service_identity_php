@@ -6,14 +6,10 @@ namespace App\Infrastructure\Service\Token;
 
 use App\Application\User\Port\TokenProviderInterface;
 use App\Domain\User\ValueObject\EmailAddress;
-use App\Infrastructure\Service\User\TokenManager;
 
 final readonly class TokenProvider implements TokenProviderInterface
 {
-    public function __construct(
-        private TokenManager $tokenManager,
-    ) {
-    }
+    public const string TOKEN_SEPARATOR = '&';
 
     public function generateRandomToken(int $length = 64): string
     {
@@ -30,11 +26,15 @@ final readonly class TokenProvider implements TokenProviderInterface
 
     public function encode(string $token, EmailAddress $email): string
     {
-        return $this->tokenManager->generateEmailToken($token, $email->toString());
+        return base64_encode($email->toString() . self::TOKEN_SEPARATOR . $token);
     }
 
     public function split(string $encodedToken): array
     {
-        return $this->tokenManager->splitToken($encodedToken);
+        $decodedToken = base64_decode($encodedToken);
+        $email = strtok($decodedToken, self::TOKEN_SEPARATOR);
+        $token = substr($decodedToken, strpos($decodedToken, self::TOKEN_SEPARATOR) + 1);
+
+        return ['email' => $email, 'token' => $token];
     }
 }

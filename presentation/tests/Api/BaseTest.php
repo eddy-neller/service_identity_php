@@ -6,6 +6,7 @@ namespace App\Presentation\Tests\Api;
 
 use ApiPlatform\Symfony\Bundle\Test\ApiTestCase;
 use ApiPlatform\Symfony\Bundle\Test\Client;
+use App\Presentation\Tests\Api\User\UserTest;
 use Doctrine\ORM\EntityManagerInterface;
 use Faker\Factory;
 use Faker\Generator;
@@ -22,8 +23,6 @@ use Throwable;
 abstract class BaseTest extends ApiTestCase
 {
     protected const string URL_API = '/api/';
-
-    protected const string URL_LOGIN = self::URL_API . 'login';
 
     public const array ASSERTION_TYPE = [
         'SERIALIZATION' => 'serialization',
@@ -150,11 +149,15 @@ abstract class BaseTest extends ApiTestCase
         }
     }
 
-    protected function getToken(string $username): string
+    /**
+     * @return array<string, mixed>
+     */
+    protected function login(string $username): array
     {
         try {
             $options = [
                 'headers' => [
+                    'Accept' => 'application/json',
                     'Content-Type' => 'application/json',
                 ],
                 'json' => [
@@ -163,18 +166,29 @@ abstract class BaseTest extends ApiTestCase
                 ],
             ];
 
-            $response = $this->getApiClient()->request(Request::METHOD_POST, self::URL_LOGIN, $options);
+            $response = $this->getApiClient()->request(Request::METHOD_POST, UserTest::URL_LOGIN, $options);
 
             $data = json_decode($response->getContent(), true, 512, JSON_THROW_ON_ERROR);
 
-            if (!is_array($data) || !isset($data['token'])) {
-                throw new RuntimeException('Token not found');
+            if (!is_array($data)) {
+                throw new RuntimeException('Invalid login response');
             }
 
-            return $data['token'];
+            return $data;
         } catch (Throwable $e) {
-            throw new RuntimeException('getToken: ' . $e->getMessage());
+            throw new RuntimeException('login: ' . $e->getMessage());
         }
+    }
+
+    protected function getToken(string $username): string
+    {
+        $data = $this->login($username);
+
+        if (!isset($data['accessToken'])) {
+            throw new RuntimeException('getToken: Token not found');
+        }
+
+        return $data['accessToken'];
     }
 
     protected function testSuccess(

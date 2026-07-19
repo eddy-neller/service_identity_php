@@ -8,11 +8,13 @@ use App\Domain\SharedKernel\Event\DomainEventTrait;
 use App\Domain\User\Event\ActivationEmailRequestedEvent;
 use App\Domain\User\Event\PasswordResetCompletedEvent;
 use App\Domain\User\Event\PasswordResetRequestedEvent;
+use App\Domain\User\Event\ReauthenticationReason;
 use App\Domain\User\Event\UserActivatedEvent;
 use App\Domain\User\Event\UserAvatarUpdatedEvent;
 use App\Domain\User\Event\UserCreatedByAdminEvent;
 use App\Domain\User\Event\UserDeletedByAdminEvent;
 use App\Domain\User\Event\UserPasswordUpdatedEvent;
+use App\Domain\User\Event\UserReauthenticationRequiredEvent;
 use App\Domain\User\Event\UserRegisteredEvent;
 use App\Domain\User\Event\UserUpdatedByAdminEvent;
 use App\Domain\User\Event\UserWrongPasswordAttemptRegisteredEvent;
@@ -262,10 +264,13 @@ final class User
             userId: $this->id,
             occurredOn: $now,
         ));
+
+        $this->requireReauthentication(ReauthenticationReason::PASSWORD_RESET, $now);
     }
 
     public function registerWrongPasswordAttempt(int $maxAttempts, DateTimeImmutable $now): void
     {
+        $wasLocked = $this->isLocked();
         $attempts = $this->security->getTotalWrongPassword() + 1;
         $this->security = $this->security->withTotalWrongPassword($attempts);
 
@@ -279,6 +284,10 @@ final class User
             userId: $this->id,
             occurredOn: $now,
         ));
+
+        if (!$wasLocked && $this->isLocked()) {
+            $this->requireReauthentication(ReauthenticationReason::ACCOUNT_LOCKED, $now);
+        }
     }
 
     public function resetWrongPasswordAttempts(DateTimeImmutable $now): void
@@ -309,6 +318,15 @@ final class User
             userId: $this->id,
             occurredOn: $now,
         ));
+
+        $this->requireReauthentication(ReauthenticationReason::PASSWORD_CHANGED, $now);
+    }
+
+    public function recordSuccessfulLogin(DateTimeImmutable $now): void
+    {
+        ++$this->loginCount;
+        $this->lastVisit = $now;
+        $this->touch($now);
     }
 
     public function updateAvatar(string $avatarName, DateTimeImmutable $now): void
@@ -333,6 +351,7 @@ final class User
         ?HashedPassword $password = null,
     ): void {
         $hasChanges = false;
+        $accessDisabled = null !== $status && $this->status->isActive() && !$status->isActive();
 
         if (null !== $username) {
             $this->username = $username;
@@ -376,6 +395,14 @@ final class User
                 userId: $this->id,
                 occurredOn: $now,
             ));
+
+            if (null !== $password) {
+                $this->requireReauthentication(ReauthenticationReason::PASSWORD_CHANGED, $now);
+            } elseif (null !== $roles) {
+                $this->requireReauthentication(ReauthenticationReason::ROLES_CHANGED, $now);
+            } elseif ($accessDisabled) {
+                $this->requireReauthentication(ReauthenticationReason::ACCESS_DISABLED, $now);
+            }
         }
     }
 
@@ -385,6 +412,7 @@ final class User
             userId: $this->id,
             occurredOn: $now,
         ));
+        $this->requireReauthentication(ReauthenticationReason::ACCOUNT_DELETED, $now);
     }
 
     public function isActive(): bool
@@ -485,6 +513,15 @@ final class User
     private function touch(DateTimeImmutable $now): void
     {
         $this->updatedAt = $now;
+    }
+
+    private function requireReauthentication(ReauthenticationReason $reason, DateTimeImmutable $now): void
+    {
+        $this->recordEvent(new UserReauthenticationRequiredEvent(
+            userId: $this->id,
+            reason: $reason,
+            occurredOn: $now,
+        ));
     }
 
     private function assertActivationTokenValid(string $token, DateTimeImmutable $now): void
