@@ -4,16 +4,16 @@ declare(strict_types=1);
 
 namespace App\Domain\Shop\Ordering\Model;
 
+use App\Domain\Shop\Catalog\ValueObject\ProductTitle;
 use App\Domain\Shop\Ordering\ValueObject\OrderLineId;
 use App\Domain\Shop\Ordering\ValueObject\OrderLineQuantity;
 use App\Domain\Shop\Shared\ValueObject\Money;
-use InvalidArgumentException;
 
 final class OrderLine
 {
     private function __construct(
         private readonly OrderLineId $id,
-        private readonly string $productName,
+        private readonly ProductTitle $productName,
         private readonly OrderLineQuantity $quantity,
         private readonly Money $unitPrice,
     ) {
@@ -21,19 +21,13 @@ final class OrderLine
 
     public static function create(
         OrderLineId $id,
-        string $productName,
+        ProductTitle $productName,
         Money $unitPrice,
         OrderLineQuantity $quantity,
     ): self {
-        $trimmedName = trim($productName);
-
-        if ('' === $trimmedName) {
-            throw new InvalidArgumentException('Order line product name cannot be empty.');
-        }
-
         return new self(
             id: $id,
-            productName: $trimmedName,
+            productName: $productName,
             quantity: $quantity,
             unitPrice: $unitPrice,
         );
@@ -44,7 +38,7 @@ final class OrderLine
         return $this->id;
     }
 
-    public function getProductName(): string
+    public function getProductName(): ProductTitle
     {
         return $this->productName;
     }

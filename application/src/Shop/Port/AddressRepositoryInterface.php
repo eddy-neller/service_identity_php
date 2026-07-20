@@ -12,6 +12,8 @@ use App\Domain\Shop\Customer\ValueObject\CustomerId;
 
 interface AddressRepositoryInterface
 {
+    public const array SORT_FIELDS = ['name', 'city', 'country', 'createdAt'];
+
     public function nextIdentity(): AddressId;
 
     public function save(Address $address): void;

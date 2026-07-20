@@ -5,14 +5,14 @@ declare(strict_types=1);
 namespace App\Application\Shop\UseCase\Query\Catalog\DisplayListProduct;
 
 use App\Application\Shared\CQRS\Query\CacheableQueryInterface;
-use App\Application\Shared\ReadModel\Pagination;
 
 final readonly class DisplayListProductQuery implements CacheableQueryInterface
 {
     private const int CACHE_TTL_SECONDS = 3600;
 
     public function __construct(
-        public Pagination $pagination,
+        public ?string $page = null,
+        public ?string $itemsPerPage = null,
         public array $filters = [],
         public array $orderBy = [],
     ) {
@@ -21,8 +21,8 @@ final readonly class DisplayListProductQuery implements CacheableQueryInterface
     public function cacheKey(): string
     {
         $payload = [
-            'page' => $this->pagination->page,
-            'itemsPerPage' => $this->pagination->itemsPerPage,
+            'page' => $this->page,
+            'itemsPerPage' => $this->itemsPerPage,
             'filters' => $this->normalizedFilters(),
             'orderBy' => $this->normalizedOrderBy(),
         ];

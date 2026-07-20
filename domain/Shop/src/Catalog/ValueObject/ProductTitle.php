@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Domain\Shop\Catalog\ValueObject;
 
-use InvalidArgumentException;
+use App\Domain\Shop\Catalog\Exception\InvalidProductTitleException;
 
 final readonly class ProductTitle
 {
@@ -22,17 +22,17 @@ final readonly class ProductTitle
         $normalized = trim($value);
 
         if ('' === $normalized) {
-            throw new InvalidArgumentException('Product title cannot be empty.');
+            throw InvalidProductTitleException::empty();
         }
 
         $length = self::stringLength($normalized);
 
         if ($length < self::MIN_LENGTH) {
-            throw new InvalidArgumentException(sprintf('Product title must be at least %d characters long.', self::MIN_LENGTH));
+            throw InvalidProductTitleException::tooShort(self::MIN_LENGTH);
         }
 
         if ($length > self::MAX_LENGTH) {
-            throw new InvalidArgumentException(sprintf('Product title must be at most %d characters long.', self::MAX_LENGTH));
+            throw InvalidProductTitleException::tooLong(self::MAX_LENGTH);
         }
 
         return new self($normalized);

@@ -46,13 +46,13 @@ final class ProductCollectionProviderTest extends TestCase
             ->method('dispatch')
             ->willReturnCallback(function ($query) use ($output): ProductList {
                 $this->assertInstanceOf(DisplayListProductQuery::class, $query);
-                $this->assertSame(2, $query->pagination->page);
-                $this->assertSame(15, $query->pagination->itemsPerPage);
+                $this->assertSame('2', $query->page);
+                $this->assertSame('15', $query->itemsPerPage);
                 $this->assertSame('Product', $query->filters['title'] ?? null);
                 $this->assertSame('Subtitle', $query->filters['subtitle'] ?? null);
                 $this->assertSame('Nice', $query->filters['description'] ?? null);
                 $this->assertSame('/api/shop/categories/550e8400-e29b-41d4-a716-446655440000', $query->filters['category'] ?? null);
-                $this->assertSame(['createdAt' => 'asc'], $query->orderBy);
+                $this->assertSame(['createdAt' => 'ASC'], $query->orderBy);
 
                 return $output;
             });
@@ -113,8 +113,8 @@ final class ProductCollectionProviderTest extends TestCase
             ->method('dispatch')
             ->willReturnCallback(function ($query) use ($output): ProductList {
                 $this->assertInstanceOf(DisplayListProductQuery::class, $query);
-                $this->assertSame(1, $query->pagination->page);
-                $this->assertSame(30, $query->pagination->itemsPerPage);
+                $this->assertNull($query->page);
+                $this->assertNull($query->itemsPerPage);
                 $this->assertSame([], $query->filters);
                 $this->assertSame([], $query->orderBy);
 

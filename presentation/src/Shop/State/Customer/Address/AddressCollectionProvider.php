@@ -7,14 +7,17 @@ namespace App\Presentation\Shop\State\Customer\Address;
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProviderInterface;
 use App\Application\Shared\CQRS\Query\QueryBusInterface;
-use App\Application\Shared\ReadModel\Pagination;
+use App\Application\Shop\Port\AddressRepositoryInterface;
 use App\Application\Shop\UseCase\Query\Customer\DisplayListAddress\DisplayListAddressQuery;
+use App\Presentation\Shared\State\CollectionParameterNormalizerTrait;
 use App\Presentation\Shop\Presenter\Customer\AddressResourcePresenter;
 use App\Presentation\Shop\State\Shared\CurrentCustomerResolver;
 use Symfony\Component\HttpFoundation\Request;
 
 final readonly class AddressCollectionProvider implements ProviderInterface
 {
+    use CollectionParameterNormalizerTrait;
+
     public function __construct(
         private QueryBusInterface $queryBus,
         private CurrentCustomerResolver $customerResolver,
@@ -29,12 +32,12 @@ final readonly class AddressCollectionProvider implements ProviderInterface
             $filters = [];
         }
 
-        $pagination = Pagination::fromRaw($filters['page'] ?? null, $filters['itemsPerPage'] ?? null);
-        $orderBy = is_array($filters['order'] ?? null) ? $filters['order'] : [];
+        $orderBy = $this->normalizeOrderBy($filters['order'] ?? null, AddressRepositoryInterface::SORT_FIELDS);
 
         $output = $this->queryBus->dispatch(new DisplayListAddressQuery(
             ownerId: $this->customerResolver->resolve(),
-            pagination: $pagination,
+            page: $this->normalizePaginationParameter($filters['page'] ?? null),
+            itemsPerPage: $this->normalizePaginationParameter($filters['itemsPerPage'] ?? null),
             orderBy: $orderBy,
             filters: $filters,
         ));

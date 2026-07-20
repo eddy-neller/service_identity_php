@@ -72,10 +72,42 @@ domain/
 
 ## Exceptions métier
 
-- Base par bounded context : `UserDomainException`, `OrderDomainException`, …
-- Exceptions ciblées : `ActivationLimitReachedException`, etc.
-- Messages **métier**, pas techniques.
-- Quand une nouvelle exception Domain peut remonter jusqu'à l'API, ajouter son mapping HTTP dans `config/packages/api_platform.yaml` (`api_platform.exception_to_status`).
+**Deux axes orthogonaux, à respecter tous les deux :**
+
+- **Axe bounded context** (héritage de classe) : chaque exception hérite de la base de son BC —
+  `UserDomainException`, `CatalogDomainException`, `CustomerDomainException`, `CartDomainException`, … elles-mêmes
+  sous `SharedKernel\Exception\DomainException`. Sert au regroupement par contexte (throws génériques,
+  `expectException(<BC>DomainException::class)` des tests) et constitue le **fallback 400**.
+- **Axe sémantique** (interface marqueur de `SharedKernel\Exception`, matchée par `is_a()`) : la feuille `implements`
+  la catégorie qui décrit *ce qui s'est passé*, indépendamment du BC :
+  - `InvalidArgumentInterface` → **422** (invariant violé, valeur refusée par un VO/agrégat),
+  - `EntityNotFoundInterface` → **404** (agrégat/entité introuvable),
+  - `ConflictInterface` → **409** (unicité violée, limite atteinte, ressource déjà existante).
+
+Règles :
+
+- Exceptions ciblées : une classe par cas métier (`ActivationLimitReachedException`,
+  `CategoryTitleAlreadyUsedException`, …), message **métier** (pas technique).
+- **Le mapping HTTP n'est plus déclaré par classe.** Une nouvelle exception qui entre dans une catégorie
+  `implements` simplement l'interface correspondante — **rien à toucher dans le yaml**. Seul un status hors
+  catégorie (401/403/423/429…) reçoit une ligne explicite dans `config/packages/api_platform.yaml`, placée
+  **avant** le fallback `DomainException: 400`.
+- Le Domain **ignore HTTP** : les interfaces portent une sémantique métier (« argument invalide »,
+  « introuvable », « conflit »), jamais un code. Le lien code↔catégorie vit dans `exception_to_status`.
+- Fonctionnement détaillé (ordre de résolution, `is_a()`, décision d'ajout) :
+  [`docs/exception_handling.md`](../docs/exception_handling.md).
+
+### `Exception` métier vs `Error` technique
+
+Règle : le **type** du throwable encode sa nature. PHP distingue deux familles de `Throwable` — respecter cette sémantique.
+
+- **Cas métier anticipé** (règle non respectée, entrée invalide, ressource introuvable, transition d'état interdite) → **exception métier** héritant de la hiérarchie Domain (`…DomainException` → 400 par défaut, ou feuille portant une interface sémantique `InvalidArgumentInterface`/`EntityNotFoundInterface`/`ConflictInterface` → 422/404/409). **Ne jamais** lever une exception SPL brute (`\InvalidArgumentException`, `\RuntimeException`, …) pour une règle métier : ces types ne sont **pas** mappés dans `exception_to_status`, donc l'API renvoie **500** au lieu du 4xx attendu — un vrai bug qui masque une erreur côté client.
+- **Erreur technique / d'exécution** (invariant interne violé « qui ne devrait jamais arriver » avec un usage correct, misuse du code, violation de type) → **exception SPL brute la plus pertinente**, non mappée → **500 + log `critical`** (comportement voulu). Choisir le type le plus précis :
+  - `\LogicException` et ses sous-classes (`\InvalidArgumentException`, `\LengthException`, `\OutOfRangeException`, …) pour un bug détectable à l'écriture du code (argument/état invalide produit en interne, garde de type).
+  - `\RuntimeException` et ses sous-classes (`\UnexpectedValueException`, `\OutOfBoundsException`, …) pour un échec qui n'apparaît qu'à l'exécution (I/O, parsing d'une donnée stockée, service externe).
+- **Ne jamais lever un `\Error` / `\TypeError` soi-même** : cette famille est réservée au moteur PHP. Un `catch (\Exception)` (middleware de bus, worker Messenger, wrapper CLI) ne l'attrape pas — préférer une exception SPL, au flux uniforme.
+- Critère de tri : *cette entrée peut-elle venir d'un appel API valide ?* Oui → exception métier Domain (4xx). Non, état impossible sauf bug → exception SPL brute (500).
+- Le Domain **ignore HTTP** : ne pas passer de code HTTP (`404`, `400`, …) au constructeur d'une exception Domain — le mapping vit dans `exception_to_status`, un code en dur y est mort et trompeur.
 
 ---
 

@@ -55,9 +55,9 @@ final class AddressCollectionProviderTest extends TestCase
 
                 if ($query instanceof DisplayListAddressQuery) {
                     $this->assertSame('550e8400-e29b-41d4-a716-446655440201', $query->ownerId);
-                    $this->assertSame(2, $query->pagination->page);
-                    $this->assertSame(15, $query->pagination->itemsPerPage);
-                    $this->assertSame(['name' => 'asc'], $query->orderBy);
+                    $this->assertSame('2', $query->page);
+                    $this->assertSame('15', $query->itemsPerPage);
+                    $this->assertSame(['name' => 'ASC'], $query->orderBy);
                     $this->assertSame([
                         'page' => '2',
                         'itemsPerPage' => '15',

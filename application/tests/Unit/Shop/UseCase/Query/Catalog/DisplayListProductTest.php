@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Application\Tests\Unit\Shop\UseCase\Query\Catalog;
 
-use App\Application\Shared\ReadModel\Pagination;
 use App\Application\Shop\Port\ProductRepositoryInterface;
 use App\Application\Shop\ReadModel\Catalog\ProductItem;
 use App\Application\Shop\ReadModel\Catalog\ProductList;
@@ -39,7 +38,8 @@ final class DisplayListProductTest extends TestCase
     public function testHandleReturnsProductsAndPagination(): void
     {
         $query = new DisplayListProductQuery(
-            pagination: Pagination::fromValues(2, 5),
+            page: '2',
+            itemsPerPage: '5',
             filters: [
                 'title' => 'Product',
                 'subtitle' => 'Subtitle',
@@ -69,7 +69,8 @@ final class DisplayListProductTest extends TestCase
     public function testHandleAppliesDefaultsWhenValuesAreInvalid(): void
     {
         $query = new DisplayListProductQuery(
-            pagination: Pagination::fromValues(0, 0),
+            page: '0',
+            itemsPerPage: '0',
             filters: [],
             orderBy: [],
         );
@@ -96,12 +97,14 @@ final class DisplayListProductTest extends TestCase
         $this->repository->expects($this->never())->method('list');
 
         $queryA = new DisplayListProductQuery(
-            pagination: Pagination::fromValues(2, 5),
+            page: '2',
+            itemsPerPage: '5',
             filters: ['title' => 'Product', 'subtitle' => 'Sub'],
             orderBy: ['title' => 'ASC', 'createdAt' => 'DESC'],
         );
         $queryB = new DisplayListProductQuery(
-            pagination: Pagination::fromValues(2, 5),
+            page: '2',
+            itemsPerPage: '5',
             filters: ['subtitle' => 'Sub', 'title' => 'Product'],
             orderBy: ['createdAt' => 'DESC', 'title' => 'ASC'],
         );
@@ -114,7 +117,8 @@ final class DisplayListProductTest extends TestCase
         $this->repository->expects($this->never())->method('list');
 
         $query = new DisplayListProductQuery(
-            pagination: Pagination::fromValues(1, 10),
+            page: '1',
+            itemsPerPage: '10',
         );
 
         $this->assertSame(3600, $query->cacheTtl());

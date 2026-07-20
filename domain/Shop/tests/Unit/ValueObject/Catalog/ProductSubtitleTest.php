@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Domain\Shop\Tests\Unit\ValueObject\Catalog;
 
+use App\Domain\Shop\Catalog\Exception\InvalidProductSubtitleException;
 use App\Domain\Shop\Catalog\ValueObject\ProductSubtitle;
-use InvalidArgumentException;
 use PHPUnit\Framework\TestCase;
 
 final class ProductSubtitleTest extends TestCase
@@ -19,7 +19,7 @@ final class ProductSubtitleTest extends TestCase
 
     public function testFromStringThrowsWhenEmpty(): void
     {
-        $this->expectException(InvalidArgumentException::class);
+        $this->expectException(InvalidProductSubtitleException::class);
         $this->expectExceptionMessage('Product subtitle cannot be empty.');
 
         ProductSubtitle::fromString('   ');
@@ -27,7 +27,7 @@ final class ProductSubtitleTest extends TestCase
 
     public function testFromStringThrowsWhenTooShort(): void
     {
-        $this->expectException(InvalidArgumentException::class);
+        $this->expectException(InvalidProductSubtitleException::class);
         $this->expectExceptionMessage('Product subtitle must be at least 2 characters long.');
 
         ProductSubtitle::fromString('a');
@@ -35,7 +35,7 @@ final class ProductSubtitleTest extends TestCase
 
     public function testFromStringThrowsWhenTooLong(): void
     {
-        $this->expectException(InvalidArgumentException::class);
+        $this->expectException(InvalidProductSubtitleException::class);
         $this->expectExceptionMessage('Product subtitle must be at most 150 characters long.');
 
         ProductSubtitle::fromString(str_repeat('a', 151));

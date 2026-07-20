@@ -4,9 +4,10 @@ declare(strict_types=1);
 
 namespace App\Domain\Shop\Catalog\Exception;
 
+use App\Domain\SharedKernel\Exception\ConflictInterface;
 use Throwable;
 
-final class CategoryTitleAlreadyUsedException extends CatalogDomainException
+final class CategoryTitleAlreadyUsedException extends CatalogDomainException implements ConflictInterface
 {
     public function __construct(
         string $message = 'Category title is already used.',

@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Application\Tests\Unit\User\UseCase\Query;
 
-use App\Application\Shared\ReadModel\Pagination;
 use App\Application\User\Port\UserRepositoryInterface;
 use App\Application\User\ReadModel\UserItem;
 use App\Application\User\ReadModel\UserList;
@@ -35,7 +34,8 @@ final class DisplayListUserTest extends TestCase
     public function testHandleReturnsUsersAndPagination(): void
     {
         $query = new DisplayListUserQuery(
-            pagination: Pagination::fromValues(2, 5),
+            page: '2',
+            itemsPerPage: '5',
             filters: ['username' => 'john'],
             orderBy: ['username' => 'ASC'],
         );
@@ -59,7 +59,8 @@ final class DisplayListUserTest extends TestCase
     public function testHandleAppliesDefaultsWhenValuesAreInvalid(): void
     {
         $query = new DisplayListUserQuery(
-            pagination: Pagination::fromValues(0, 0),
+            page: '0',
+            itemsPerPage: '0',
             filters: [],
             orderBy: [],
         );
@@ -83,12 +84,14 @@ final class DisplayListUserTest extends TestCase
         $this->repository->expects($this->never())->method('list');
 
         $queryA = new DisplayListUserQuery(
-            pagination: Pagination::fromValues(2, 5),
+            page: '2',
+            itemsPerPage: '5',
             filters: ['username' => 'john', 'isVerified' => true],
             orderBy: ['username' => 'ASC', 'createdAt' => 'DESC'],
         );
         $queryB = new DisplayListUserQuery(
-            pagination: Pagination::fromValues(2, 5),
+            page: '2',
+            itemsPerPage: '5',
             filters: ['isVerified' => true, 'username' => 'john'],
             orderBy: ['createdAt' => 'DESC', 'username' => 'ASC'],
         );
@@ -101,7 +104,8 @@ final class DisplayListUserTest extends TestCase
         $this->repository->expects($this->never())->method('list');
 
         $query = new DisplayListUserQuery(
-            pagination: Pagination::fromValues(1, 10),
+            page: '1',
+            itemsPerPage: '10',
         );
 
         $this->assertSame(3600, $query->cacheTtl());

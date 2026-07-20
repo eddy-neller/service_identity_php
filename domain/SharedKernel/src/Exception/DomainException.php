@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Domain\SharedKernel\Exception;
 
-use RuntimeException;
+use Exception;
 
-class DomainException extends RuntimeException
+class DomainException extends Exception
 {
 }

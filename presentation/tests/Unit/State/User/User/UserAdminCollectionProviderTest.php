@@ -39,11 +39,11 @@ final class UserAdminCollectionProviderTest extends TestCase
             ->method('dispatch')
             ->willReturnCallback(function ($query) use ($output): UserList {
                 $this->assertInstanceOf(DisplayListUserQuery::class, $query);
-                $this->assertSame(2, $query->pagination->page);
-                $this->assertSame(15, $query->pagination->itemsPerPage);
+                $this->assertSame('2', $query->page);
+                $this->assertSame('15', $query->itemsPerPage);
                 $this->assertSame('john', $query->filters['username'] ?? null);
                 $this->assertSame('john@example.com', $query->filters['email'] ?? null);
-                $this->assertSame(['createdAt' => 'asc'], $query->orderBy);
+                $this->assertSame(['createdAt' => 'ASC'], $query->orderBy);
 
                 return $output;
             });
@@ -94,8 +94,8 @@ final class UserAdminCollectionProviderTest extends TestCase
             ->method('dispatch')
             ->willReturnCallback(function ($query) use ($output): UserList {
                 $this->assertInstanceOf(DisplayListUserQuery::class, $query);
-                $this->assertSame(1, $query->pagination->page);
-                $this->assertSame(30, $query->pagination->itemsPerPage);
+                $this->assertNull($query->page);
+                $this->assertNull($query->itemsPerPage);
                 $this->assertSame([], $query->filters);
                 $this->assertSame([], $query->orderBy);
 
@@ -124,6 +124,45 @@ final class UserAdminCollectionProviderTest extends TestCase
         $this->assertInstanceOf(UserResource::class, $result[0]);
         $this->assertSame('john', $result[0]->username);
         $this->assertSame('/uploads/images/user/avatar/avatar.jpg', $result[0]->avatarUrl);
+    }
+
+    public function testItNormalizesMultipleValidSortCriteriaInCanonicalPriorityOrder(): void
+    {
+        $queryBus = $this->createMock(QueryBusInterface::class);
+        $output = new UserList([], 0, 0);
+
+        $queryBus
+            ->expects($this->once())
+            ->method('dispatch')
+            ->willReturnCallback(function ($query) use ($output): UserList {
+                $this->assertInstanceOf(DisplayListUserQuery::class, $query);
+                $this->assertSame([
+                    'username' => 'ASC',
+                    'email' => 'DESC',
+                    'createdAt' => 'ASC',
+                ], $query->orderBy);
+
+                return $output;
+            });
+
+        $avatarUrlResolver = $this->createStub(AvatarUrlResolverInterface::class);
+        $provider = new UserAdminCollectionProvider($queryBus, new UserResourcePresenter($avatarUrlResolver));
+
+        $result = $provider->provide(
+            new GetCollection(name: 'users-admin-col'),
+            context: [
+                'filters' => [
+                    'order' => [
+                        'createdAt' => 'asc',
+                        'unsupported' => 'DESC',
+                        'email' => 'desc',
+                        'username' => 'ASC',
+                    ],
+                ],
+            ],
+        );
+
+        $this->assertSame([], $result);
     }
 
     private function createDomainUser(): DomainUser

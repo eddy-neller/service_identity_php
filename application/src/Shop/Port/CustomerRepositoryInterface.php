@@ -11,6 +11,8 @@ use App\Domain\Shop\Customer\ValueObject\UserAccountId;
 
 interface CustomerRepositoryInterface
 {
+    public const array SORT_FIELDS = ['username', 'status', 'createdAt'];
+
     public function nextIdentity(): CustomerId;
 
     public function list(array $filters, array $orderBy, int $page, int $itemsPerPage): CustomerList;

@@ -28,7 +28,7 @@ final readonly class UpdateProductImageByAdminCommandHandler implements CommandH
         $imageFile = $command->imageFile;
 
         if (!$imageFile->isValid()) {
-            throw new CatalogDomainException('Invalid image file.', 400);
+            throw new CatalogDomainException('Invalid image file.');
         }
 
         $productId = ProductId::fromString($command->productId);

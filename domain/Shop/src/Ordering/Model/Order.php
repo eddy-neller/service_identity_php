@@ -8,6 +8,7 @@ use App\Domain\SharedKernel\Event\DomainEventTrait;
 use App\Domain\Shop\Customer\ValueObject\CustomerId;
 use App\Domain\Shop\Ordering\Event\OrderPaidEvent;
 use App\Domain\Shop\Ordering\Event\OrderPlacedEvent;
+use App\Domain\Shop\Ordering\Exception\CartDomainException;
 use App\Domain\Shop\Ordering\ValueObject\OrderId;
 use App\Domain\Shop\Ordering\ValueObject\OrderReference;
 use App\Domain\Shop\Ordering\ValueObject\PaymentSessionId;
@@ -98,7 +99,7 @@ final class Order
     public function markAsPaid(PaymentSessionId $paymentSessionId, DateTimeImmutable $now): void
     {
         if ($this->isPaid) {
-            throw new InvalidArgumentException('Order is already paid.');
+            throw new CartDomainException('Order is already paid.');
         }
 
         $this->isPaid = true;
@@ -188,7 +189,7 @@ final class Order
     private static function assertLines(array $lines): void
     {
         if ([] === $lines) {
-            throw new InvalidArgumentException('Order must contain at least one line.');
+            throw new CartDomainException('Order must contain at least one line.');
         }
 
         $expectedCurrency = null;
@@ -201,7 +202,7 @@ final class Order
             $expectedCurrency ??= $line->getUnitPrice()->currency();
 
             if ($line->getUnitPrice()->currency() !== $expectedCurrency) {
-                throw new InvalidArgumentException('Order lines must share the same currency.');
+                throw new CartDomainException('Order lines must share the same currency.');
             }
         }
     }

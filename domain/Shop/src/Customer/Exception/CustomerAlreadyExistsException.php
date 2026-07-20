@@ -4,9 +4,10 @@ declare(strict_types=1);
 
 namespace App\Domain\Shop\Customer\Exception;
 
+use App\Domain\SharedKernel\Exception\ConflictInterface;
 use Throwable;
 
-final class CustomerAlreadyExistsException extends CustomerDomainException
+final class CustomerAlreadyExistsException extends CustomerDomainException implements ConflictInterface
 {
     public function __construct(
         string $message = 'Customer already exists for this user account.',

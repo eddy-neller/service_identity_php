@@ -43,7 +43,7 @@ final readonly class CreateCategoryByAdminCommandHandler implements CommandHandl
             if (null !== $parentId) {
                 $parent = $this->repository->findById($parentId);
                 if (null === $parent) {
-                    throw new CategoryNotFoundException('Parent category not found.', 404);
+                    throw new CategoryNotFoundException('Parent category not found.');
                 }
             }
 

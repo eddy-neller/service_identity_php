@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Domain\Shop\Shared\ValueObject;
 
-use InvalidArgumentException;
+use App\Domain\Shop\Shared\Exception\InvalidMoneyException;
 
 final readonly class Money
 {
@@ -22,13 +22,13 @@ final readonly class Money
     public static function fromInt(int $amount, string $currency = 'EUR'): self
     {
         if ($amount < 0) {
-            throw new InvalidArgumentException('Money amount cannot be negative.');
+            throw InvalidMoneyException::negativeAmount();
         }
 
         $normalizedCurrency = strtoupper(trim($currency));
 
         if ('' === $normalizedCurrency) {
-            throw new InvalidArgumentException('Currency cannot be empty.');
+            throw InvalidMoneyException::emptyCurrency();
         }
 
         return new self($amount, $normalizedCurrency);
@@ -49,7 +49,7 @@ final readonly class Money
     public function multiply(int $multiplier): self
     {
         if ($multiplier < 0) {
-            throw new InvalidArgumentException('Money multiplier must be positive.');
+            throw InvalidMoneyException::negativeMultiplier();
         }
 
         return new self($this->amount * $multiplier, $this->currency);
@@ -83,7 +83,7 @@ final readonly class Money
     private function assertSameCurrency(self $other): void
     {
         if ($this->currency !== $other->currency) {
-            throw new InvalidArgumentException('Money must be in the same currency.');
+            throw InvalidMoneyException::currenciesDiffer();
         }
     }
 }

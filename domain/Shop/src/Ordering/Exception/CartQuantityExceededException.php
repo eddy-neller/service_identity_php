@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace App\Domain\Shop\Ordering\Exception;
 
-final class CartQuantityExceededException extends CartDomainException
+use App\Domain\SharedKernel\Exception\InvalidArgumentInterface;
+
+final class CartQuantityExceededException extends CartDomainException implements InvalidArgumentInterface
 {
     private function __construct(string $message)
     {

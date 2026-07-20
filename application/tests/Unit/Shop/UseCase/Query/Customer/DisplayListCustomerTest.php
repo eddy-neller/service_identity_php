@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Application\Tests\Unit\Shop\UseCase\Query\Customer;
 
-use App\Application\Shared\ReadModel\Pagination;
 use App\Application\Shop\Port\CustomerRepositoryInterface;
 use App\Application\Shop\ReadModel\Customer\CustomerItem;
 use App\Application\Shop\ReadModel\Customer\CustomerList;
@@ -36,7 +35,8 @@ final class DisplayListCustomerTest extends TestCase
     public function testHandleReturnsCustomersAndPagination(): void
     {
         $query = new DisplayListCustomerQuery(
-            pagination: Pagination::fromValues(2, 5),
+            page: '2',
+            itemsPerPage: '5',
             filters: ['status' => 1],
             orderBy: ['createdAt' => 'ASC'],
         );
@@ -59,7 +59,8 @@ final class DisplayListCustomerTest extends TestCase
     public function testHandleAppliesDefaultOrderWhenMissing(): void
     {
         $query = new DisplayListCustomerQuery(
-            pagination: Pagination::fromValues(0, 0),
+            page: '0',
+            itemsPerPage: '0',
             filters: [],
             orderBy: [],
         );

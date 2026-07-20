@@ -4,9 +4,10 @@ declare(strict_types=1);
 
 namespace App\Domain\Shop\Catalog\Exception;
 
+use App\Domain\SharedKernel\Exception\EntityNotFoundInterface;
 use Throwable;
 
-final class ProductNotFoundException extends CatalogDomainException
+final class ProductNotFoundException extends CatalogDomainException implements EntityNotFoundInterface
 {
     public function __construct(
         string $message = 'Product not found.',

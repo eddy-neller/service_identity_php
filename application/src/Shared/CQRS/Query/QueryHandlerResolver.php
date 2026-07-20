@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Application\Shared\CQRS\Query;
 
+use LogicException;
 use Psr\Container\ContainerInterface;
-use RuntimeException;
 
 final class QueryHandlerResolver implements QueryHandlerResolverInterface
 {
@@ -27,19 +27,19 @@ final class QueryHandlerResolver implements QueryHandlerResolverInterface
         $handlerClass = $this->discoverHandlerClass($queryClass);
 
         if (!$this->handlers->has($handlerClass)) {
-            throw new RuntimeException(sprintf('Query handler "%s" not found for query "%s". Make sure the handler is registered as a service.', $handlerClass, $queryClass));
+            throw new LogicException(sprintf('Query handler "%s" not found for query "%s". Make sure the handler is registered as a service.', $handlerClass, $queryClass));
         }
 
         $handler = $this->handlers->get($handlerClass);
 
         if (!method_exists($handler, 'handle')) {
-            throw new RuntimeException(sprintf('Query handler "%s" does not have a "handle" method for query "%s".', $handlerClass, $queryClass));
+            throw new LogicException(sprintf('Query handler "%s" does not have a "handle" method for query "%s".', $handlerClass, $queryClass));
         }
 
         // Créer le callable et le mettre en cache
         $callable = static function (QueryInterface $qry) use ($handler, $queryClass): mixed {
             if (!$qry instanceof $queryClass) {
-                throw new RuntimeException(sprintf('Query type mismatch. Expected "%s", got "%s".', $queryClass, $qry::class));
+                throw new LogicException(sprintf('Query type mismatch. Expected "%s", got "%s".', $queryClass, $qry::class));
             }
 
             return $handler->handle($qry);
@@ -53,13 +53,13 @@ final class QueryHandlerResolver implements QueryHandlerResolverInterface
     private function discoverHandlerClass(string $queryClass): string
     {
         if (!str_ends_with($queryClass, 'Query')) {
-            throw new RuntimeException(sprintf('Query class "%s" must end with "Query" to use auto-discovery.', $queryClass));
+            throw new LogicException(sprintf('Query class "%s" must end with "Query" to use auto-discovery.', $queryClass));
         }
 
         $handlerClass = preg_replace('/Query$/', 'QueryHandler', $queryClass);
 
         if (!class_exists($handlerClass)) {
-            throw new RuntimeException(sprintf('Query handler class "%s" not found for query "%s". Expected handler class based on convention: {Action}Query → {Action}QueryHandler.', $handlerClass, $queryClass));
+            throw new LogicException(sprintf('Query handler class "%s" not found for query "%s". Expected handler class based on convention: {Action}Query → {Action}QueryHandler.', $handlerClass, $queryClass));
         }
 
         return $handlerClass;

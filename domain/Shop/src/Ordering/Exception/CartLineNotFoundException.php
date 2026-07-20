@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace App\Domain\Shop\Ordering\Exception;
 
-final class CartLineNotFoundException extends CartDomainException
+use App\Domain\SharedKernel\Exception\EntityNotFoundInterface;
+
+final class CartLineNotFoundException extends CartDomainException implements EntityNotFoundInterface
 {
     public function __construct()
     {

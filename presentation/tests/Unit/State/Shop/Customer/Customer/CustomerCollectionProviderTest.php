@@ -38,10 +38,10 @@ final class CustomerCollectionProviderTest extends TestCase
             ->method('dispatch')
             ->willReturnCallback(function ($query) use ($output): CustomerList {
                 $this->assertInstanceOf(DisplayListCustomerQuery::class, $query);
-                $this->assertSame(2, $query->pagination->page);
-                $this->assertSame(15, $query->pagination->itemsPerPage);
+                $this->assertSame('2', $query->page);
+                $this->assertSame('15', $query->itemsPerPage);
                 $this->assertSame('1', $query->filters['status'] ?? null);
-                $this->assertSame(['createdAt' => 'asc'], $query->orderBy);
+                $this->assertSame(['createdAt' => 'ASC'], $query->orderBy);
 
                 return $output;
             });
@@ -88,8 +88,8 @@ final class CustomerCollectionProviderTest extends TestCase
             ->method('dispatch')
             ->willReturnCallback(function ($query) use ($output): CustomerList {
                 $this->assertInstanceOf(DisplayListCustomerQuery::class, $query);
-                $this->assertSame(1, $query->pagination->page);
-                $this->assertSame(30, $query->pagination->itemsPerPage);
+                $this->assertNull($query->page);
+                $this->assertNull($query->itemsPerPage);
                 $this->assertSame([], $query->filters);
                 $this->assertSame([], $query->orderBy);
 

@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Domain\Shop\Customer\Model;
 
+use App\Domain\Shop\Customer\Exception\InvalidAddressException;
 use App\Domain\Shop\Customer\ValueObject\AddressId;
 use App\Domain\Shop\Customer\ValueObject\CustomerId;
 use DateTimeImmutable;
-use InvalidArgumentException;
 
 final class Address
 {
@@ -214,7 +214,7 @@ final class Address
         $length = strlen($trimmed);
 
         if ($length < $min || $length > $max) {
-            throw new InvalidArgumentException(sprintf('%s must be between %d and %d characters.', $label, $min, $max));
+            throw InvalidAddressException::lengthOutOfRange($label, $min, $max);
         }
 
         return $trimmed;

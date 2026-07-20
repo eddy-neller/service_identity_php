@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Domain\SharedKernel\ValueObject;
 
-use InvalidArgumentException;
+use App\Domain\SharedKernel\Exception\InvalidSlugException;
 
 final class Slug
 {
@@ -20,11 +20,11 @@ final class Slug
         $normalized = strtolower(trim($value));
 
         if ('' === $normalized) {
-            throw new InvalidArgumentException('Slug cannot be empty.');
+            throw InvalidSlugException::empty();
         }
 
         if (!preg_match(self::SLUG_PATTERN, $normalized)) {
-            throw new InvalidArgumentException('Slug format is invalid.');
+            throw InvalidSlugException::invalidFormat();
         }
 
         return new self($normalized);

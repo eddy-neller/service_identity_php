@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Domain\Shop\Tests\Unit\ValueObject\Catalog;
 
+use App\Domain\Shop\Catalog\Exception\InvalidCategoryTitleException;
 use App\Domain\Shop\Catalog\ValueObject\CategoryTitle;
-use InvalidArgumentException;
 use PHPUnit\Framework\TestCase;
 
 final class CategoryTitleTest extends TestCase
@@ -19,7 +19,7 @@ final class CategoryTitleTest extends TestCase
 
     public function testFromStringThrowsWhenEmpty(): void
     {
-        $this->expectException(InvalidArgumentException::class);
+        $this->expectException(InvalidCategoryTitleException::class);
         $this->expectExceptionMessage('Category title cannot be empty.');
 
         CategoryTitle::fromString('   ');
@@ -27,7 +27,7 @@ final class CategoryTitleTest extends TestCase
 
     public function testFromStringThrowsWhenTooShort(): void
     {
-        $this->expectException(InvalidArgumentException::class);
+        $this->expectException(InvalidCategoryTitleException::class);
         $this->expectExceptionMessage('Category title must be at least 2 characters long.');
 
         CategoryTitle::fromString('a');
@@ -35,7 +35,7 @@ final class CategoryTitleTest extends TestCase
 
     public function testFromStringThrowsWhenTooLong(): void
     {
-        $this->expectException(InvalidArgumentException::class);
+        $this->expectException(InvalidCategoryTitleException::class);
         $this->expectExceptionMessage('Category title must be at most 100 characters long.');
 
         CategoryTitle::fromString(str_repeat('a', 101));

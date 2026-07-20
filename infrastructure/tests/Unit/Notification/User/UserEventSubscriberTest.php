@@ -69,6 +69,12 @@ final class UserEventSubscriberTest extends TestCase
 
     public function testGetSubscribedEventsRegistersReauthenticationListener(): void
     {
+        $this->refreshTokenRepository->expects($this->never())
+            ->method('deleteAllForUser');
+
+        $this->logger->expects($this->never())
+            ->method('info');
+
         $events = UserEventSubscriber::getSubscribedEvents();
 
         $this->assertSame('onUserReauthenticationRequired', $events['user.reauthentication.required']);

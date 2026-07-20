@@ -4,9 +4,10 @@ declare(strict_types=1);
 
 namespace App\Domain\Shop\Customer\Exception;
 
+use App\Domain\SharedKernel\Exception\EntityNotFoundInterface;
 use Throwable;
 
-final class AddressNotFoundException extends CustomerDomainException
+final class AddressNotFoundException extends CustomerDomainException implements EntityNotFoundInterface
 {
     public function __construct(
         string $message = 'Address not found.',

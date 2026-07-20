@@ -39,7 +39,7 @@ final readonly class UpdateCategoryByAdminCommandHandler implements CommandHandl
             : null;
 
         if (null !== $parentId && $categoryId->equals($parentId)) {
-            throw new CatalogDomainException('Category cannot be its own parent.', 400);
+            throw new CatalogDomainException('Category cannot be its own parent.');
         }
 
         return $this->transactional->transactional(
@@ -70,7 +70,7 @@ final readonly class UpdateCategoryByAdminCommandHandler implements CommandHandl
         if (null !== $parentId) {
             $parent = $this->repository->findById($parentId);
             if (null === $parent) {
-                throw new CategoryNotFoundException('Parent category not found.', 404);
+                throw new CategoryNotFoundException('Parent category not found.');
             }
         }
 

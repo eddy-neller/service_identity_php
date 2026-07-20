@@ -7,13 +7,16 @@ namespace App\Presentation\Shop\State\Catalog\Product;
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProviderInterface;
 use App\Application\Shared\CQRS\Query\QueryBusInterface;
-use App\Application\Shared\ReadModel\Pagination;
+use App\Application\Shop\Port\ProductRepositoryInterface;
 use App\Application\Shop\UseCase\Query\Catalog\DisplayListProduct\DisplayListProductQuery;
+use App\Presentation\Shared\State\CollectionParameterNormalizerTrait;
 use App\Presentation\Shop\Presenter\Catalog\ProductResourcePresenter;
 use Symfony\Component\HttpFoundation\Request;
 
 final readonly class ProductCollectionProvider implements ProviderInterface
 {
+    use CollectionParameterNormalizerTrait;
+
     public function __construct(
         private QueryBusInterface $queryBus,
         private ProductResourcePresenter $productResourcePresenter,
@@ -27,11 +30,11 @@ final readonly class ProductCollectionProvider implements ProviderInterface
             $filters = [];
         }
 
-        $pagination = Pagination::fromRaw($filters['page'] ?? null, $filters['itemsPerPage'] ?? null);
-        $orderBy = is_array($filters['order'] ?? null) ? $filters['order'] : [];
+        $orderBy = $this->normalizeOrderBy($filters['order'] ?? null, ProductRepositoryInterface::SORT_FIELDS);
 
         $output = $this->queryBus->dispatch(new DisplayListProductQuery(
-            pagination: $pagination,
+            page: $this->normalizePaginationParameter($filters['page'] ?? null),
+            itemsPerPage: $this->normalizePaginationParameter($filters['itemsPerPage'] ?? null),
             filters: $filters,
             orderBy: $orderBy,
         ));

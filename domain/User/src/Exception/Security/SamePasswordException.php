@@ -4,9 +4,10 @@ declare(strict_types=1);
 
 namespace App\Domain\User\Exception\Security;
 
+use App\Domain\SharedKernel\Exception\InvalidArgumentInterface;
 use App\Domain\User\Exception\UserDomainException;
 
-final class SamePasswordException extends UserDomainException
+final class SamePasswordException extends UserDomainException implements InvalidArgumentInterface
 {
     public function __construct()
     {

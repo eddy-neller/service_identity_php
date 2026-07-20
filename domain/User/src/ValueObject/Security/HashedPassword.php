@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Domain\User\ValueObject\Security;
 
-use App\Domain\User\Exception\Security\InvalidPasswordHashException;
+use InvalidArgumentException;
 
 final readonly class HashedPassword
 {
@@ -16,7 +16,7 @@ final readonly class HashedPassword
     public static function fromString(string $value): self
     {
         if ('' === trim($value)) {
-            throw new InvalidPasswordHashException();
+            throw new InvalidArgumentException('Password hash cannot be empty.');
         }
 
         return new self($value);

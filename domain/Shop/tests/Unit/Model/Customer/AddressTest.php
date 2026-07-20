@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace App\Domain\Shop\Tests\Unit\Model\Customer;
 
+use App\Domain\Shop\Customer\Exception\InvalidAddressException;
 use App\Domain\Shop\Customer\Model\Address;
 use App\Domain\Shop\Customer\ValueObject\AddressId;
 use App\Domain\Shop\Customer\ValueObject\CustomerId;
 use DateTimeImmutable;
-use InvalidArgumentException;
 use PHPUnit\Framework\TestCase;
 
 final class AddressTest extends TestCase
@@ -147,7 +147,7 @@ final class AddressTest extends TestCase
 
     public function testCreateThrowsOnInvalidLabel(): void
     {
-        $this->expectException(InvalidArgumentException::class);
+        $this->expectException(InvalidAddressException::class);
 
         Address::create(
             id: AddressId::fromString(self::ADDRESS_ID),

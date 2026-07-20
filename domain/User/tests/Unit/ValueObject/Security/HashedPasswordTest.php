@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Domain\User\Tests\Unit\ValueObject\Security;
 
-use App\Domain\User\Exception\Security\InvalidPasswordHashException;
 use App\Domain\User\ValueObject\Security\HashedPassword;
+use InvalidArgumentException;
 use PHPUnit\Framework\TestCase;
 
 final class HashedPasswordTest extends TestCase
@@ -20,7 +20,7 @@ final class HashedPasswordTest extends TestCase
 
     public function testFromStringThrowsWhenEmpty(): void
     {
-        $this->expectException(InvalidPasswordHashException::class);
+        $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('Password hash cannot be empty.');
 
         HashedPassword::fromString('');
@@ -28,7 +28,7 @@ final class HashedPasswordTest extends TestCase
 
     public function testFromStringThrowsWhenOnlyWhitespace(): void
     {
-        $this->expectException(InvalidPasswordHashException::class);
+        $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('Password hash cannot be empty.');
 
         HashedPassword::fromString('   ');

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Domain\User\ValueObject\Security;
 
-use App\Domain\User\Exception\Security\InvalidRefreshTokenHashException;
+use InvalidArgumentException;
 
 final readonly class RefreshTokenHash
 {
@@ -16,7 +16,7 @@ final readonly class RefreshTokenHash
     public static function fromString(string $value): self
     {
         if ('' === trim($value)) {
-            throw new InvalidRefreshTokenHashException();
+            throw new InvalidArgumentException('A refresh token hash cannot be empty.');
         }
 
         return new self($value);

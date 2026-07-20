@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Domain\Shop\Ordering\ValueObject;
 
-use InvalidArgumentException;
+use App\Domain\Shop\Ordering\Exception\InvalidOrderLineQuantityException;
 
 final readonly class OrderLineQuantity
 {
@@ -16,7 +16,7 @@ final readonly class OrderLineQuantity
     public static function fromInt(int $value): self
     {
         if ($value < 1) {
-            throw new InvalidArgumentException('Order line quantity must be greater than zero.');
+            throw InvalidOrderLineQuantityException::notPositive();
         }
 
         return new self($value);

@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Domain\Shop\Tests\Unit\ValueObject\Ordering;
 
+use App\Domain\Shop\Ordering\Exception\InvalidOrderLineQuantityException;
 use App\Domain\Shop\Ordering\ValueObject\OrderLineQuantity;
-use InvalidArgumentException;
 use PHPUnit\Framework\TestCase;
 
 final class OrderLineQuantityTest extends TestCase
@@ -19,7 +19,7 @@ final class OrderLineQuantityTest extends TestCase
 
     public function testFromIntThrowsWhenNotPositive(): void
     {
-        $this->expectException(InvalidArgumentException::class);
+        $this->expectException(InvalidOrderLineQuantityException::class);
         $this->expectExceptionMessage('Order line quantity must be greater than zero.');
 
         OrderLineQuantity::fromInt(0);

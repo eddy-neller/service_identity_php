@@ -4,9 +4,10 @@ declare(strict_types=1);
 
 namespace App\Domain\User\Exception\Profile;
 
+use App\Domain\SharedKernel\Exception\InvalidArgumentInterface;
 use App\Domain\User\Exception\UserDomainException;
 
-final class InvalidAvatarException extends UserDomainException
+final class InvalidAvatarException extends UserDomainException implements InvalidArgumentInterface
 {
     public static function missing(): self
     {

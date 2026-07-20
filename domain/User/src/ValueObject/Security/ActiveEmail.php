@@ -8,7 +8,7 @@ use DateTime;
 use DateTimeInterface;
 use Exception;
 use JsonSerializable;
-use RuntimeException;
+use UnexpectedValueException;
 
 final readonly class ActiveEmail implements JsonSerializable
 {
@@ -28,8 +28,8 @@ final readonly class ActiveEmail implements JsonSerializable
                 $lastAttempt = $data['lastAttempt'] instanceof DateTimeInterface
                     ? $data['lastAttempt']
                     : new DateTime($data['lastAttempt']);
-            } catch (Exception) {
-                throw new RuntimeException('Error on lastAttempt');
+            } catch (Exception $exception) {
+                throw new UnexpectedValueException('Unable to parse the "lastAttempt" date value.', previous: $exception);
             }
         }
 

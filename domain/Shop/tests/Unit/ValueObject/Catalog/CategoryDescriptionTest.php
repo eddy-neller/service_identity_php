@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Domain\Shop\Tests\Unit\ValueObject\Catalog;
 
+use App\Domain\Shop\Catalog\Exception\InvalidCategoryDescriptionException;
 use App\Domain\Shop\Catalog\ValueObject\CategoryDescription;
-use InvalidArgumentException;
 use PHPUnit\Framework\TestCase;
 
 final class CategoryDescriptionTest extends TestCase
@@ -19,7 +19,7 @@ final class CategoryDescriptionTest extends TestCase
 
     public function testFromStringThrowsWhenEmpty(): void
     {
-        $this->expectException(InvalidArgumentException::class);
+        $this->expectException(InvalidCategoryDescriptionException::class);
         $this->expectExceptionMessage('Category description cannot be empty.');
 
         CategoryDescription::fromString('   ');
@@ -27,7 +27,7 @@ final class CategoryDescriptionTest extends TestCase
 
     public function testFromStringThrowsWhenTooShort(): void
     {
-        $this->expectException(InvalidArgumentException::class);
+        $this->expectException(InvalidCategoryDescriptionException::class);
         $this->expectExceptionMessage('Category description must be at least 2 characters long.');
 
         CategoryDescription::fromString('a');
@@ -35,7 +35,7 @@ final class CategoryDescriptionTest extends TestCase
 
     public function testFromStringThrowsWhenTooLong(): void
     {
-        $this->expectException(InvalidArgumentException::class);
+        $this->expectException(InvalidCategoryDescriptionException::class);
         $this->expectExceptionMessage('Category description must be at most 1000 characters long.');
 
         CategoryDescription::fromString(str_repeat('a', 1001));

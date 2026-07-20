@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace App\Domain\User\Exception;
 
-final class InvalidUsernameException extends UserDomainException
+use App\Domain\SharedKernel\Exception\InvalidArgumentInterface;
+
+final class InvalidUsernameException extends UserDomainException implements InvalidArgumentInterface
 {
     public static function empty(): self
     {

@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Domain\Shop\Tests\Unit\ValueObject\Catalog;
 
+use App\Domain\Shop\Catalog\Exception\InvalidProductDescriptionException;
 use App\Domain\Shop\Catalog\ValueObject\ProductDescription;
-use InvalidArgumentException;
 use PHPUnit\Framework\TestCase;
 
 final class ProductDescriptionTest extends TestCase
@@ -19,7 +19,7 @@ final class ProductDescriptionTest extends TestCase
 
     public function testFromStringThrowsWhenEmpty(): void
     {
-        $this->expectException(InvalidArgumentException::class);
+        $this->expectException(InvalidProductDescriptionException::class);
         $this->expectExceptionMessage('Product description cannot be empty.');
 
         ProductDescription::fromString('   ');
@@ -27,7 +27,7 @@ final class ProductDescriptionTest extends TestCase
 
     public function testFromStringThrowsWhenTooShort(): void
     {
-        $this->expectException(InvalidArgumentException::class);
+        $this->expectException(InvalidProductDescriptionException::class);
         $this->expectExceptionMessage('Product description must be at least 2 characters long.');
 
         ProductDescription::fromString('a');
@@ -35,7 +35,7 @@ final class ProductDescriptionTest extends TestCase
 
     public function testFromStringThrowsWhenTooLong(): void
     {
-        $this->expectException(InvalidArgumentException::class);
+        $this->expectException(InvalidProductDescriptionException::class);
         $this->expectExceptionMessage('Product description must be at most 1000 characters long.');
 
         ProductDescription::fromString(str_repeat('a', 1001));

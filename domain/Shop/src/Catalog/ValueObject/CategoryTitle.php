@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Domain\Shop\Catalog\ValueObject;
 
-use InvalidArgumentException;
+use App\Domain\Shop\Catalog\Exception\InvalidCategoryTitleException;
 
 final readonly class CategoryTitle
 {
@@ -22,17 +22,17 @@ final readonly class CategoryTitle
         $normalized = trim($value);
 
         if ('' === $normalized) {
-            throw new InvalidArgumentException('Category title cannot be empty.');
+            throw InvalidCategoryTitleException::empty();
         }
 
         $length = self::stringLength($normalized);
 
         if ($length < self::MIN_LENGTH) {
-            throw new InvalidArgumentException(sprintf('Category title must be at least %d characters long.', self::MIN_LENGTH));
+            throw InvalidCategoryTitleException::tooShort(self::MIN_LENGTH);
         }
 
         if ($length > self::MAX_LENGTH) {
-            throw new InvalidArgumentException(sprintf('Category title must be at most %d characters long.', self::MAX_LENGTH));
+            throw InvalidCategoryTitleException::tooLong(self::MAX_LENGTH);
         }
 
         return new self($normalized);

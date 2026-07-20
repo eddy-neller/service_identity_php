@@ -8,7 +8,7 @@ use App\Domain\User\ValueObject\Security\ActiveEmail;
 use DateTimeImmutable;
 use DateTimeInterface;
 use PHPUnit\Framework\TestCase;
-use RuntimeException;
+use UnexpectedValueException;
 
 final class ActiveEmailTest extends TestCase
 {
@@ -80,8 +80,8 @@ final class ActiveEmailTest extends TestCase
 
     public function testFromArrayThrowsExceptionForInvalidDate(): void
     {
-        $this->expectException(RuntimeException::class);
-        $this->expectExceptionMessage('Error on lastAttempt');
+        $this->expectException(UnexpectedValueException::class);
+        $this->expectExceptionMessage('Unable to parse the "lastAttempt" date value.');
 
         ActiveEmail::fromArray(['lastAttempt' => 'invalid-date']);
     }

@@ -7,13 +7,16 @@ namespace App\Presentation\User\State\User;
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProviderInterface;
 use App\Application\Shared\CQRS\Query\QueryBusInterface;
-use App\Application\Shared\ReadModel\Pagination;
+use App\Application\User\Port\UserRepositoryInterface;
 use App\Application\User\UseCase\Query\DisplayListUser\DisplayListUserQuery;
+use App\Presentation\Shared\State\CollectionParameterNormalizerTrait;
 use App\Presentation\User\Presenter\UserResourcePresenter;
 use Symfony\Component\HttpFoundation\Request;
 
 final readonly class UserAdminCollectionProvider implements ProviderInterface
 {
+    use CollectionParameterNormalizerTrait;
+
     public function __construct(
         private QueryBusInterface $queryBus,
         private UserResourcePresenter $userResourcePresenter,
@@ -27,11 +30,11 @@ final readonly class UserAdminCollectionProvider implements ProviderInterface
             $filters = [];
         }
 
-        $pagination = Pagination::fromRaw($filters['page'] ?? null, $filters['itemsPerPage'] ?? null);
-        $orderBy = is_array($filters['order'] ?? null) ? $filters['order'] : [];
+        $orderBy = $this->normalizeOrderBy($filters['order'] ?? null, UserRepositoryInterface::SORT_FIELDS);
 
         $output = $this->queryBus->dispatch(new DisplayListUserQuery(
-            pagination: $pagination,
+            page: $this->normalizePaginationParameter($filters['page'] ?? null),
+            itemsPerPage: $this->normalizePaginationParameter($filters['itemsPerPage'] ?? null),
             filters: $filters,
             orderBy: $orderBy,
         ));

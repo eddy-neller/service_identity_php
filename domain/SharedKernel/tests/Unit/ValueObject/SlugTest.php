@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Domain\SharedKernel\Tests\Unit\ValueObject;
 
+use App\Domain\SharedKernel\Exception\InvalidSlugException;
 use App\Domain\SharedKernel\ValueObject\Slug;
-use InvalidArgumentException;
 use PHPUnit\Framework\TestCase;
 
 final class SlugTest extends TestCase
@@ -20,7 +20,7 @@ final class SlugTest extends TestCase
 
     public function testFromStringRejectsEmptyValue(): void
     {
-        $this->expectException(InvalidArgumentException::class);
+        $this->expectException(InvalidSlugException::class);
         $this->expectExceptionMessage('Slug cannot be empty.');
 
         Slug::fromString(' ');
@@ -28,7 +28,7 @@ final class SlugTest extends TestCase
 
     public function testFromStringRejectsInvalidFormat(): void
     {
-        $this->expectException(InvalidArgumentException::class);
+        $this->expectException(InvalidSlugException::class);
         $this->expectExceptionMessage('Slug format is invalid.');
 
         Slug::fromString('Invalid slug!');

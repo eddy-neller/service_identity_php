@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Domain\Shop\Tests\Unit\ValueObject\Shared;
 
+use App\Domain\Shop\Shared\Exception\InvalidMoneyException;
 use App\Domain\Shop\Shared\ValueObject\Money;
-use InvalidArgumentException;
 use PHPUnit\Framework\TestCase;
 
 final class MoneyTest extends TestCase
@@ -20,7 +20,7 @@ final class MoneyTest extends TestCase
 
     public function testFromIntThrowsWhenNegative(): void
     {
-        $this->expectException(InvalidArgumentException::class);
+        $this->expectException(InvalidMoneyException::class);
         $this->expectExceptionMessage('Money amount cannot be negative.');
 
         Money::fromInt(-1);
@@ -28,7 +28,7 @@ final class MoneyTest extends TestCase
 
     public function testFromIntThrowsWhenCurrencyEmpty(): void
     {
-        $this->expectException(InvalidArgumentException::class);
+        $this->expectException(InvalidMoneyException::class);
         $this->expectExceptionMessage('Currency cannot be empty.');
 
         Money::fromInt(1000, '   ');
@@ -44,7 +44,7 @@ final class MoneyTest extends TestCase
 
     public function testAddThrowsWhenCurrencyDiffers(): void
     {
-        $this->expectException(InvalidArgumentException::class);
+        $this->expectException(InvalidMoneyException::class);
         $this->expectExceptionMessage('Money must be in the same currency.');
 
         Money::fromInt(1000)->add(Money::fromInt(500, 'USD'));
@@ -52,7 +52,7 @@ final class MoneyTest extends TestCase
 
     public function testMultiplyThrowsWhenNegative(): void
     {
-        $this->expectException(InvalidArgumentException::class);
+        $this->expectException(InvalidMoneyException::class);
         $this->expectExceptionMessage('Money multiplier must be positive.');
 
         Money::fromInt(1000)->multiply(-1);

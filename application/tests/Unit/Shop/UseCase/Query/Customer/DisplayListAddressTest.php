@@ -38,7 +38,6 @@ final class DisplayListAddressTest extends TestCase
         $createdAt = new DateTimeImmutable('2025-01-01 10:00:00');
         $addressId = AddressId::fromString(self::ADDRESS_ID);
         $customerId = CustomerId::fromString(self::CUSTOMER_ID);
-        $pagination = Pagination::fromRaw(1, 10);
         $orderBy = ['createdAt' => 'DESC'];
         $filters = ['city' => 'Paris'];
 
@@ -58,7 +57,8 @@ final class DisplayListAddressTest extends TestCase
 
         $query = new DisplayListAddressQuery(
             ownerId: $customerId->toString(),
-            pagination: $pagination,
+            page: '1',
+            itemsPerPage: '10',
             orderBy: $orderBy,
             filters: $filters,
         );
@@ -68,7 +68,12 @@ final class DisplayListAddressTest extends TestCase
 
         $this->repository->expects($this->once())
             ->method('listByOwner')
-            ->with($customerId, $pagination, $orderBy, $filters)
+            ->with(
+                $customerId,
+                $this->callback(static fn (Pagination $pagination): bool => 1 === $pagination->page && 10 === $pagination->itemsPerPage),
+                $orderBy,
+                $filters,
+            )
             ->willReturn($addressList);
 
         $output = $this->handler->handle($query);
