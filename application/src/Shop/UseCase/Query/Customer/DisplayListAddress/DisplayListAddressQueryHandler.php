@@ -7,7 +7,9 @@ namespace App\Application\Shop\UseCase\Query\Customer\DisplayListAddress;
 use App\Application\Shared\CQRS\Query\QueryHandlerInterface;
 use App\Application\Shared\ReadModel\Pagination;
 use App\Application\Shop\Port\AddressRepositoryInterface;
+use App\Application\Shop\ReadModel\Customer\AddressItem;
 use App\Application\Shop\ReadModel\Customer\AddressList;
+use App\Domain\Shop\Customer\Model\Address;
 use App\Domain\Shop\Customer\ValueObject\CustomerId;
 
 final readonly class DisplayListAddressQueryHandler implements QueryHandlerInterface
@@ -21,11 +23,18 @@ final readonly class DisplayListAddressQueryHandler implements QueryHandlerInter
     {
         $pagination = Pagination::fromRaw($query->page, $query->itemsPerPage);
 
-        return $this->repository->listByOwner(
+        $result = $this->repository->listByOwner(
             ownerId: CustomerId::fromString($query->ownerId),
-            pagination: $pagination,
+            page: $pagination->page,
+            itemsPerPage: $pagination->itemsPerPage,
             orderBy: $query->orderBy,
             filters: $query->filters,
+        );
+
+        return new AddressList(
+            items: array_map(static fn (Address $address): AddressItem => AddressItem::fromAddress($address), $result['items']),
+            totalItems: $result['totalItems'],
+            totalPages: $result['totalPages'],
         );
     }
 }

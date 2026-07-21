@@ -7,8 +7,6 @@ namespace App\Infrastructure\Persistence\Doctrine\User;
 use App\Application\Shared\Port\EventDispatcherInterface;
 use App\Application\Shared\Port\UuidGeneratorInterface;
 use App\Application\User\Port\UserRepositoryInterface;
-use App\Application\User\ReadModel\UserItem;
-use App\Application\User\ReadModel\UserList;
 use App\Domain\User\Model\User as DomainUser;
 use App\Domain\User\ValueObject\EmailAddress;
 use App\Domain\User\ValueObject\UserId;
@@ -37,7 +35,10 @@ final readonly class DoctrineUserRepository implements UserRepositoryInterface
         return UserId::fromString($this->uuidGenerator->generate());
     }
 
-    public function list(array $filters, array $orderBy, int $page, int $itemsPerPage): UserList
+    /**
+     * @return array{items: list<DomainUser>, totalItems: int, totalPages: int}
+     */
+    public function list(array $filters, array $orderBy, int $page, int $itemsPerPage): array
     {
         $qb = $this->repository->createQueryBuilder('u');
 
@@ -51,18 +52,18 @@ final readonly class DoctrineUserRepository implements UserRepositoryInterface
         $totalItems = count($paginator);
         $totalPages = $itemsPerPage > 0 ? (int) ceil($totalItems / $itemsPerPage) : 1;
 
-        $userItems = [];
+        $users = [];
         foreach ($paginator as $entity) {
             if ($entity instanceof DoctrineUser) {
-                $userItems[] = UserItem::fromUser($this->mapper->toDomain($entity));
+                $users[] = $this->mapper->toDomain($entity);
             }
         }
 
-        return new UserList(
-            items: $userItems,
-            totalItems: $totalItems,
-            totalPages: $totalPages,
-        );
+        return [
+            'items' => $users,
+            'totalItems' => $totalItems,
+            'totalPages' => $totalPages,
+        ];
     }
 
     public function save(DomainUser $user): void

@@ -62,8 +62,9 @@ final class CreateCategoryByAdminTest extends TestCase
         $description = CategoryDescription::fromString($descriptionValue);
         $slug = Slug::fromString('my-category');
         $parent = $this->createCategory($parentId, 'Parent category', 'parent-category');
+        $category = $this->createCategory($categoryId, $title, $slug->toString(), $description, $parentId);
         $categoryItem = CategoryItem::fromCategory(
-            category: $this->createCategory($categoryId, $title, $slug->toString(), $description, $parentId),
+            category: $category,
             parent: $parent,
             children: [],
         );
@@ -112,9 +113,9 @@ final class CreateCategoryByAdminTest extends TestCase
             }));
 
         $this->repository->expects($this->once())
-            ->method('findItemById')
+            ->method('findTreeById')
             ->with($categoryId)
-            ->willReturn($categoryItem);
+            ->willReturn(['category' => $category, 'parent' => $parent, 'children' => []]);
 
         $this->transactional->expects($this->once())
             ->method('transactional')
@@ -124,7 +125,7 @@ final class CreateCategoryByAdminTest extends TestCase
 
         $output = $this->handler->handle($command);
 
-        $this->assertSame($categoryItem, $output);
+        $this->assertEquals($categoryItem, $output);
     }
 
     public function testHandleThrowsWhenParentNotFound(): void
@@ -199,7 +200,7 @@ final class CreateCategoryByAdminTest extends TestCase
             ->with($this->isInstanceOf(Category::class));
 
         $this->repository->expects($this->once())
-            ->method('findItemById')
+            ->method('findTreeById')
             ->with($categoryId)
             ->willReturn(null);
 

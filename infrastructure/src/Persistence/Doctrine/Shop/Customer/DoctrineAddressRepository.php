@@ -5,10 +5,7 @@ declare(strict_types=1);
 namespace App\Infrastructure\Persistence\Doctrine\Shop\Customer;
 
 use App\Application\Shared\Port\UuidGeneratorInterface;
-use App\Application\Shared\ReadModel\Pagination;
 use App\Application\Shop\Port\AddressRepositoryInterface;
-use App\Application\Shop\ReadModel\Customer\AddressItem;
-use App\Application\Shop\ReadModel\Customer\AddressList;
 use App\Domain\Shop\Customer\Model\Address as DomainAddress;
 use App\Domain\Shop\Customer\ValueObject\AddressId;
 use App\Domain\Shop\Customer\ValueObject\CustomerId;
@@ -36,7 +33,10 @@ final readonly class DoctrineAddressRepository implements AddressRepositoryInter
         return AddressId::fromString($this->uuidGenerator->generate());
     }
 
-    public function listByOwner(CustomerId $ownerId, Pagination $pagination, array $orderBy, array $filters): AddressList
+    /**
+     * @return array{items: list<DomainAddress>, totalItems: int, totalPages: int}
+     */
+    public function listByOwner(CustomerId $ownerId, int $page, int $itemsPerPage, array $orderBy, array $filters): array
     {
         $qb = $this->createQueryBuilder()
             ->andWhere('a.customer = :customer')
@@ -45,25 +45,25 @@ final readonly class DoctrineAddressRepository implements AddressRepositoryInter
         $this->applyFilters($qb, $filters);
         $this->applyOrdering($qb, $orderBy);
 
-        $offset = max(0, ($pagination->page - 1) * $pagination->itemsPerPage);
-        $qb->setFirstResult($offset)->setMaxResults($pagination->itemsPerPage);
+        $offset = max(0, ($page - 1) * $itemsPerPage);
+        $qb->setFirstResult($offset)->setMaxResults($itemsPerPage);
 
         $paginator = new Paginator($qb);
         $totalItems = count($paginator);
-        $totalPages = $pagination->itemsPerPage > 0 ? (int) ceil($totalItems / $pagination->itemsPerPage) : 1;
+        $totalPages = $itemsPerPage > 0 ? (int) ceil($totalItems / $itemsPerPage) : 1;
 
         $addresses = [];
         foreach ($paginator as $entity) {
             if ($entity instanceof DoctrineAddress) {
-                $addresses[] = AddressItem::fromAddress($this->mapper->toDomain($entity));
+                $addresses[] = $this->mapper->toDomain($entity);
             }
         }
 
-        return new AddressList(
-            items: $addresses,
-            totalItems: $totalItems,
-            totalPages: $totalPages,
-        );
+        return [
+            'items' => $addresses,
+            'totalItems' => $totalItems,
+            'totalPages' => $totalPages,
+        ];
     }
 
     public function save(DomainAddress $address): void

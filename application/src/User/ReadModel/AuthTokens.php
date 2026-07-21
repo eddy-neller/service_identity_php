@@ -14,13 +14,13 @@ final readonly class AuthTokens
     ) {
     }
 
-    public static function of(IssuedAccessToken $accessToken, string $refreshToken): self
+    public static function of(string $accessToken, string $refreshToken, int $expiresIn): self
     {
         return new self(
-            accessToken: $accessToken->token,
+            accessToken: $accessToken,
             refreshToken: $refreshToken,
             tokenType: 'Bearer',
-            expiresIn: $accessToken->expiresIn,
+            expiresIn: $expiresIn,
         );
     }
 }

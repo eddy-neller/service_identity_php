@@ -39,13 +39,13 @@ final class DisplayCategoryTest extends TestCase
         $categoryItem = CategoryItem::fromCategory($category, null, []);
 
         $this->repository->expects($this->once())
-            ->method('findItemById')
+            ->method('findTreeById')
             ->with($categoryId)
-            ->willReturn($categoryItem);
+            ->willReturn(['category' => $category, 'parent' => null, 'children' => []]);
 
         $output = $this->handler->handle($query);
 
-        $this->assertSame($categoryItem, $output);
+        $this->assertEquals($categoryItem, $output);
     }
 
     public function testHandleThrowsWhenCategoryNotFound(): void
@@ -54,7 +54,7 @@ final class DisplayCategoryTest extends TestCase
         $query = new DisplayCategoryQuery($categoryId->toString());
 
         $this->repository->expects($this->once())
-            ->method('findItemById')
+            ->method('findTreeById')
             ->with($categoryId)
             ->willReturn(null);
 

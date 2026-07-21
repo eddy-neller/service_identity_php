@@ -6,8 +6,6 @@ namespace App\Infrastructure\Persistence\Doctrine\Shop\Catalog;
 
 use App\Application\Shared\Port\UuidGeneratorInterface;
 use App\Application\Shop\Port\CategoryRepositoryInterface;
-use App\Application\Shop\ReadModel\Catalog\CategoryItem;
-use App\Application\Shop\ReadModel\Catalog\CategoryList;
 use App\Domain\Shop\Catalog\Model\Category as DomainCategory;
 use App\Domain\Shop\Catalog\ValueObject\CategoryId;
 use App\Domain\Shop\Catalog\ValueObject\CategoryTitle;
@@ -35,7 +33,10 @@ final readonly class DoctrineCategoryRepository implements CategoryRepositoryInt
         return CategoryId::fromString($this->uuidGenerator->generate());
     }
 
-    public function list(array $filters, array $orderBy, int $page, int $itemsPerPage): CategoryList
+    /**
+     * @return array{items: list<DomainCategory>, totalItems: int, totalPages: int}
+     */
+    public function list(array $filters, array $orderBy, int $page, int $itemsPerPage): array
     {
         $qb = $this->createQueryBuilder();
 
@@ -52,15 +53,15 @@ final readonly class DoctrineCategoryRepository implements CategoryRepositoryInt
         $categories = [];
         foreach ($paginator as $entity) {
             if ($entity instanceof DoctrineCategory) {
-                $categories[] = CategoryItem::fromCategory($this->mapper->toDomain($entity));
+                $categories[] = $this->mapper->toDomain($entity);
             }
         }
 
-        return new CategoryList(
-            items: $categories,
-            totalItems: $totalItems,
-            totalPages: $totalPages,
-        );
+        return [
+            'items' => $categories,
+            'totalItems' => $totalItems,
+            'totalPages' => $totalPages,
+        ];
     }
 
     public function save(DomainCategory $category): void
@@ -101,7 +102,10 @@ final readonly class DoctrineCategoryRepository implements CategoryRepositoryInt
         return $entity instanceof DoctrineCategory ? $this->mapper->toDomain($entity) : null;
     }
 
-    public function findItemById(CategoryId $id): ?CategoryItem
+    /**
+     * @return array{category: DomainCategory, parent: ?DomainCategory, children: ?list<DomainCategory>}|null
+     */
+    public function findTreeById(CategoryId $id): ?array
     {
         $entity = $this->findEntity($id);
         if (null === $entity) {
@@ -117,11 +121,11 @@ final readonly class DoctrineCategoryRepository implements CategoryRepositoryInt
             $childrenEntities,
         );
 
-        return CategoryItem::fromCategory(
-            category: $this->mapper->toDomain($entity),
-            parent: $parent,
-            children: $children,
-        );
+        return [
+            'category' => $this->mapper->toDomain($entity),
+            'parent' => $parent,
+            'children' => $children,
+        ];
     }
 
     private function findEntity(CategoryId $id): ?DoctrineCategory

@@ -6,7 +6,6 @@ namespace App\Application\Tests\Unit\Shop\UseCase\Query\Catalog;
 
 use App\Application\Shop\Port\CategoryRepositoryInterface;
 use App\Application\Shop\ReadModel\Catalog\CategoryItem;
-use App\Application\Shop\ReadModel\Catalog\CategoryList;
 use App\Application\Shop\UseCase\Query\Catalog\DisplayListCategory\DisplayListCategoryQuery;
 use App\Application\Shop\UseCase\Query\Catalog\DisplayListCategory\DisplayListCategoryQueryHandler;
 use App\Domain\SharedKernel\ValueObject\Slug;
@@ -38,17 +37,17 @@ final class DisplayListCategoryTest extends TestCase
             orderBy: ['title' => 'ASC'],
         );
 
-        $category = CategoryItem::fromCategory($this->createCategory(CategoryId::fromString('550e8400-e29b-41d4-a716-446655440000')));
-        $list = new CategoryList([$category], 10, 2);
+        $category = $this->createCategory(CategoryId::fromString('550e8400-e29b-41d4-a716-446655440000'));
+        $categoryItem = CategoryItem::fromCategory($category);
 
         $this->repository->expects($this->once())
             ->method('list')
             ->with(['level' => 1], ['title' => 'ASC'], 2, 5)
-            ->willReturn($list);
+            ->willReturn(['items' => [$category], 'totalItems' => 10, 'totalPages' => 2]);
 
         $output = $this->handler->handle($query);
 
-        $this->assertSame([$category], $output->items);
+        $this->assertEquals([$categoryItem], $output->items);
         $this->assertSame(10, $output->totalItems);
         $this->assertSame(2, $output->totalPages);
     }
@@ -62,17 +61,17 @@ final class DisplayListCategoryTest extends TestCase
             orderBy: [],
         );
 
-        $category = CategoryItem::fromCategory($this->createCategory(CategoryId::fromString('550e8400-e29b-41d4-a716-446655440001')));
-        $list = new CategoryList([$category], 1, 1);
+        $category = $this->createCategory(CategoryId::fromString('550e8400-e29b-41d4-a716-446655440001'));
+        $categoryItem = CategoryItem::fromCategory($category);
 
         $this->repository->expects($this->once())
             ->method('list')
             ->with([], ['createdAt' => 'DESC'], 1, 30)
-            ->willReturn($list);
+            ->willReturn(['items' => [$category], 'totalItems' => 1, 'totalPages' => 1]);
 
         $output = $this->handler->handle($query);
 
-        $this->assertSame([$category], $output->items);
+        $this->assertEquals([$categoryItem], $output->items);
     }
 
     public function testQueryCacheKeyIsStableWhenFiltersAndOrderByAreReordered(): void

@@ -8,7 +8,6 @@ use App\Application\Shared\Port\ClockInterface;
 use App\Application\Shared\Port\SlugGeneratorInterface;
 use App\Application\Shared\Port\TransactionalInterface;
 use App\Application\Shop\Port\CategoryRepositoryInterface;
-use App\Application\Shop\ReadModel\Catalog\CategoryItem;
 use App\Application\Shop\UseCase\Command\Catalog\UpdateCategoryByAdmin\UpdateCategoryByAdminCommand;
 use App\Application\Shop\UseCase\Command\Catalog\UpdateCategoryByAdmin\UpdateCategoryByAdminCommandHandler;
 use App\Domain\SharedKernel\ValueObject\Slug;
@@ -61,7 +60,6 @@ final class UpdateCategoryByAdminTest extends TestCase
         $category = $this->createCategory($categoryId, 'Old title', 'old-title');
         $parent = $this->createCategory($parentId, 'Parent', 'parent');
         $slug = Slug::fromString('new-title');
-        $categoryItem = CategoryItem::fromCategory($category, $parent, []);
 
         $command = new UpdateCategoryByAdminCommand(
             categoryId: $categoryId->toString(),
@@ -103,9 +101,9 @@ final class UpdateCategoryByAdminTest extends TestCase
             ->with($category);
 
         $this->repository->expects($this->once())
-            ->method('findItemById')
+            ->method('findTreeById')
             ->with($categoryId)
-            ->willReturn($categoryItem);
+            ->willReturn(['category' => $category, 'parent' => $parent, 'children' => []]);
 
         $this->transactional->expects($this->once())
             ->method('transactional')
@@ -115,7 +113,7 @@ final class UpdateCategoryByAdminTest extends TestCase
 
         $output = $this->handler->handle($command);
 
-        $this->assertSame($categoryItem, $output);
+        $this->assertSame('New title', $output->title);
         $this->assertSame('New title', $category->getTitle()->toString());
         $this->assertSame('new-title', $category->getSlug()->toString());
         $this->assertSame('New description', $category->getDescription()?->toString());
@@ -130,7 +128,6 @@ final class UpdateCategoryByAdminTest extends TestCase
         $description = CategoryDescription::fromString('Existing description');
         $category = $this->createCategory($categoryId, 'Old title', 'old-title', $description);
         $slug = Slug::fromString('new-title');
-        $categoryItem = CategoryItem::fromCategory($category, null, []);
 
         $command = new UpdateCategoryByAdminCommand(
             categoryId: $categoryId->toString(),
@@ -158,9 +155,9 @@ final class UpdateCategoryByAdminTest extends TestCase
             ->with($category);
 
         $this->repository->expects($this->once())
-            ->method('findItemById')
+            ->method('findTreeById')
             ->with($categoryId)
-            ->willReturn($categoryItem);
+            ->willReturn(['category' => $category, 'parent' => null, 'children' => []]);
 
         $this->transactional->expects($this->once())
             ->method('transactional')
@@ -168,7 +165,7 @@ final class UpdateCategoryByAdminTest extends TestCase
 
         $output = $this->handler->handle($command);
 
-        $this->assertSame($categoryItem, $output);
+        $this->assertSame('New title', $output->title);
         $this->assertSame('New title', $category->getTitle()->toString());
         $this->assertSame('new-title', $category->getSlug()->toString());
         $this->assertSame($description, $category->getDescription());
@@ -315,7 +312,7 @@ final class UpdateCategoryByAdminTest extends TestCase
             ->with($category);
 
         $this->repository->expects($this->once())
-            ->method('findItemById')
+            ->method('findTreeById')
             ->with($categoryId)
             ->willReturn(null);
 
@@ -382,7 +379,6 @@ final class UpdateCategoryByAdminTest extends TestCase
         $now = new DateTimeImmutable('2024-02-01 12:00:00');
         $categoryId = CategoryId::fromString(self::CATEGORY_ID);
         $category = $this->createCategory($categoryId, 'Old title', 'old-title');
-        $categoryItem = CategoryItem::fromCategory($category, null, []);
 
         $command = new UpdateCategoryByAdminCommand(
             categoryId: $categoryId->toString(),
@@ -415,9 +411,9 @@ final class UpdateCategoryByAdminTest extends TestCase
             ->with($category);
 
         $this->repository->expects($this->once())
-            ->method('findItemById')
+            ->method('findTreeById')
             ->with($categoryId)
-            ->willReturn($categoryItem);
+            ->willReturn(['category' => $category, 'parent' => null, 'children' => []]);
 
         $this->transactional->expects($this->once())
             ->method('transactional')
@@ -427,7 +423,7 @@ final class UpdateCategoryByAdminTest extends TestCase
 
         $output = $this->handler->handle($command);
 
-        $this->assertSame($categoryItem, $output);
+        $this->assertSame('Same title', $output->title);
         $this->assertSame('Same title', $category->getTitle()->toString());
     }
 

@@ -58,12 +58,16 @@ final readonly class CreateCategoryByAdminCommandHandler implements CommandHandl
 
             $this->repository->save($category);
 
-            $categoryItem = $this->repository->findItemById($id);
-            if (null === $categoryItem) {
+            $categoryTree = $this->repository->findTreeById($id);
+            if (null === $categoryTree) {
                 throw new CategoryNotFoundException();
             }
 
-            return $categoryItem;
+            return CategoryItem::fromCategory(
+                category: $categoryTree['category'],
+                parent: $categoryTree['parent'],
+                children: $categoryTree['children'],
+            );
         });
     }
 }

@@ -52,8 +52,9 @@ final readonly class AuthTokenIssuer
         $this->refreshTokenRepository->save($refreshToken);
 
         return AuthTokens::of(
-            $accessToken,
-            $rawRefreshToken
+            accessToken: $accessToken['token'],
+            refreshToken: $rawRefreshToken,
+            expiresIn: $accessToken['expiresIn'],
         );
     }
 }

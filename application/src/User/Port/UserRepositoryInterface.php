@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Application\User\Port;
 
-use App\Application\User\ReadModel\UserList;
 use App\Domain\User\Model\User;
 use App\Domain\User\ValueObject\EmailAddress;
 use App\Domain\User\ValueObject\UserId;
@@ -16,7 +15,10 @@ interface UserRepositoryInterface
 
     public function nextIdentity(): UserId;
 
-    public function list(array $filters, array $orderBy, int $page, int $itemsPerPage): UserList;
+    /**
+     * @return array{items: list<User>, totalItems: int, totalPages: int}
+     */
+    public function list(array $filters, array $orderBy, int $page, int $itemsPerPage): array;
 
     public function save(User $user): void;
 

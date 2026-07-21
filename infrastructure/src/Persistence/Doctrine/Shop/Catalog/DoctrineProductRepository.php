@@ -7,8 +7,7 @@ namespace App\Infrastructure\Persistence\Doctrine\Shop\Catalog;
 use App\Application\Shared\Port\FileInterface;
 use App\Application\Shared\Port\UuidGeneratorInterface;
 use App\Application\Shop\Port\ProductRepositoryInterface;
-use App\Application\Shop\ReadModel\Catalog\ProductItem;
-use App\Application\Shop\ReadModel\Catalog\ProductList;
+use App\Domain\Shop\Catalog\Model\Category as DomainCategory;
 use App\Domain\Shop\Catalog\Model\Product as DomainProduct;
 use App\Domain\Shop\Catalog\ValueObject\CategoryId;
 use App\Domain\Shop\Catalog\ValueObject\ProductId;
@@ -39,7 +38,10 @@ final readonly class DoctrineProductRepository implements ProductRepositoryInter
         return ProductId::fromString($this->uuidGenerator->generate());
     }
 
-    public function list(array $filters, array $orderBy, int $page, int $itemsPerPage): ProductList
+    /**
+     * @return array{items: list<array{product: DomainProduct, category: DomainCategory}>, totalItems: int, totalPages: int}
+     */
+    public function list(array $filters, array $orderBy, int $page, int $itemsPerPage): array
     {
         $qb = $this->createQueryBuilder();
 
@@ -56,18 +58,18 @@ final readonly class DoctrineProductRepository implements ProductRepositoryInter
         $products = [];
         foreach ($paginator as $entity) {
             if ($entity instanceof DoctrineProduct) {
-                $products[] = ProductItem::fromProduct(
-                    product: $this->mapper->toDomain($entity),
-                    category: $this->categoryMapper->toDomain($entity->getCategory()),
-                );
+                $products[] = [
+                    'product' => $this->mapper->toDomain($entity),
+                    'category' => $this->categoryMapper->toDomain($entity->getCategory()),
+                ];
             }
         }
 
-        return new ProductList(
-            items: $products,
-            totalItems: $totalItems,
-            totalPages: $totalPages,
-        );
+        return [
+            'items' => $products,
+            'totalItems' => $totalItems,
+            'totalPages' => $totalPages,
+        ];
     }
 
     public function save(DomainProduct $product): void

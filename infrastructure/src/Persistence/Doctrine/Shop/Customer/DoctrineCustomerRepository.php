@@ -6,8 +6,6 @@ namespace App\Infrastructure\Persistence\Doctrine\Shop\Customer;
 
 use App\Application\Shared\Port\UuidGeneratorInterface;
 use App\Application\Shop\Port\CustomerRepositoryInterface;
-use App\Application\Shop\ReadModel\Customer\CustomerItem;
-use App\Application\Shop\ReadModel\Customer\CustomerList;
 use App\Domain\Shop\Customer\Model\Customer as DomainCustomer;
 use App\Domain\Shop\Customer\ValueObject\CustomerId;
 use App\Domain\Shop\Customer\ValueObject\CustomerStatus;
@@ -36,7 +34,10 @@ final readonly class DoctrineCustomerRepository implements CustomerRepositoryInt
         return CustomerId::fromString($this->uuidGenerator->generate());
     }
 
-    public function list(array $filters, array $orderBy, int $page, int $itemsPerPage): CustomerList
+    /**
+     * @return array{items: list<DomainCustomer>, totalItems: int, totalPages: int}
+     */
+    public function list(array $filters, array $orderBy, int $page, int $itemsPerPage): array
     {
         $qb = $this->em->createQueryBuilder()
             ->select('c')
@@ -55,15 +56,15 @@ final readonly class DoctrineCustomerRepository implements CustomerRepositoryInt
         $customers = [];
         foreach ($paginator as $entity) {
             if ($entity instanceof DoctrineCustomer) {
-                $customers[] = CustomerItem::fromCustomer($this->mapper->toDomain($entity));
+                $customers[] = $this->mapper->toDomain($entity);
             }
         }
 
-        return new CustomerList(
-            items: $customers,
-            totalItems: $totalItems,
-            totalPages: $totalPages,
-        );
+        return [
+            'items' => $customers,
+            'totalItems' => $totalItems,
+            'totalPages' => $totalPages,
+        ];
     }
 
     public function save(DomainCustomer $customer): void

@@ -90,12 +90,16 @@ final readonly class UpdateCategoryByAdminCommandHandler implements CommandHandl
 
         $this->repository->save($category);
 
-        $categoryItem = $this->repository->findItemById($categoryId);
+        $categoryTree = $this->repository->findTreeById($categoryId);
 
-        if (null === $categoryItem) {
+        if (null === $categoryTree) {
             throw new CategoryNotFoundException();
         }
 
-        return $categoryItem;
+        return CategoryItem::fromCategory(
+            category: $categoryTree['category'],
+            parent: $categoryTree['parent'],
+            children: $categoryTree['children'],
+        );
     }
 }

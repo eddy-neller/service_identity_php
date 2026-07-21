@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Application\Shop\Port;
 
-use App\Application\Shop\ReadModel\Customer\CustomerList;
 use App\Domain\Shop\Customer\Model\Customer;
 use App\Domain\Shop\Customer\ValueObject\CustomerId;
 use App\Domain\Shop\Customer\ValueObject\UserAccountId;
@@ -15,7 +14,10 @@ interface CustomerRepositoryInterface
 
     public function nextIdentity(): CustomerId;
 
-    public function list(array $filters, array $orderBy, int $page, int $itemsPerPage): CustomerList;
+    /**
+     * @return array{items: list<Customer>, totalItems: int, totalPages: int}
+     */
+    public function list(array $filters, array $orderBy, int $page, int $itemsPerPage): array;
 
     public function save(Customer $customer): void;
 

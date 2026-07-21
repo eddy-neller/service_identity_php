@@ -4,11 +4,8 @@ declare(strict_types=1);
 
 namespace App\Application\Tests\Unit\Shop\UseCase\Query\Customer;
 
-use App\Application\Shared\ReadModel\Pagination;
 use App\Application\Shop\Port\AddressRepositoryInterface;
 use App\Application\Shop\Port\CustomerRepositoryInterface;
-use App\Application\Shop\ReadModel\Customer\AddressItem;
-use App\Application\Shop\ReadModel\Customer\AddressList;
 use App\Application\Shop\UseCase\Query\Customer\DisplayCustomer\DisplayCustomerQuery;
 use App\Application\Shop\UseCase\Query\Customer\DisplayCustomer\DisplayCustomerQueryHandler;
 use App\Domain\Shop\Customer\Exception\CustomerNotFoundException;
@@ -74,11 +71,12 @@ final class DisplayCustomerTest extends TestCase
             ->method('listByOwner')
             ->with(
                 $customerId,
-                $this->callback(static fn (Pagination $pagination): bool => 1 === $pagination->page && 1000 === $pagination->itemsPerPage),
+                1,
+                Customer::MAX_ADDRESSES,
                 ['createdAt' => 'DESC'],
                 [],
             )
-            ->willReturn(new AddressList([AddressItem::fromAddress($address)], 1, 1));
+            ->willReturn(['items' => [$address], 'totalItems' => 1, 'totalPages' => 1]);
 
         $output = $this->handler->handle(new DisplayCustomerQuery($customerId->toString()));
 

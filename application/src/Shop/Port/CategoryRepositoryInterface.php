@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace App\Application\Shop\Port;
 
-use App\Application\Shop\ReadModel\Catalog\CategoryItem;
-use App\Application\Shop\ReadModel\Catalog\CategoryList;
 use App\Domain\Shop\Catalog\Model\Category;
 use App\Domain\Shop\Catalog\ValueObject\CategoryId;
 use App\Domain\Shop\Catalog\ValueObject\CategoryTitle;
@@ -16,7 +14,10 @@ interface CategoryRepositoryInterface
 
     public function nextIdentity(): CategoryId;
 
-    public function list(array $filters, array $orderBy, int $page, int $itemsPerPage): CategoryList;
+    /**
+     * @return array{items: list<Category>, totalItems: int, totalPages: int}
+     */
+    public function list(array $filters, array $orderBy, int $page, int $itemsPerPage): array;
 
     public function save(Category $category): void;
 
@@ -26,5 +27,8 @@ interface CategoryRepositoryInterface
 
     public function findByTitle(CategoryTitle $title): ?Category;
 
-    public function findItemById(CategoryId $id): ?CategoryItem;
+    /**
+     * @return array{category: Category, parent: ?Category, children: ?list<Category>}|null
+     */
+    public function findTreeById(CategoryId $id): ?array;
 }

@@ -6,7 +6,6 @@ namespace App\Application\Tests\Unit\Shop\UseCase\Query\Catalog;
 
 use App\Application\Shop\Port\ProductRepositoryInterface;
 use App\Application\Shop\ReadModel\Catalog\ProductItem;
-use App\Application\Shop\ReadModel\Catalog\ProductList;
 use App\Application\Shop\UseCase\Query\Catalog\DisplayListProduct\DisplayListProductQuery;
 use App\Application\Shop\UseCase\Query\Catalog\DisplayListProduct\DisplayListProductQueryHandler;
 use App\Domain\SharedKernel\ValueObject\Slug;
@@ -48,20 +47,21 @@ final class DisplayListProductTest extends TestCase
         );
 
         $categoryId = CategoryId::fromString('550e8400-e29b-41d4-a716-446655440000');
+        $product = $this->createProduct(ProductId::fromString('1d2f4c1a-2b2b-4aa2-9a20-8b3e18f1d152'), $categoryId);
+        $category = $this->createCategory($categoryId);
         $item = ProductItem::fromProduct(
-            product: $this->createProduct(ProductId::fromString('1d2f4c1a-2b2b-4aa2-9a20-8b3e18f1d152'), $categoryId),
-            category: $this->createCategory($categoryId),
+            product: $product,
+            category: $category,
         );
-        $list = new ProductList([$item], 10, 2);
 
         $this->repository->expects($this->once())
             ->method('list')
             ->with(['title' => 'Product', 'subtitle' => 'Subtitle'], ['title' => 'ASC'], 2, 5)
-            ->willReturn($list);
+            ->willReturn(['items' => [['product' => $product, 'category' => $category]], 'totalItems' => 10, 'totalPages' => 2]);
 
         $output = $this->handler->handle($query);
 
-        $this->assertSame([$item], $output->items);
+        $this->assertEquals([$item], $output->items);
         $this->assertSame(10, $output->totalItems);
         $this->assertSame(2, $output->totalPages);
     }
@@ -76,20 +76,21 @@ final class DisplayListProductTest extends TestCase
         );
 
         $categoryId = CategoryId::fromString('550e8400-e29b-41d4-a716-446655440001');
+        $product = $this->createProduct(ProductId::fromString('2d2f4c1a-2b2b-4aa2-9a20-8b3e18f1d153'), $categoryId);
+        $category = $this->createCategory($categoryId);
         $item = ProductItem::fromProduct(
-            product: $this->createProduct(ProductId::fromString('2d2f4c1a-2b2b-4aa2-9a20-8b3e18f1d153'), $categoryId),
-            category: $this->createCategory($categoryId),
+            product: $product,
+            category: $category,
         );
-        $list = new ProductList([$item], 1, 1);
 
         $this->repository->expects($this->once())
             ->method('list')
             ->with([], ['createdAt' => 'DESC'], 1, 30)
-            ->willReturn($list);
+            ->willReturn(['items' => [['product' => $product, 'category' => $category]], 'totalItems' => 1, 'totalPages' => 1]);
 
         $output = $this->handler->handle($query);
 
-        $this->assertSame([$item], $output->items);
+        $this->assertEquals([$item], $output->items);
     }
 
     public function testQueryCacheKeyIsStableWhenFiltersAndOrderByAreReordered(): void

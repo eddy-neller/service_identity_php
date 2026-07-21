@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace App\Application\Shop\Port;
 
-use App\Application\Shared\ReadModel\Pagination;
-use App\Application\Shop\ReadModel\Customer\AddressList;
 use App\Domain\Shop\Customer\Model\Address;
 use App\Domain\Shop\Customer\ValueObject\AddressId;
 use App\Domain\Shop\Customer\ValueObject\CustomerId;
@@ -30,5 +28,8 @@ interface AddressRepositoryInterface
 
     public function findDefaultReplacementForOwner(CustomerId $ownerId, AddressId $excludedId): ?Address;
 
-    public function listByOwner(CustomerId $ownerId, Pagination $pagination, array $orderBy, array $filters): AddressList;
+    /**
+     * @return array{items: list<Address>, totalItems: int, totalPages: int}
+     */
+    public function listByOwner(CustomerId $ownerId, int $page, int $itemsPerPage, array $orderBy, array $filters): array;
 }

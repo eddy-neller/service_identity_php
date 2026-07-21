@@ -8,6 +8,7 @@ use App\Application\Shared\CQRS\Query\QueryHandlerInterface;
 use App\Application\User\Port\TokenProviderInterface;
 use App\Application\User\Port\UserRepositoryInterface;
 use App\Domain\User\ValueObject\EmailAddress;
+use Exception;
 
 final readonly class CheckPasswordResetTokenQueryHandler implements QueryHandlerInterface
 {
@@ -20,8 +21,13 @@ final readonly class CheckPasswordResetTokenQueryHandler implements QueryHandler
     public function handle(CheckPasswordResetTokenQuery $query): bool
     {
         $split = $this->tokenProvider->split($query->token);
-        $email = EmailAddress::fromString($split['email'] ?? '');
         $rawToken = $split['token'] ?? '';
+
+        try {
+            $email = EmailAddress::fromString($split['email'] ?? '');
+        } catch (Exception) {
+            return false;
+        }
 
         $user = $this->repository->findByResetPasswordToken($rawToken);
 

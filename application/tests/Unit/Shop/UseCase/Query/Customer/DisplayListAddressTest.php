@@ -4,10 +4,8 @@ declare(strict_types=1);
 
 namespace App\Application\Tests\Unit\Shop\UseCase\Query\Customer;
 
-use App\Application\Shared\ReadModel\Pagination;
 use App\Application\Shop\Port\AddressRepositoryInterface;
 use App\Application\Shop\ReadModel\Customer\AddressItem;
-use App\Application\Shop\ReadModel\Customer\AddressList;
 use App\Application\Shop\UseCase\Query\Customer\DisplayListAddress\DisplayListAddressQuery;
 use App\Application\Shop\UseCase\Query\Customer\DisplayListAddress\DisplayListAddressQueryHandler;
 use App\Domain\Shop\Customer\Model\Address;
@@ -64,21 +62,21 @@ final class DisplayListAddressTest extends TestCase
         );
 
         $addressItem = AddressItem::fromAddress($address);
-        $addressList = new AddressList([$addressItem], 1, 1);
 
         $this->repository->expects($this->once())
             ->method('listByOwner')
             ->with(
                 $customerId,
-                $this->callback(static fn (Pagination $pagination): bool => 1 === $pagination->page && 10 === $pagination->itemsPerPage),
+                1,
+                10,
                 $orderBy,
                 $filters,
             )
-            ->willReturn($addressList);
+            ->willReturn(['items' => [$address], 'totalItems' => 1, 'totalPages' => 1]);
 
         $output = $this->handler->handle($query);
 
-        $this->assertSame([$addressItem], $output->items);
+        $this->assertEquals([$addressItem], $output->items);
         $this->assertSame(1, $output->totalItems);
         $this->assertSame(1, $output->totalPages);
     }

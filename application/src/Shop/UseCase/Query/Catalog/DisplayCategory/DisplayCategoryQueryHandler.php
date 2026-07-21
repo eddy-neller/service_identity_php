@@ -19,12 +19,16 @@ final readonly class DisplayCategoryQueryHandler implements QueryHandlerInterfac
 
     public function handle(DisplayCategoryQuery $query): CategoryItem
     {
-        $categoryItem = $this->categoryRepository->findItemById(CategoryId::fromString($query->categoryId));
+        $categoryTree = $this->categoryRepository->findTreeById(CategoryId::fromString($query->categoryId));
 
-        if (null === $categoryItem) {
+        if (null === $categoryTree) {
             throw new CategoryNotFoundException();
         }
 
-        return $categoryItem;
+        return CategoryItem::fromCategory(
+            category: $categoryTree['category'],
+            parent: $categoryTree['parent'],
+            children: $categoryTree['children'],
+        );
     }
 }

@@ -6,7 +6,6 @@ namespace App\Application\Tests\Unit\Shop\UseCase\Query\Customer;
 
 use App\Application\Shop\Port\CustomerRepositoryInterface;
 use App\Application\Shop\ReadModel\Customer\CustomerItem;
-use App\Application\Shop\ReadModel\Customer\CustomerList;
 use App\Application\Shop\UseCase\Query\Customer\DisplayListCustomer\DisplayListCustomerQuery;
 use App\Application\Shop\UseCase\Query\Customer\DisplayListCustomer\DisplayListCustomerQueryHandler;
 use App\Domain\Shop\Customer\Model\Customer;
@@ -41,17 +40,17 @@ final class DisplayListCustomerTest extends TestCase
             orderBy: ['createdAt' => 'ASC'],
         );
 
-        $customer = CustomerItem::fromCustomer($this->createCustomer());
-        $list = new CustomerList([$customer], 10, 2);
+        $customer = $this->createCustomer();
+        $customerItem = CustomerItem::fromCustomer($customer);
 
         $this->repository->expects($this->once())
             ->method('list')
             ->with(['status' => 1], ['createdAt' => 'ASC'], 2, 5)
-            ->willReturn($list);
+            ->willReturn(['items' => [$customer], 'totalItems' => 10, 'totalPages' => 2]);
 
         $output = $this->handler->handle($query);
 
-        $this->assertSame([$customer], $output->items);
+        $this->assertEquals([$customerItem], $output->items);
         $this->assertSame(10, $output->totalItems);
         $this->assertSame(2, $output->totalPages);
     }
@@ -65,17 +64,17 @@ final class DisplayListCustomerTest extends TestCase
             orderBy: [],
         );
 
-        $customer = CustomerItem::fromCustomer($this->createCustomer());
-        $list = new CustomerList([$customer], 1, 1);
+        $customer = $this->createCustomer();
+        $customerItem = CustomerItem::fromCustomer($customer);
 
         $this->repository->expects($this->once())
             ->method('list')
             ->with([], ['createdAt' => 'DESC'], 1, 30)
-            ->willReturn($list);
+            ->willReturn(['items' => [$customer], 'totalItems' => 1, 'totalPages' => 1]);
 
         $output = $this->handler->handle($query);
 
-        $this->assertSame([$customer], $output->items);
+        $this->assertEquals([$customerItem], $output->items);
         $this->assertSame(1, $output->totalItems);
         $this->assertSame(1, $output->totalPages);
     }
