@@ -7,7 +7,7 @@ namespace App\Presentation\User\State\Auth;
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProcessorInterface;
 use App\Application\Shared\CQRS\Command\CommandBusInterface;
-use App\Application\User\UseCase\Command\Logout\LogoutCommand;
+use App\Application\User\UseCase\Command\Auth\Logout\LogoutCommand;
 use App\Presentation\Shared\State\PresentationErrorCode;
 use App\Presentation\User\Dto\Auth\LogoutInput;
 use App\Presentation\User\Security\UserMeSecurityTrait;

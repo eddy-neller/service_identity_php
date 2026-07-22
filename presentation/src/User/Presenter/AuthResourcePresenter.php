@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Presentation\User\Presenter;
 
 use App\Application\User\ReadModel\AuthTokens;
-use App\Presentation\User\ApiResource\AuthResource;
+use App\Presentation\User\ApiResource\Auth\AuthResource;
 
 final class AuthResourcePresenter
 {

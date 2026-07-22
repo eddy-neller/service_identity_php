@@ -7,7 +7,7 @@ namespace App\Presentation\Tests\Unit\State\User\Auth;
 use ApiPlatform\Metadata\Operation;
 use App\Application\Shared\CQRS\Command\CommandBusInterface;
 use App\Application\User\ReadModel\AuthTokens;
-use App\Application\User\UseCase\Command\RefreshToken\RefreshTokenCommand;
+use App\Application\User\UseCase\Command\Auth\RefreshToken\RefreshTokenCommand;
 use App\Presentation\User\Dto\Auth\RefreshTokenInput;
 use App\Presentation\User\Presenter\AuthResourcePresenter;
 use App\Presentation\User\State\Auth\RefreshTokenProcessor;

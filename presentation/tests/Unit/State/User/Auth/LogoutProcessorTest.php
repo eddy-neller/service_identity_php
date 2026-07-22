@@ -6,7 +6,7 @@ namespace App\Presentation\Tests\Unit\State\User\Auth;
 
 use ApiPlatform\Metadata\Operation;
 use App\Application\Shared\CQRS\Command\CommandBusInterface;
-use App\Application\User\UseCase\Command\Logout\LogoutCommand;
+use App\Application\User\UseCase\Command\Auth\Logout\LogoutCommand;
 use App\Infrastructure\Entity\User\User;
 use App\Presentation\User\Dto\Auth\LogoutInput;
 use App\Presentation\User\State\Auth\LogoutProcessor;
