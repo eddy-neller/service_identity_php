@@ -10,12 +10,12 @@ use App\Application\User\Port\UserRepositoryInterface;
 use App\Application\User\UseCase\Command\Account\ResetWrongPasswordAttempts\ResetWrongPasswordAttemptsCommand;
 use App\Application\User\UseCase\Command\Account\ResetWrongPasswordAttempts\ResetWrongPasswordAttemptsCommandHandler;
 use App\Domain\User\Model\User;
-use App\Domain\User\ValueObject\EmailAddress;
-use App\Domain\User\ValueObject\Preferences;
+use App\Domain\User\ValueObject\Identity\EmailAddress;
+use App\Domain\User\ValueObject\Identity\UserId;
+use App\Domain\User\ValueObject\Identity\Username;
+use App\Domain\User\ValueObject\Profile\Preferences;
 use App\Domain\User\ValueObject\Security\HashedPassword;
 use App\Domain\User\ValueObject\Security\ResetPassword;
-use App\Domain\User\ValueObject\UserId;
-use App\Domain\User\ValueObject\Username;
 use DateTimeImmutable;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
@@ -47,7 +47,7 @@ final class ResetWrongPasswordAttemptsTest extends TestCase
     public function testHandleResetsAttemptsWhenUserFound(): void
     {
         $user = $this->createUser();
-        $this->setResetPassword($user, new ResetPassword(mailSent: 0, token: 't', tokenTtl: time() + 3600));
+        $this->setResetPassword($user, ResetPassword::create(mailSent: 0, token: 't', tokenTtl: time() + 3600));
         $command = new ResetWrongPasswordAttemptsCommand((string) $user->getId());
 
         $this->repository->expects($this->once())

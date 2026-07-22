@@ -53,7 +53,13 @@ domain/
 ## Value Objects
 
 - `final`, propriétés `private` (souvent `readonly`), **immuables**.
-- Validation métier dans le constructeur / factory (`fromString`, `fromInt`, …).
+- **Constructeur `private`** — sans exception. La création passe **toujours** par une factory nommée
+  statique qui exprime l'intention et centralise la validation : `fromString`, `fromInt`, `fromArray`,
+  `create`, `active`, `disabled`, `zero`, … `new Vo(...)` hors de la classe est **interdit** (impossible de
+  contourner un invariant). Les witheurs (`with*`, `add`, `multiply`) et les factories appellent `new self(...)`
+  en interne — seuls autorisés à instancier.
+- Validation métier dans le constructeur privé / la factory (`fromString`, `fromInt`, …) : un état invalide
+  ne doit jamais pouvoir exister, même via un statut « enum-like » (`fromInt` valide la borne).
 - Comparaison par valeur : `equals(self $other): bool`.
 - Utiliser des VOs pour : emails, montants, quantités, statuts, préférences, langues, tokens, limites, etc. — **pas de `string`/`int` bruts** pour ces concepts.
 - Le VO encapsule **toute** l'arithmétique et les conversions de son concept :
@@ -248,7 +254,7 @@ adaptés au comportement public :
 - [ ] Aucun `use App\Application\*`, `App\Infrastructure\*`, `App\Presentation\*`.
 - [ ] Aucun import Symfony/Doctrine/API Platform/HTTP/Ramsey.
 - [ ] Agrégats créés via factory methods (`create`, `register`, `place`, `reconstitute`).
-- [ ] Value Objects immuables et validant leurs invariants ; arithmétique/conversions encapsulées dans le VO.
+- [ ] Value Objects immuables et validant leurs invariants ; **constructeur `private` + factory nommée** (aucun `new Vo(...)` hors classe) ; arithmétique/conversions encapsulées dans le VO.
 - [ ] Test de VO complet : construction valide, un cas par invariant rejeté (message exact), `equals()` vrai/faux, cast `(string)`.
 - [ ] Toute méthode métier sensible reçoit un `DateTimeImmutable $now`.
 - [ ] `createdAt` immuable, `updatedAt` mis à jour via `$this->touch($now);`.

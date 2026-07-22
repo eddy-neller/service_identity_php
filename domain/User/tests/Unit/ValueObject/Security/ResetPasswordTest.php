@@ -11,7 +11,7 @@ final class ResetPasswordTest extends TestCase
 {
     public function testConstructWithDefaultValues(): void
     {
-        $resetPassword = new ResetPassword();
+        $resetPassword = ResetPassword::create();
 
         $this->assertSame(0, $resetPassword->getMailSent());
         $this->assertNull($resetPassword->getToken());
@@ -20,7 +20,7 @@ final class ResetPasswordTest extends TestCase
 
     public function testConstructWithSpecificValues(): void
     {
-        $resetPassword = new ResetPassword(
+        $resetPassword = ResetPassword::create(
             mailSent: 2,
             token: 'reset-token',
             tokenTtl: 1234567890,
@@ -62,7 +62,7 @@ final class ResetPasswordTest extends TestCase
 
     public function testJsonSerializeReturnsArray(): void
     {
-        $resetPassword = new ResetPassword(
+        $resetPassword = ResetPassword::create(
             mailSent: 2,
             token: 'reset-token',
             tokenTtl: 1234567890,
@@ -78,7 +78,7 @@ final class ResetPasswordTest extends TestCase
 
     public function testToArrayReturnsArray(): void
     {
-        $resetPassword = new ResetPassword(
+        $resetPassword = ResetPassword::create(
             mailSent: 2,
             token: 'reset-token',
             tokenTtl: 1234567890,
@@ -94,7 +94,7 @@ final class ResetPasswordTest extends TestCase
 
     public function testWithMailSentCreatesNewInstance(): void
     {
-        $resetPassword = new ResetPassword(mailSent: 1);
+        $resetPassword = ResetPassword::create(mailSent: 1);
         $newResetPassword = $resetPassword->withMailSent(3);
 
         $this->assertSame(1, $resetPassword->getMailSent());
@@ -103,7 +103,7 @@ final class ResetPasswordTest extends TestCase
 
     public function testWithMailSentIsImmutable(): void
     {
-        $resetPassword = new ResetPassword(mailSent: 1);
+        $resetPassword = ResetPassword::create(mailSent: 1);
         $newResetPassword = $resetPassword->withMailSent(3);
 
         $this->assertNotSame($resetPassword, $newResetPassword);
@@ -111,7 +111,7 @@ final class ResetPasswordTest extends TestCase
 
     public function testWithTokenCreatesNewInstance(): void
     {
-        $resetPassword = new ResetPassword(token: 'old-token');
+        $resetPassword = ResetPassword::create(token: 'old-token');
         $newResetPassword = $resetPassword->withToken('new-token');
 
         $this->assertSame('old-token', $resetPassword->getToken());
@@ -120,7 +120,7 @@ final class ResetPasswordTest extends TestCase
 
     public function testWithTokenIsImmutable(): void
     {
-        $resetPassword = new ResetPassword(token: 'old-token');
+        $resetPassword = ResetPassword::create(token: 'old-token');
         $newResetPassword = $resetPassword->withToken('new-token');
 
         $this->assertNotSame($resetPassword, $newResetPassword);
@@ -128,7 +128,7 @@ final class ResetPasswordTest extends TestCase
 
     public function testWithTokenCanSetNull(): void
     {
-        $resetPassword = new ResetPassword(token: 'token');
+        $resetPassword = ResetPassword::create(token: 'token');
         $newResetPassword = $resetPassword->withToken(null);
 
         $this->assertNull($newResetPassword->getToken());
@@ -136,7 +136,7 @@ final class ResetPasswordTest extends TestCase
 
     public function testWithTokenTtlCreatesNewInstance(): void
     {
-        $resetPassword = new ResetPassword(tokenTtl: 1000);
+        $resetPassword = ResetPassword::create(tokenTtl: 1000);
         $newResetPassword = $resetPassword->withTokenTtl(2000);
 
         $this->assertSame(1000, $resetPassword->getTokenTtl());
@@ -145,7 +145,7 @@ final class ResetPasswordTest extends TestCase
 
     public function testWithTokenTtlIsImmutable(): void
     {
-        $resetPassword = new ResetPassword(tokenTtl: 1000);
+        $resetPassword = ResetPassword::create(tokenTtl: 1000);
         $newResetPassword = $resetPassword->withTokenTtl(2000);
 
         $this->assertNotSame($resetPassword, $newResetPassword);
@@ -153,7 +153,7 @@ final class ResetPasswordTest extends TestCase
 
     public function testWithTokenTtlCanSetNull(): void
     {
-        $resetPassword = new ResetPassword(tokenTtl: 1000);
+        $resetPassword = ResetPassword::create(tokenTtl: 1000);
         $newResetPassword = $resetPassword->withTokenTtl(null);
 
         $this->assertNull($newResetPassword->getTokenTtl());
@@ -161,7 +161,7 @@ final class ResetPasswordTest extends TestCase
 
     public function testWithMethodsPreserveOtherValues(): void
     {
-        $resetPassword = new ResetPassword(
+        $resetPassword = ResetPassword::create(
             mailSent: 1,
             token: 'token',
             tokenTtl: 1000,

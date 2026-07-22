@@ -13,7 +13,7 @@ use ApiPlatform\Metadata\Patch;
 use ApiPlatform\Metadata\Post;
 use ApiPlatform\OpenApi\Model;
 use ApiPlatform\OpenApi\Model\RequestBody;
-use App\Domain\User\ValueObject\Security\RoleSet;
+use App\Domain\User\ValueObject\Access\RoleSet;
 use App\Infrastructure\Entity\User\User;
 use App\Presentation\RouteRequirements;
 use App\Presentation\User\ApiResource\UserResource;

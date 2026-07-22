@@ -9,11 +9,11 @@ use App\Application\User\Service\UserUniquenessChecker;
 use App\Domain\User\Exception\Uniqueness\EmailAlreadyUsedException;
 use App\Domain\User\Exception\Uniqueness\UsernameAlreadyUsedException;
 use App\Domain\User\Model\User;
-use App\Domain\User\ValueObject\EmailAddress;
-use App\Domain\User\ValueObject\Preferences;
+use App\Domain\User\ValueObject\Identity\EmailAddress;
+use App\Domain\User\ValueObject\Identity\UserId;
+use App\Domain\User\ValueObject\Identity\Username;
+use App\Domain\User\ValueObject\Profile\Preferences;
 use App\Domain\User\ValueObject\Security\HashedPassword;
-use App\Domain\User\ValueObject\UserId;
-use App\Domain\User\ValueObject\Username;
 use DateTimeImmutable;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
@@ -213,7 +213,7 @@ final class UserUniquenessCheckerTest extends TestCase
             Username::fromString($username),
             EmailAddress::fromString($email),
             HashedPassword::fromString('hashed-password'),
-            new Preferences(),
+            Preferences::create(),
             new DateTimeImmutable('2024-01-01T00:00:00Z'),
         );
     }

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Presentation\User\Security\Voter;
 
-use App\Domain\User\ValueObject\Security\RoleSet;
+use App\Domain\User\ValueObject\Access\RoleSet;
 use App\Infrastructure\Entity\User\User;
 use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;

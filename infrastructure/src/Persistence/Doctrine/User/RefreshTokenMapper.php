@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace App\Infrastructure\Persistence\Doctrine\User;
 
 use App\Domain\User\Model\RefreshToken as DomainRefreshToken;
-use App\Domain\User\ValueObject\RefreshTokenId;
+use App\Domain\User\ValueObject\Identity\UserId;
 use App\Domain\User\ValueObject\Security\RefreshTokenHash;
-use App\Domain\User\ValueObject\UserId;
+use App\Domain\User\ValueObject\Security\RefreshTokenId;
 use App\Infrastructure\Entity\User\RefreshToken as DoctrineRefreshToken;
 use Ramsey\Uuid\Uuid;
 

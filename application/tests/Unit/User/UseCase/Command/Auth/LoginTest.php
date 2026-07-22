@@ -5,13 +5,13 @@ declare(strict_types=1);
 namespace App\Application\Tests\Unit\User\UseCase\Command\Auth;
 
 use App\Domain\User\Model\User;
-use App\Domain\User\ValueObject\EmailAddress;
-use App\Domain\User\ValueObject\Preferences;
+use App\Domain\User\ValueObject\Access\RoleSet;
+use App\Domain\User\ValueObject\Identity\EmailAddress;
+use App\Domain\User\ValueObject\Identity\UserId;
+use App\Domain\User\ValueObject\Identity\Username;
+use App\Domain\User\ValueObject\Lifecycle\UserStatus;
+use App\Domain\User\ValueObject\Profile\Preferences;
 use App\Domain\User\ValueObject\Security\HashedPassword;
-use App\Domain\User\ValueObject\Security\RoleSet;
-use App\Domain\User\ValueObject\Security\UserStatus;
-use App\Domain\User\ValueObject\UserId;
-use App\Domain\User\ValueObject\Username;
 use DateTimeImmutable;
 use PHPUnit\Framework\TestCase;
 
@@ -27,7 +27,7 @@ final class LoginTest extends TestCase
             roles: RoleSet::fromArray(['ROLE_USER']),
             status: UserStatus::active(),
             now: new DateTimeImmutable('2026-07-18 10:00:00'),
-            preferences: new Preferences(),
+            preferences: Preferences::create(),
         );
 
         $user->recordSuccessfulLogin(new DateTimeImmutable('2026-07-18 11:00:00'));

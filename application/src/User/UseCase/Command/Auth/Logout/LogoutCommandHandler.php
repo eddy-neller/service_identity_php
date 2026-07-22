@@ -8,8 +8,8 @@ use App\Application\Shared\CQRS\Command\CommandHandlerInterface;
 use App\Application\Shared\Port\TransactionalInterface;
 use App\Application\User\Port\RefreshTokenHasherInterface;
 use App\Application\User\Port\RefreshTokenRepositoryInterface;
+use App\Domain\User\ValueObject\Identity\UserId;
 use App\Domain\User\ValueObject\Security\RefreshTokenHash;
-use App\Domain\User\ValueObject\UserId;
 
 final readonly class LogoutCommandHandler implements CommandHandlerInterface
 {

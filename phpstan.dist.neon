@@ -1,8 +1,17 @@
 parameters:
     level: 6
     paths:
-        - bin/
-        - config/
-        - public/
+        - application/
+        - domain/
+        - infrastructure/
+        - presentation/
         - src/
         - tests/
+    ignoreErrors:
+        - identifier: missingType.iterableValue
+        - identifier: missingType.generics
+        - '#Call to an undefined method Doctrine\\ORM\\EntityRepository<[^>]+>::[a-zA-Z_]+\(\)#'
+        - '#Call to an undefined method Doctrine\\Persistence\\ObjectRepository<[^>]+>::[a-zA-Z_]+\(\)#'
+    treatPhpDocTypesAsCertain: false
+    excludePaths:
+        - tests/bootstrap.php

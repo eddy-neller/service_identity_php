@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Infrastructure\DataFixtures\test\User;
 
-use App\Domain\User\ValueObject\Security\ActiveEmail;
+use App\Domain\User\ValueObject\Access\RoleSet;
+use App\Domain\User\ValueObject\Identity\ActiveEmail;
+use App\Domain\User\ValueObject\Lifecycle\UserStatus;
 use App\Domain\User\ValueObject\Security\ResetPassword;
-use App\Domain\User\ValueObject\Security\RoleSet;
-use App\Domain\User\ValueObject\Security\UserStatus;
 use App\Infrastructure\DataFixtures\DataFixturesTrait;
 use App\Infrastructure\Entity\User\User;
 use DateTimeImmutable;
@@ -144,7 +144,7 @@ class UserFixtures extends Fixture implements FixtureGroupInterface
         $activationUser->setCreatedAt($timestamps['createdAt']);
         $activationUser->setUpdatedAt($timestamps['updatedAt']);
 
-        $activeEmail = new ActiveEmail(
+        $activeEmail = ActiveEmail::create(
             mailSent: 0,
             token: self::ACTIVATION_RAW_TOKEN,
             tokenTtl: new DateTimeImmutable('+10 years')->getTimestamp(),
@@ -152,7 +152,7 @@ class UserFixtures extends Fixture implements FixtureGroupInterface
 
         $activationUser->setActiveEmail($activeEmail);
 
-        $resetPassword = new ResetPassword(
+        $resetPassword = ResetPassword::create(
             mailSent: 0,
             token: self::ACTIVATION_RAW_TOKEN,
             tokenTtl: new DateTimeImmutable('+10 years')->getTimestamp(),

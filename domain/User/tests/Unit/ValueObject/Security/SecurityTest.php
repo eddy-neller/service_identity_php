@@ -11,7 +11,7 @@ final class SecurityTest extends TestCase
 {
     public function testConstructWithDefaultValues(): void
     {
-        $security = new Security();
+        $security = Security::create();
 
         $this->assertSame(0, $security->getTotalWrongPassword());
         $this->assertSame(0, $security->getTotalWrongTwoFactorCode());
@@ -20,7 +20,7 @@ final class SecurityTest extends TestCase
 
     public function testConstructWithSpecificValues(): void
     {
-        $security = new Security(
+        $security = Security::create(
             totalWrongPassword: 3,
             totalWrongTwoFactorCode: 2,
             totalTwoFactorSmsSent: 5,
@@ -68,7 +68,7 @@ final class SecurityTest extends TestCase
 
     public function testJsonSerializeReturnsArray(): void
     {
-        $security = new Security(
+        $security = Security::create(
             totalWrongPassword: 3,
             totalWrongTwoFactorCode: 2,
             totalTwoFactorSmsSent: 5,
@@ -84,7 +84,7 @@ final class SecurityTest extends TestCase
 
     public function testToArrayReturnsArray(): void
     {
-        $security = new Security(
+        $security = Security::create(
             totalWrongPassword: 3,
             totalWrongTwoFactorCode: 2,
             totalTwoFactorSmsSent: 5,
@@ -100,7 +100,7 @@ final class SecurityTest extends TestCase
 
     public function testWithTotalWrongPasswordCreatesNewInstance(): void
     {
-        $security = new Security(totalWrongPassword: 2);
+        $security = Security::create(totalWrongPassword: 2);
         $newSecurity = $security->withTotalWrongPassword(5);
 
         $this->assertSame(2, $security->getTotalWrongPassword());
@@ -109,7 +109,7 @@ final class SecurityTest extends TestCase
 
     public function testWithTotalWrongPasswordIsImmutable(): void
     {
-        $security = new Security(totalWrongPassword: 2);
+        $security = Security::create(totalWrongPassword: 2);
         $newSecurity = $security->withTotalWrongPassword(5);
 
         $this->assertNotSame($security, $newSecurity);
@@ -117,7 +117,7 @@ final class SecurityTest extends TestCase
 
     public function testWithTotalWrongTwoFactorCodeCreatesNewInstance(): void
     {
-        $security = new Security(totalWrongTwoFactorCode: 1);
+        $security = Security::create(totalWrongTwoFactorCode: 1);
         $newSecurity = $security->withTotalWrongTwoFactorCode(3);
 
         $this->assertSame(1, $security->getTotalWrongTwoFactorCode());
@@ -126,7 +126,7 @@ final class SecurityTest extends TestCase
 
     public function testWithTotalWrongTwoFactorCodeIsImmutable(): void
     {
-        $security = new Security(totalWrongTwoFactorCode: 1);
+        $security = Security::create(totalWrongTwoFactorCode: 1);
         $newSecurity = $security->withTotalWrongTwoFactorCode(3);
 
         $this->assertNotSame($security, $newSecurity);
@@ -134,7 +134,7 @@ final class SecurityTest extends TestCase
 
     public function testWithTotalTwoFactorSmsSentCreatesNewInstance(): void
     {
-        $security = new Security(totalTwoFactorSmsSent: 4);
+        $security = Security::create(totalTwoFactorSmsSent: 4);
         $newSecurity = $security->withTotalTwoFactorSmsSent(8);
 
         $this->assertSame(4, $security->getTotalTwoFactorSmsSent());
@@ -143,7 +143,7 @@ final class SecurityTest extends TestCase
 
     public function testWithTotalTwoFactorSmsSentIsImmutable(): void
     {
-        $security = new Security(totalTwoFactorSmsSent: 4);
+        $security = Security::create(totalTwoFactorSmsSent: 4);
         $newSecurity = $security->withTotalTwoFactorSmsSent(8);
 
         $this->assertNotSame($security, $newSecurity);
@@ -151,7 +151,7 @@ final class SecurityTest extends TestCase
 
     public function testWithMethodsPreserveOtherValues(): void
     {
-        $security = new Security(
+        $security = Security::create(
             totalWrongPassword: 1,
             totalWrongTwoFactorCode: 2,
             totalTwoFactorSmsSent: 3,

@@ -8,11 +8,23 @@ use JsonSerializable;
 
 final readonly class ResetPassword implements JsonSerializable
 {
-    public function __construct(
+    private function __construct(
         private int $mailSent = 0,
         private ?string $token = null,
         private ?int $tokenTtl = null,
     ) {
+    }
+
+    public static function create(
+        int $mailSent = 0,
+        ?string $token = null,
+        ?int $tokenTtl = null,
+    ): self {
+        return new self(
+            mailSent: $mailSent,
+            token: $token,
+            tokenTtl: $tokenTtl,
+        );
     }
 
     public static function fromArray(array $data): self

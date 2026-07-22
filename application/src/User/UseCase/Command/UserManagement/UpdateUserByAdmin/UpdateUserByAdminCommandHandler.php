@@ -13,14 +13,14 @@ use App\Application\User\Port\UserUniquenessCheckerInterface;
 use App\Application\User\ReadModel\UserItem;
 use App\Domain\User\Exception\UserNotFoundException;
 use App\Domain\User\Model\User;
-use App\Domain\User\ValueObject\EmailAddress;
-use App\Domain\User\ValueObject\Firstname;
-use App\Domain\User\ValueObject\Lastname;
+use App\Domain\User\ValueObject\Access\RoleSet;
+use App\Domain\User\ValueObject\Identity\EmailAddress;
+use App\Domain\User\ValueObject\Identity\UserId;
+use App\Domain\User\ValueObject\Identity\Username;
+use App\Domain\User\ValueObject\Lifecycle\UserStatus;
+use App\Domain\User\ValueObject\Profile\Firstname;
+use App\Domain\User\ValueObject\Profile\Lastname;
 use App\Domain\User\ValueObject\Security\HashedPassword;
-use App\Domain\User\ValueObject\Security\RoleSet;
-use App\Domain\User\ValueObject\Security\UserStatus;
-use App\Domain\User\ValueObject\UserId;
-use App\Domain\User\ValueObject\Username;
 
 final readonly class UpdateUserByAdminCommandHandler implements CommandHandlerInterface
 {

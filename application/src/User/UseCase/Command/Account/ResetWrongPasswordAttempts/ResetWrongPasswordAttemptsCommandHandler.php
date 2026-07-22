@@ -8,7 +8,7 @@ use App\Application\Shared\CQRS\Command\CommandHandlerInterface;
 use App\Application\Shared\Port\ClockInterface;
 use App\Application\Shared\Port\TransactionalInterface;
 use App\Application\User\Port\UserRepositoryInterface;
-use App\Domain\User\ValueObject\UserId;
+use App\Domain\User\ValueObject\Identity\UserId;
 
 final readonly class ResetWrongPasswordAttemptsCommandHandler implements CommandHandlerInterface
 {

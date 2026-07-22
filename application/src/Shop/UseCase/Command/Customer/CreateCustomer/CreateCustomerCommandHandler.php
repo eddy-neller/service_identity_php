@@ -14,7 +14,7 @@ use App\Domain\Shop\Customer\Exception\CustomerAlreadyExistsException;
 use App\Domain\Shop\Customer\Model\Customer;
 use App\Domain\Shop\Customer\ValueObject\UserAccountId;
 use App\Domain\User\Exception\UserNotFoundException;
-use App\Domain\User\ValueObject\UserId;
+use App\Domain\User\ValueObject\Identity\UserId;
 
 final readonly class CreateCustomerCommandHandler implements CommandHandlerInterface
 {

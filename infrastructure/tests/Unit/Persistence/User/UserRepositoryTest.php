@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Infrastructure\Tests\Unit\Persistence\User;
 
-use App\Domain\User\ValueObject\Security\UserStatus;
+use App\Domain\User\ValueObject\Lifecycle\UserStatus;
 use App\Infrastructure\Entity\User\User;
 use App\Infrastructure\Persistence\Doctrine\User\UserRepository;
 use Doctrine\ORM\EntityManagerInterface;

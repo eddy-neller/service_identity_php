@@ -6,12 +6,12 @@ namespace App\Infrastructure\Tests\Unit\Notification\User;
 
 use App\Application\Shared\Messenger\Message\SendEmailMessage;
 use App\Domain\User\Model\User;
-use App\Domain\User\ValueObject\EmailAddress;
-use App\Domain\User\ValueObject\Firstname;
-use App\Domain\User\ValueObject\Preferences;
+use App\Domain\User\ValueObject\Identity\EmailAddress;
+use App\Domain\User\ValueObject\Identity\UserId;
+use App\Domain\User\ValueObject\Identity\Username;
+use App\Domain\User\ValueObject\Profile\Firstname;
+use App\Domain\User\ValueObject\Profile\Preferences;
 use App\Domain\User\ValueObject\Security\HashedPassword;
-use App\Domain\User\ValueObject\UserId;
-use App\Domain\User\ValueObject\Username;
 use App\Infrastructure\Notification\User\UserNotifier;
 use DateTimeImmutable;
 use PHPUnit\Framework\MockObject\MockObject;
@@ -165,7 +165,9 @@ final class UserNotifierTest extends KernelTestCase
 
     public function testSendUserMailWithFallbackLanguage(): void
     {
-        $user = $this->createUser('invalid-lang');
+        // Préférence utilisateur 'fr' (valide), mais non activée côté déploiement
+        // => le notifier doit retomber sur le default 'en'
+        $user = $this->createUser('fr');
         $subject = 'Account Activation Required';
         $baseLink = 'https://example.com/activate/';
         $encodedToken = 'encoded-token-abc';
@@ -181,7 +183,7 @@ final class UserNotifierTest extends KernelTestCase
             ->method('get')
             ->willReturnMap([
                 ['mailerFrontLinkRegisterValidation', $baseLink],
-                ['app.enabled_locales', ['en', 'fr']],
+                ['app.enabled_locales', ['en']],
                 ['app.default_locale', 'en'],
             ]);
 
@@ -284,9 +286,7 @@ final class UserNotifierTest extends KernelTestCase
 
     private function createUser(?string $lang): User
     {
-        // Si lang est null, utiliser une langue non autorisée pour tester le fallback
-        // Sinon, utiliser la langue fournie
-        $preferences = Preferences::fromArray($lang ? ['lang' => $lang] : ['lang' => 'invalid-lang']);
+        $preferences = Preferences::fromArray($lang ? ['lang' => $lang] : []);
 
         return User::register(
             id: UserId::fromString('550e8400-e29b-41d4-a716-446655440000'),

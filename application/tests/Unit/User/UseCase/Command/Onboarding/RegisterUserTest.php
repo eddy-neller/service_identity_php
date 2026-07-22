@@ -16,9 +16,9 @@ use App\Application\User\UseCase\Command\Onboarding\RegisterUser\RegisterUserCom
 use App\Domain\User\Exception\Uniqueness\EmailAlreadyUsedException;
 use App\Domain\User\Exception\Uniqueness\UsernameAlreadyUsedException;
 use App\Domain\User\Model\User;
-use App\Domain\User\ValueObject\EmailAddress;
-use App\Domain\User\ValueObject\UserId;
-use App\Domain\User\ValueObject\Username;
+use App\Domain\User\ValueObject\Identity\EmailAddress;
+use App\Domain\User\ValueObject\Identity\UserId;
+use App\Domain\User\ValueObject\Identity\Username;
 use DateTimeImmutable;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;

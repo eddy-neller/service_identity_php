@@ -15,7 +15,7 @@ use ApiPlatform\Metadata\Patch;
 use ApiPlatform\Metadata\Post;
 use ApiPlatform\OpenApi\Model;
 use App\Domain\Shop\Customer\ValueObject\CustomerStatus;
-use App\Domain\User\ValueObject\Security\RoleSet;
+use App\Domain\User\ValueObject\Access\RoleSet;
 use App\Infrastructure\Entity\Shop\Customer;
 use App\Presentation\RouteRequirements;
 use App\Presentation\Shop\Dto\Customer\CustomerPatchInput;

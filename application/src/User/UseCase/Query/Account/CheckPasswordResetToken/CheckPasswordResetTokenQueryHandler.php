@@ -7,7 +7,7 @@ namespace App\Application\User\UseCase\Query\Account\CheckPasswordResetToken;
 use App\Application\Shared\CQRS\Query\QueryHandlerInterface;
 use App\Application\User\Port\TokenProviderInterface;
 use App\Application\User\Port\UserRepositoryInterface;
-use App\Domain\User\ValueObject\EmailAddress;
+use App\Domain\User\ValueObject\Identity\EmailAddress;
 use Exception;
 
 final readonly class CheckPasswordResetTokenQueryHandler implements QueryHandlerInterface

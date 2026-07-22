@@ -28,7 +28,7 @@ final readonly class ProductMapper
             price: Money::fromInt((int) round($entity->getPrice())),
             slug: Slug::fromString($entity->getSlug()),
             categoryId: CategoryId::fromString($entity->getCategory()->getId()->toString()),
-            image: new ProductImage(
+            image: ProductImage::create(
                 fileName: $entity->getImageName(),
             ),
             createdAt: $entity->getCreatedAt(),

@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace App\Infrastructure\Entity\User;
 
-use App\Domain\User\ValueObject\Security\ActiveEmail;
+use App\Domain\User\ValueObject\Access\RoleSet;
+use App\Domain\User\ValueObject\Identity\ActiveEmail;
+use App\Domain\User\ValueObject\Lifecycle\UserStatus;
 use App\Domain\User\ValueObject\Security\ResetPassword;
-use App\Domain\User\ValueObject\Security\RoleSet;
 use App\Domain\User\ValueObject\Security\Security;
-use App\Domain\User\ValueObject\Security\UserStatus;
 use App\Entity\Shop\Order;
 use App\Infrastructure\Persistence\Doctrine\User\UserRepository;
 use DateTimeImmutable;
@@ -88,9 +88,9 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
     public function __construct()
     {
-        $this->security = new Security()->toArray();
-        $this->activeEmail = new ActiveEmail()->toArray();
-        $this->resetPassword = new ResetPassword()->toArray();
+        $this->security = Security::create()->toArray();
+        $this->activeEmail = ActiveEmail::create()->toArray();
+        $this->resetPassword = ResetPassword::create()->toArray();
         $this->orders = new ArrayCollection();
         $this->lastVisit = new DateTimeImmutable();
     }

@@ -6,9 +6,16 @@ namespace App\Domain\Shop\Catalog\ValueObject;
 
 final readonly class ProductImage
 {
-    public function __construct(
+    private function __construct(
         private ?string $fileName = null,
     ) {
+    }
+
+    public static function create(?string $fileName = null): self
+    {
+        return new self(
+            fileName: $fileName,
+        );
     }
 
     public function fileName(): ?string

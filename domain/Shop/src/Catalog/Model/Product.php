@@ -48,7 +48,7 @@ final class Product
             price: $price,
             slug: $slug,
             categoryId: $categoryId,
-            image: new ProductImage(),
+            image: ProductImage::create(),
             createdAt: $now,
             updatedAt: $now,
         );

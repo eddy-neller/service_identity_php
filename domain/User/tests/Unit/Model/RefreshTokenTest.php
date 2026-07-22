@@ -6,9 +6,9 @@ namespace App\Domain\User\Tests\Unit\Model;
 
 use App\Domain\User\Exception\UserDomainException;
 use App\Domain\User\Model\RefreshToken;
-use App\Domain\User\ValueObject\RefreshTokenId;
+use App\Domain\User\ValueObject\Identity\UserId;
 use App\Domain\User\ValueObject\Security\RefreshTokenHash;
-use App\Domain\User\ValueObject\UserId;
+use App\Domain\User\ValueObject\Security\RefreshTokenId;
 use DateTimeImmutable;
 use PHPUnit\Framework\TestCase;
 

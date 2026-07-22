@@ -5,18 +5,18 @@ declare(strict_types=1);
 namespace App\Infrastructure\EventListener;
 
 use App\Application\Shared\Port\QueryCacheInterface;
-use App\Domain\User\Event\ActivationEmailRequestedEvent;
-use App\Domain\User\Event\PasswordResetCompletedEvent;
-use App\Domain\User\Event\PasswordResetRequestedEvent;
-use App\Domain\User\Event\UserActivatedEvent;
-use App\Domain\User\Event\UserAvatarUpdatedEvent;
-use App\Domain\User\Event\UserCreatedByAdminEvent;
-use App\Domain\User\Event\UserDeletedByAdminEvent;
-use App\Domain\User\Event\UserPasswordUpdatedEvent;
-use App\Domain\User\Event\UserRegisteredEvent;
-use App\Domain\User\Event\UserUpdatedByAdminEvent;
-use App\Domain\User\Event\UserWrongPasswordAttemptRegisteredEvent;
-use App\Domain\User\Event\UserWrongPasswordAttemptsResetEvent;
+use App\Domain\User\Event\Lifecycle\ActivationEmailRequestedEvent;
+use App\Domain\User\Event\Lifecycle\UserActivatedEvent;
+use App\Domain\User\Event\Lifecycle\UserRegisteredEvent;
+use App\Domain\User\Event\Management\UserCreatedByAdminEvent;
+use App\Domain\User\Event\Management\UserDeletedByAdminEvent;
+use App\Domain\User\Event\Management\UserUpdatedByAdminEvent;
+use App\Domain\User\Event\Profile\UserAvatarUpdatedEvent;
+use App\Domain\User\Event\Security\PasswordResetCompletedEvent;
+use App\Domain\User\Event\Security\PasswordResetRequestedEvent;
+use App\Domain\User\Event\Security\UserPasswordUpdatedEvent;
+use App\Domain\User\Event\Security\UserWrongPasswordAttemptRegisteredEvent;
+use App\Domain\User\Event\Security\UserWrongPasswordAttemptsResetEvent;
 use Symfony\Component\EventDispatcher\Attribute\AsEventListener;
 
 #[AsEventListener(event: 'user.created_by_admin', method: 'onUserEvent')]

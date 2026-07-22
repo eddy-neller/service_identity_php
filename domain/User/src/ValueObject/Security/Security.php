@@ -8,11 +8,23 @@ use JsonSerializable;
 
 final readonly class Security implements JsonSerializable
 {
-    public function __construct(
+    private function __construct(
         private int $totalWrongPassword = 0,
         private int $totalWrongTwoFactorCode = 0,
         private int $totalTwoFactorSmsSent = 0,
     ) {
+    }
+
+    public static function create(
+        int $totalWrongPassword = 0,
+        int $totalWrongTwoFactorCode = 0,
+        int $totalTwoFactorSmsSent = 0,
+    ): self {
+        return new self(
+            totalWrongPassword: $totalWrongPassword,
+            totalWrongTwoFactorCode: $totalWrongTwoFactorCode,
+            totalTwoFactorSmsSent: $totalTwoFactorSmsSent,
+        );
     }
 
     public static function fromArray(array $data): self

@@ -10,7 +10,7 @@ use App\Application\Shared\Port\TransactionalInterface;
 use App\Application\User\Port\TokenProviderInterface;
 use App\Application\User\Port\UserRepositoryInterface;
 use App\Domain\User\Exception\UserNotFoundException;
-use App\Domain\User\ValueObject\EmailAddress;
+use App\Domain\User\ValueObject\Identity\EmailAddress;
 
 final readonly class ValidateActivationCommandHandler implements CommandHandlerInterface
 {

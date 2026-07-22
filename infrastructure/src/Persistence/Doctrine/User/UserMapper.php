@@ -5,15 +5,15 @@ declare(strict_types=1);
 namespace App\Infrastructure\Persistence\Doctrine\User;
 
 use App\Domain\User\Model\User as DomainUser;
-use App\Domain\User\ValueObject\EmailAddress;
-use App\Domain\User\ValueObject\Firstname;
-use App\Domain\User\ValueObject\Lastname;
-use App\Domain\User\ValueObject\Preferences;
+use App\Domain\User\ValueObject\Access\RoleSet;
+use App\Domain\User\ValueObject\Identity\EmailAddress;
+use App\Domain\User\ValueObject\Identity\UserId;
+use App\Domain\User\ValueObject\Identity\Username;
+use App\Domain\User\ValueObject\Lifecycle\UserStatus;
+use App\Domain\User\ValueObject\Profile\Firstname;
+use App\Domain\User\ValueObject\Profile\Lastname;
+use App\Domain\User\ValueObject\Profile\Preferences;
 use App\Domain\User\ValueObject\Security\HashedPassword;
-use App\Domain\User\ValueObject\Security\RoleSet;
-use App\Domain\User\ValueObject\Security\UserStatus;
-use App\Domain\User\ValueObject\UserId;
-use App\Domain\User\ValueObject\Username;
 use App\Infrastructure\Entity\User\User as DoctrineUser;
 use Ramsey\Uuid\Uuid;
 

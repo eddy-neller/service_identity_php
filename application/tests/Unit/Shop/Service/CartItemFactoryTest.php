@@ -201,7 +201,7 @@ final class CartItemFactoryTest extends TestCase
             $price,
             Slug::fromString($slug),
             CategoryId::fromString(self::CATEGORY_ID),
-            new ProductImage($imageName),
+            ProductImage::create($imageName),
             $now,
             $now,
         );

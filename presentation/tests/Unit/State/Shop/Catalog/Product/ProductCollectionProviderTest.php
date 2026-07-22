@@ -175,7 +175,7 @@ final class ProductCollectionProviderTest extends TestCase
             now: new DateTimeImmutable('2025-01-01 10:00:00'),
         );
 
-        $product->updateImage(new ProductImage('product.jpg'), new DateTimeImmutable('2025-01-02 10:00:00'));
+        $product->updateImage(ProductImage::create('product.jpg'), new DateTimeImmutable('2025-01-02 10:00:00'));
 
         return $product;
     }

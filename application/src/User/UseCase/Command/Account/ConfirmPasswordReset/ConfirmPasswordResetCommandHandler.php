@@ -11,7 +11,7 @@ use App\Application\User\Port\PasswordHasherInterface;
 use App\Application\User\Port\TokenProviderInterface;
 use App\Application\User\Port\UserRepositoryInterface;
 use App\Domain\User\Exception\UserDomainException;
-use App\Domain\User\ValueObject\EmailAddress;
+use App\Domain\User\ValueObject\Identity\EmailAddress;
 use App\Domain\User\ValueObject\Security\HashedPassword;
 
 final readonly class ConfirmPasswordResetCommandHandler implements CommandHandlerInterface

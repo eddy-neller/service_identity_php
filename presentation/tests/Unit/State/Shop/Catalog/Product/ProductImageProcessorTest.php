@@ -198,7 +198,7 @@ final class ProductImageProcessorTest extends TestCase
             price: Money::fromInt(1299),
             slug: Slug::fromString('product-title'),
             categoryId: CategoryId::fromString('550e8400-e29b-41d4-a716-446655440001'),
-            image: new ProductImage('product.jpg'),
+            image: ProductImage::create('product.jpg'),
             createdAt: $now,
             updatedAt: $now,
         );

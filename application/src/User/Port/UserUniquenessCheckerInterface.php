@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Application\User\Port;
 
-use App\Domain\User\ValueObject\EmailAddress;
-use App\Domain\User\ValueObject\UserId;
-use App\Domain\User\ValueObject\Username;
+use App\Domain\User\ValueObject\Identity\EmailAddress;
+use App\Domain\User\ValueObject\Identity\UserId;
+use App\Domain\User\ValueObject\Identity\Username;
 
 interface UserUniquenessCheckerInterface
 {

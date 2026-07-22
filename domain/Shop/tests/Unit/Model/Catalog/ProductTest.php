@@ -117,7 +117,7 @@ final class ProductTest extends TestCase
         $product = $this->createProduct();
         $now = new DateTimeImmutable('2025-01-02 10:00:00');
 
-        $product->updateImage(new ProductImage('image.jpg'), $now);
+        $product->updateImage(ProductImage::create('image.jpg'), $now);
 
         $this->assertSame('image.jpg', $product->getImageName());
         $this->assertSame($now, $product->getUpdatedAt());
@@ -137,7 +137,7 @@ final class ProductTest extends TestCase
     {
         $createdAt = new DateTimeImmutable('2024-12-01 10:00:00');
         $updatedAt = new DateTimeImmutable('2024-12-10 10:00:00');
-        $image = new ProductImage('stored.jpg');
+        $image = ProductImage::create('stored.jpg');
 
         $product = Product::reconstitute(
             id: ProductId::fromString(self::PRODUCT_ID),

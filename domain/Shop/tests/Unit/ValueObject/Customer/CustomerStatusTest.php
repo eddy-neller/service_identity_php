@@ -4,11 +4,20 @@ declare(strict_types=1);
 
 namespace App\Domain\Shop\Tests\Unit\ValueObject\Customer;
 
+use App\Domain\Shop\Customer\Exception\InvalidCustomerStatusException;
 use App\Domain\Shop\Customer\ValueObject\CustomerStatus;
 use PHPUnit\Framework\TestCase;
 
 final class CustomerStatusTest extends TestCase
 {
+    public function testFromIntRejectsUnsupportedValue(): void
+    {
+        $this->expectException(InvalidCustomerStatusException::class);
+        $this->expectExceptionMessage('Unsupported status: 42.');
+
+        CustomerStatus::fromInt(42);
+    }
+
     public function testActiveStatus(): void
     {
         $status = CustomerStatus::active();

@@ -9,7 +9,7 @@ use App\Application\Shared\Port\ClockInterface;
 use App\Application\Shared\Port\TransactionalInterface;
 use App\Application\User\Port\UserRepositoryInterface;
 use App\Domain\User\Exception\UserNotFoundException;
-use App\Domain\User\ValueObject\UserId;
+use App\Domain\User\ValueObject\Identity\UserId;
 
 final readonly class DeleteUserByAdminCommandHandler implements CommandHandlerInterface
 {

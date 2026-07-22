@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace App\Domain\User\Model;
 
 use App\Domain\User\Exception\UserDomainException;
-use App\Domain\User\ValueObject\RefreshTokenId;
+use App\Domain\User\ValueObject\Identity\UserId;
 use App\Domain\User\ValueObject\Security\RefreshTokenHash;
-use App\Domain\User\ValueObject\UserId;
+use App\Domain\User\ValueObject\Security\RefreshTokenId;
 use DateTimeImmutable;
 
 final readonly class RefreshToken

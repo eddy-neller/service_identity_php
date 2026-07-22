@@ -12,7 +12,7 @@ use App\Application\User\Port\AvatarStorageInterface;
 use App\Application\User\Port\UserRepositoryInterface;
 use App\Application\User\ReadModel\UserItem;
 use App\Domain\User\Exception\UserNotFoundException;
-use App\Domain\User\ValueObject\UserId;
+use App\Domain\User\ValueObject\Identity\UserId;
 use Exception;
 
 final readonly class UpdateAvatarCommandHandler implements CommandHandlerInterface

@@ -12,8 +12,8 @@ use App\Application\User\Port\UserRepositoryInterface;
 use App\Domain\User\Exception\Security\InvalidCurrentPasswordException;
 use App\Domain\User\Exception\Security\SamePasswordException;
 use App\Domain\User\Exception\UserNotFoundException;
+use App\Domain\User\ValueObject\Identity\UserId;
 use App\Domain\User\ValueObject\Security\HashedPassword;
-use App\Domain\User\ValueObject\UserId;
 
 final readonly class UpdatePasswordCommandHandler implements CommandHandlerInterface
 {

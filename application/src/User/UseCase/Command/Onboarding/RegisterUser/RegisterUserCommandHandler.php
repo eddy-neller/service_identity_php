@@ -15,10 +15,10 @@ use App\Application\User\Port\UserRepositoryInterface;
 use App\Application\User\Port\UserUniquenessCheckerInterface;
 use App\Application\User\ReadModel\UserItem;
 use App\Domain\User\Model\User;
-use App\Domain\User\ValueObject\EmailAddress;
-use App\Domain\User\ValueObject\Preferences;
+use App\Domain\User\ValueObject\Identity\EmailAddress;
+use App\Domain\User\ValueObject\Identity\Username;
+use App\Domain\User\ValueObject\Profile\Preferences;
 use App\Domain\User\ValueObject\Security\HashedPassword;
-use App\Domain\User\ValueObject\Username;
 
 final readonly class RegisterUserCommandHandler implements CommandHandlerInterface
 {

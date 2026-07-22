@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Presentation\User\Dto\UserManagement;
 
-use App\Domain\User\ValueObject\Security\RoleSet;
-use App\Domain\User\ValueObject\Security\UserStatus;
+use App\Domain\User\ValueObject\Access\RoleSet;
+use App\Domain\User\ValueObject\Lifecycle\UserStatus;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
 

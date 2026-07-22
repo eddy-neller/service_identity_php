@@ -4,33 +4,33 @@ declare(strict_types=1);
 
 namespace App\Domain\User\Tests\Unit\Model;
 
-use App\Domain\User\Event\ActivationEmailRequestedEvent;
-use App\Domain\User\Event\PasswordResetCompletedEvent;
-use App\Domain\User\Event\PasswordResetRequestedEvent;
-use App\Domain\User\Event\ReauthenticationReason;
-use App\Domain\User\Event\UserActivatedEvent;
-use App\Domain\User\Event\UserAvatarUpdatedEvent;
-use App\Domain\User\Event\UserCreatedByAdminEvent;
-use App\Domain\User\Event\UserDeletedByAdminEvent;
-use App\Domain\User\Event\UserPasswordUpdatedEvent;
-use App\Domain\User\Event\UserReauthenticationRequiredEvent;
-use App\Domain\User\Event\UserRegisteredEvent;
-use App\Domain\User\Event\UserUpdatedByAdminEvent;
-use App\Domain\User\Event\UserWrongPasswordAttemptRegisteredEvent;
-use App\Domain\User\Event\UserWrongPasswordAttemptsResetEvent;
+use App\Domain\User\Event\Lifecycle\ActivationEmailRequestedEvent;
+use App\Domain\User\Event\Lifecycle\UserActivatedEvent;
+use App\Domain\User\Event\Lifecycle\UserRegisteredEvent;
+use App\Domain\User\Event\Management\UserCreatedByAdminEvent;
+use App\Domain\User\Event\Management\UserDeletedByAdminEvent;
+use App\Domain\User\Event\Management\UserUpdatedByAdminEvent;
+use App\Domain\User\Event\Profile\UserAvatarUpdatedEvent;
+use App\Domain\User\Event\Security\PasswordResetCompletedEvent;
+use App\Domain\User\Event\Security\PasswordResetRequestedEvent;
+use App\Domain\User\Event\Security\ReauthenticationReason;
+use App\Domain\User\Event\Security\UserPasswordUpdatedEvent;
+use App\Domain\User\Event\Security\UserReauthenticationRequiredEvent;
+use App\Domain\User\Event\Security\UserWrongPasswordAttemptRegisteredEvent;
+use App\Domain\User\Event\Security\UserWrongPasswordAttemptsResetEvent;
 use App\Domain\User\Exception\RateLimit\ActivationLimitReachedException;
 use App\Domain\User\Exception\RateLimit\ResetPasswordLimitReachedException;
 use App\Domain\User\Exception\Security\UserLockedException;
 use App\Domain\User\Model\User;
-use App\Domain\User\ValueObject\EmailAddress;
-use App\Domain\User\ValueObject\Preferences;
-use App\Domain\User\ValueObject\Security\ActiveEmail;
+use App\Domain\User\ValueObject\Access\RoleSet;
+use App\Domain\User\ValueObject\Identity\ActiveEmail;
+use App\Domain\User\ValueObject\Identity\EmailAddress;
+use App\Domain\User\ValueObject\Identity\UserId;
+use App\Domain\User\ValueObject\Identity\Username;
+use App\Domain\User\ValueObject\Lifecycle\UserStatus;
+use App\Domain\User\ValueObject\Profile\Preferences;
 use App\Domain\User\ValueObject\Security\HashedPassword;
 use App\Domain\User\ValueObject\Security\ResetPassword;
-use App\Domain\User\ValueObject\Security\RoleSet;
-use App\Domain\User\ValueObject\Security\UserStatus;
-use App\Domain\User\ValueObject\UserId;
-use App\Domain\User\ValueObject\Username;
 use DateTimeImmutable;
 use PHPUnit\Framework\TestCase;
 use ReflectionProperty;
@@ -112,7 +112,7 @@ final class UserTest extends TestCase
     public function testRequestActivationThrowsWhenLimitReached(): void
     {
         $user = $this->createUser();
-        $this->setActiveEmail($user, new ActiveEmail(mailSent: 3));
+        $this->setActiveEmail($user, ActiveEmail::create(mailSent: 3));
 
         $this->expectException(ActivationLimitReachedException::class);
 
@@ -125,7 +125,7 @@ final class UserTest extends TestCase
         $date = new DateTimeImmutable('-1 hour');
 
         $expiredTtl = $date->getTimestamp();
-        $this->setActiveEmail($user, new ActiveEmail(mailSent: 3, token: 'old', tokenTtl: $expiredTtl));
+        $this->setActiveEmail($user, ActiveEmail::create(mailSent: 3, token: 'old', tokenTtl: $expiredTtl));
 
         $now = new DateTimeImmutable();
         $user->requestActivation('token', new DateTimeImmutable('+1 day'), $now);
@@ -202,7 +202,7 @@ final class UserTest extends TestCase
     public function testRequestPasswordResetThrowsWhenLimitReached(): void
     {
         $user = $this->createActiveUser();
-        $this->setResetPassword($user, new ResetPassword(mailSent: 3));
+        $this->setResetPassword($user, ResetPassword::create(mailSent: 3));
 
         $this->expectException(ResetPasswordLimitReachedException::class);
 
@@ -215,7 +215,7 @@ final class UserTest extends TestCase
         $date = new DateTimeImmutable('-1 hour');
 
         $expiredTtl = $date->getTimestamp();
-        $this->setResetPassword($user, new ResetPassword(mailSent: 3, token: 'old', tokenTtl: $expiredTtl));
+        $this->setResetPassword($user, ResetPassword::create(mailSent: 3, token: 'old', tokenTtl: $expiredTtl));
 
         $now = new DateTimeImmutable();
         $expiresAt = new DateTimeImmutable('+15 minutes');

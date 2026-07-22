@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Infrastructure\DataFixtures\dev\User;
 
-use App\Domain\User\ValueObject\Security\RoleSet;
-use App\Domain\User\ValueObject\Security\UserStatus;
+use App\Domain\User\ValueObject\Access\RoleSet;
+use App\Domain\User\ValueObject\Lifecycle\UserStatus;
 use App\Infrastructure\DataFixtures\DataFixturesTrait;
 use App\Infrastructure\Entity\User\User;
 use Doctrine\Bundle\FixturesBundle\Fixture;

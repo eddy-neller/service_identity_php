@@ -25,7 +25,7 @@ api_platform:
         # Cas spécifiques (sémantique propre à la sécurité / rate-limit, pas une simple catégorie)
         App\Domain\User\Exception\Security\InvalidCredentialsException: 401
         App\Domain\User\Exception\Security\InvalidRefreshTokenException: 401
-        App\Domain\User\Exception\Security\AccountNotActivatedException: 403
+        App\Domain\User\Exception\Lifecycle\AccountNotActivatedException: 403
         App\Domain\User\Exception\Security\UserLockedException: 423
         App\Domain\User\Exception\RateLimit\ActivationLimitReachedException: 429
         App\Domain\User\Exception\RateLimit\ResetPasswordLimitReachedException: 429

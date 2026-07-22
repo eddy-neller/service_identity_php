@@ -5,36 +5,36 @@ declare(strict_types=1);
 namespace App\Domain\User\Model;
 
 use App\Domain\SharedKernel\Event\DomainEventTrait;
-use App\Domain\User\Event\ActivationEmailRequestedEvent;
-use App\Domain\User\Event\PasswordResetCompletedEvent;
-use App\Domain\User\Event\PasswordResetRequestedEvent;
-use App\Domain\User\Event\ReauthenticationReason;
-use App\Domain\User\Event\UserActivatedEvent;
-use App\Domain\User\Event\UserAvatarUpdatedEvent;
-use App\Domain\User\Event\UserCreatedByAdminEvent;
-use App\Domain\User\Event\UserDeletedByAdminEvent;
-use App\Domain\User\Event\UserPasswordUpdatedEvent;
-use App\Domain\User\Event\UserReauthenticationRequiredEvent;
-use App\Domain\User\Event\UserRegisteredEvent;
-use App\Domain\User\Event\UserUpdatedByAdminEvent;
-use App\Domain\User\Event\UserWrongPasswordAttemptRegisteredEvent;
-use App\Domain\User\Event\UserWrongPasswordAttemptsResetEvent;
+use App\Domain\User\Event\Lifecycle\ActivationEmailRequestedEvent;
+use App\Domain\User\Event\Lifecycle\UserActivatedEvent;
+use App\Domain\User\Event\Lifecycle\UserRegisteredEvent;
+use App\Domain\User\Event\Management\UserCreatedByAdminEvent;
+use App\Domain\User\Event\Management\UserDeletedByAdminEvent;
+use App\Domain\User\Event\Management\UserUpdatedByAdminEvent;
+use App\Domain\User\Event\Profile\UserAvatarUpdatedEvent;
+use App\Domain\User\Event\Security\PasswordResetCompletedEvent;
+use App\Domain\User\Event\Security\PasswordResetRequestedEvent;
+use App\Domain\User\Event\Security\ReauthenticationReason;
+use App\Domain\User\Event\Security\UserPasswordUpdatedEvent;
+use App\Domain\User\Event\Security\UserReauthenticationRequiredEvent;
+use App\Domain\User\Event\Security\UserWrongPasswordAttemptRegisteredEvent;
+use App\Domain\User\Event\Security\UserWrongPasswordAttemptsResetEvent;
 use App\Domain\User\Exception\RateLimit\ActivationLimitReachedException;
 use App\Domain\User\Exception\RateLimit\ResetPasswordLimitReachedException;
 use App\Domain\User\Exception\Security\UserLockedException;
 use App\Domain\User\Exception\UserDomainException;
-use App\Domain\User\ValueObject\EmailAddress;
-use App\Domain\User\ValueObject\Firstname;
-use App\Domain\User\ValueObject\Lastname;
-use App\Domain\User\ValueObject\Preferences;
-use App\Domain\User\ValueObject\Security\ActiveEmail;
+use App\Domain\User\ValueObject\Access\RoleSet;
+use App\Domain\User\ValueObject\Identity\ActiveEmail;
+use App\Domain\User\ValueObject\Identity\EmailAddress;
+use App\Domain\User\ValueObject\Identity\UserId;
+use App\Domain\User\ValueObject\Identity\Username;
+use App\Domain\User\ValueObject\Lifecycle\UserStatus;
+use App\Domain\User\ValueObject\Profile\Firstname;
+use App\Domain\User\ValueObject\Profile\Lastname;
+use App\Domain\User\ValueObject\Profile\Preferences;
 use App\Domain\User\ValueObject\Security\HashedPassword;
 use App\Domain\User\ValueObject\Security\ResetPassword;
-use App\Domain\User\ValueObject\Security\RoleSet;
 use App\Domain\User\ValueObject\Security\Security;
-use App\Domain\User\ValueObject\Security\UserStatus;
-use App\Domain\User\ValueObject\UserId;
-use App\Domain\User\ValueObject\Username;
 use DateTimeImmutable;
 
 final class User
@@ -88,9 +88,9 @@ final class User
             password: $password,
             roles: RoleSet::fromArray(['ROLE_USER']),
             status: UserStatus::inactive(),
-            security: new Security(),
-            activeEmail: new ActiveEmail(),
-            resetPassword: new ResetPassword(),
+            security: Security::create(),
+            activeEmail: ActiveEmail::create(),
+            resetPassword: ResetPassword::create(),
             preferences: $preferences,
             avatarName: null,
             lastVisit: $now,
@@ -129,10 +129,10 @@ final class User
             password: $password,
             roles: $roles,
             status: $status,
-            security: new Security(),
-            activeEmail: new ActiveEmail(),
-            resetPassword: new ResetPassword(),
-            preferences: $preferences ?? new Preferences(),
+            security: Security::create(),
+            activeEmail: ActiveEmail::create(),
+            resetPassword: ResetPassword::create(),
+            preferences: $preferences ?? Preferences::create(),
             avatarName: null,
             lastVisit: $now,
             loginCount: 0,
@@ -198,7 +198,7 @@ final class User
             throw new ActivationLimitReachedException();
         }
 
-        $this->activeEmail = new ActiveEmail(
+        $this->activeEmail = ActiveEmail::create(
             mailSent: $this->getActiveEmail()->getMailSent() + 1,
             token: $token,
             tokenTtl: $expiresAt->getTimestamp(),
@@ -228,7 +228,7 @@ final class User
 
     public function clearActivation(): void
     {
-        $this->activeEmail = new ActiveEmail();
+        $this->activeEmail = ActiveEmail::create();
     }
 
     public function requestPasswordReset(string $token, DateTimeImmutable $expiresAt, DateTimeImmutable $now): void
@@ -240,7 +240,7 @@ final class User
             throw new ResetPasswordLimitReachedException();
         }
 
-        $this->resetPassword = new ResetPassword(
+        $this->resetPassword = ResetPassword::create(
             mailSent: $this->getResetPassword()->getMailSent() + 1,
             token: $token,
             tokenTtl: $expiresAt->getTimestamp(),
@@ -257,7 +257,7 @@ final class User
     {
         $this->assertResetPasswordTokenValid($token, $now);
         $this->password = $password;
-        $this->resetPassword = new ResetPassword();
+        $this->resetPassword = ResetPassword::create();
         $this->touch($now);
 
         $this->recordEvent(new PasswordResetCompletedEvent(
@@ -558,7 +558,7 @@ final class User
         $ttl = $activeEmail->getTokenTtl();
 
         if (null !== $ttl && $ttl <= $now->getTimestamp()) {
-            $this->activeEmail = new ActiveEmail();
+            $this->activeEmail = ActiveEmail::create();
         }
     }
 
@@ -568,7 +568,7 @@ final class User
         $ttl = $resetPassword->getTokenTtl();
 
         if (null !== $ttl && $ttl <= $now->getTimestamp()) {
-            $this->resetPassword = new ResetPassword();
+            $this->resetPassword = ResetPassword::create();
         }
     }
 

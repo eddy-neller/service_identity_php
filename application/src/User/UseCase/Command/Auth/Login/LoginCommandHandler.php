@@ -12,10 +12,10 @@ use App\Application\User\Port\PasswordHasherInterface;
 use App\Application\User\Port\UserRepositoryInterface;
 use App\Application\User\ReadModel\AuthTokens;
 use App\Application\User\Service\AuthTokenIssuer;
-use App\Domain\User\Exception\Security\AccountNotActivatedException;
+use App\Domain\User\Exception\Lifecycle\AccountNotActivatedException;
 use App\Domain\User\Exception\Security\InvalidCredentialsException;
 use App\Domain\User\Exception\Security\UserLockedException;
-use App\Domain\User\ValueObject\EmailAddress;
+use App\Domain\User\ValueObject\Identity\EmailAddress;
 
 final readonly class LoginCommandHandler implements CommandHandlerInterface
 {

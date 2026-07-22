@@ -11,21 +11,21 @@ final class ProductImageTest extends TestCase
 {
     public function testConstructorStoresFileName(): void
     {
-        $image = new ProductImage('image.jpg');
+        $image = ProductImage::create('image.jpg');
 
         $this->assertSame('image.jpg', $image->fileName());
     }
 
     public function testConstructorAllowsNull(): void
     {
-        $image = new ProductImage();
+        $image = ProductImage::create();
 
         $this->assertNull($image->fileName());
     }
 
     public function testWithFileReturnsNewInstance(): void
     {
-        $image = new ProductImage('old.jpg');
+        $image = ProductImage::create('old.jpg');
 
         $updated = $image->withFile('new.jpg');
 
@@ -36,7 +36,7 @@ final class ProductImageTest extends TestCase
 
     public function testWithFileAllowsClearingFileName(): void
     {
-        $image = new ProductImage('old.jpg');
+        $image = ProductImage::create('old.jpg');
 
         $updated = $image->withFile(null);
 

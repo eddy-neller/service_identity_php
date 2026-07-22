@@ -4,15 +4,20 @@ declare(strict_types=1);
 
 namespace App\Domain\Shop\Customer\ValueObject;
 
+use App\Domain\Shop\Customer\Exception\InvalidCustomerStatusException;
+
 final class CustomerStatus
 {
     public const int ACTIVE = 1;
 
     public const int DISABLED = 2;
 
-    public function __construct(
+    private function __construct(
         private readonly int $value = self::ACTIVE,
     ) {
+        if (!in_array($value, [self::ACTIVE, self::DISABLED], true)) {
+            throw InvalidCustomerStatusException::unsupported($value);
+        }
     }
 
     public static function active(): self
