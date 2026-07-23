@@ -153,6 +153,13 @@ Lancer la suite correspondante **avant chaque livraison** si le périmètre est 
 - La « nouvelle API » désigne le projet NestJS voisin : [`../api_js`](../api_js).
 - Pour aligner un comportement avec elle, consulter en priorité `src/application/` (cas d'usage), `src/presentation/http/` (contrats et validations) et `test/` (comportement attendu).
 
+
+---
+
+## Git et hygiene
+
+- Convention Git locale : pour committer, utiliser `git cm "<message>"`; pour pousser, utiliser `git psa && git fa`.
+
 ---
 
 ## Checklist architecture (transverse)

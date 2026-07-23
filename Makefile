@@ -201,6 +201,11 @@ serve-stop:
 serve-restart:
 	@make serve-stop && make serve-start
 
+## Consomme les messages du transport async (Messenger)
+.PHONY: messenger-consume
+messenger-consume:
+	@$(APP) sh -c "bin/console messenger:consume async -vv"
+
 ##--------------------------------- Tests -----------------------------------
 
 ## Run grum tests
