@@ -28,14 +28,12 @@ use Symfony\Component\Serializer\Attribute\Groups;
         new Get(
             uriTemplate: '/cart',
             openapi: new Model\Operation(security: [['JWT' => []]]),
-            security: "is_granted('IS_AUTHENTICATED_FULLY')",
             name: self::PREFIX_NAME . 'get',
             provider: CartGetProvider::class,
         ),
         new Post(
             uriTemplate: '/cart/items',
             openapi: new Model\Operation(security: [['JWT' => []]]),
-            security: "is_granted('IS_AUTHENTICATED_FULLY')",
             input: CartLinePostInput::class,
             name: self::PREFIX_NAME . 'item-post',
             processor: CartLinePostProcessor::class,
@@ -45,7 +43,6 @@ use Symfony\Component\Serializer\Attribute\Groups;
             uriVariables: ['productId' => new Link(fromClass: CartResource::class, identifiers: ['productId'])],
             requirements: ['productId' => RouteRequirements::UUID],
             openapi: new Model\Operation(security: [['JWT' => []]]),
-            security: "is_granted('IS_AUTHENTICATED_FULLY')",
             input: CartLinePatchInput::class,
             read: false,
             name: self::PREFIX_NAME . 'item-patch',
@@ -57,7 +54,6 @@ use Symfony\Component\Serializer\Attribute\Groups;
             requirements: ['productId' => RouteRequirements::UUID],
             status: 204,
             openapi: new Model\Operation(security: [['JWT' => []]]),
-            security: "is_granted('IS_AUTHENTICATED_FULLY')",
             output: false,
             read: false,
             name: self::PREFIX_NAME . 'item-delete',
@@ -67,13 +63,13 @@ use Symfony\Component\Serializer\Attribute\Groups;
             uriTemplate: '/cart',
             status: 204,
             openapi: new Model\Operation(security: [['JWT' => []]]),
-            security: "is_granted('IS_AUTHENTICATED_FULLY')",
             output: false,
             name: self::PREFIX_NAME . 'delete',
             processor: CartDeleteProcessor::class,
         ),
     ],
     routePrefix: '/shop/me',
+    security: "is_granted('IS_AUTHENTICATED_FULLY')",
 )]
 final class CartResource
 {

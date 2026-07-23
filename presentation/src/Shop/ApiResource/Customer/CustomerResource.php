@@ -36,7 +36,6 @@ use Symfony\Component\Serializer\Attribute\Groups;
             openapi: new Model\Operation(
                 security: [['JWT' => []]]
             ),
-            security: "is_granted('" . RoleSet::ROLE_ADMIN . "')",
             name: self::PREFIX_NAME . 'get',
             provider: CustomerGetProvider::class,
         ),
@@ -46,7 +45,6 @@ use Symfony\Component\Serializer\Attribute\Groups;
             openapi: new Model\Operation(
                 security: [['JWT' => []]]
             ),
-            security: "is_granted('" . RoleSet::ROLE_ADMIN . "')",
             input: CustomerPatchInput::class,
             name: self::PREFIX_NAME . 'patch',
             processor: CustomerPatchProcessor::class,
@@ -57,7 +55,6 @@ use Symfony\Component\Serializer\Attribute\Groups;
                 security: [['JWT' => []]]
             ),
             paginationClientItemsPerPage: true,
-            security: "is_granted('" . RoleSet::ROLE_ADMIN . "')",
             name: self::PREFIX_NAME . 'col',
             provider: CustomerCollectionProvider::class,
         ),
@@ -66,7 +63,6 @@ use Symfony\Component\Serializer\Attribute\Groups;
             openapi: new Model\Operation(
                 security: [['JWT' => []]]
             ),
-            security: "is_granted('" . RoleSet::ROLE_ADMIN . "')",
             input: CustomerPostInput::class,
             name: self::PREFIX_NAME . 'post',
             processor: CustomerPostProcessor::class,
@@ -74,6 +70,7 @@ use Symfony\Component\Serializer\Attribute\Groups;
     ],
     routePrefix: '/shop',
     order: ['createdAt' => 'DESC'],
+    security: "is_granted('" . RoleSet::ROLE_ADMIN . "')",
     stateOptions: new Options(entityClass: Customer::class),
 )]
 #[ApiFilter(SearchFilter::class, properties: ['userAccountId' => 'exact', 'status' => 'exact'])]

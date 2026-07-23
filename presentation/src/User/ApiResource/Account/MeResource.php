@@ -26,7 +26,6 @@ use ArrayObject;
             openapi: new Model\Operation(
                 security: [['JWT' => []]]
             ),
-            security: "is_granted('IS_AUTHENTICATED_FULLY')",
             output: UserResource::class,
             name: self::PREFIX_NAME,
             provider: UserMeProvider::class,
@@ -54,7 +53,6 @@ use ArrayObject;
                 ),
                 security: [['JWT' => []]]
             ),
-            security: "is_granted('IS_AUTHENTICATED_FULLY')",
             input: UserMeAvatarInput::class,
             output: UserResource::class,
             name: self::PREFIX_NAME . '-avatar',
@@ -72,7 +70,6 @@ use ArrayObject;
                 ),
                 security: [['JWT' => []]],
             ),
-            security: "is_granted('IS_AUTHENTICATED_FULLY')",
             input: UserMePasswordUpdateInput::class,
             output: false,
             name: self::PREFIX_NAME . '-update-password',
@@ -80,6 +77,7 @@ use ArrayObject;
         ),
     ],
     routePrefix: '/users',
+    security: "is_granted('IS_AUTHENTICATED_FULLY')",
 )]
 final class MeResource
 {

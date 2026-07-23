@@ -39,7 +39,6 @@ use ArrayObject;
                 description: 'Display a user. This endpoint is accessible only by administrators.',
                 security: [['JWT' => []]]
             ),
-            security: "is_granted('" . RoleSet::ROLE_ADMIN . "')",
             output: UserResource::class,
             name: self::PREFIX_NAME . '-get',
             provider: UserGetProvider::class,
@@ -52,7 +51,6 @@ use ArrayObject;
                 description: 'Update a user. All fields are optional. This endpoint is accessible only by administrators.',
                 security: [['JWT' => []]]
             ),
-            security: "is_granted('" . RoleSet::ROLE_ADMIN . "')",
             input: UserPatchInput::class,
             output: UserResource::class,
             name: self::PREFIX_NAME . '-patch',
@@ -67,7 +65,6 @@ use ArrayObject;
                 description: 'Delete a user. This endpoint is accessible only by administrators.',
                 security: [['JWT' => []]]
             ),
-            security: "is_granted('" . RoleSet::ROLE_ADMIN . "')",
             name: self::PREFIX_NAME . '-delete',
             processor: UserDeleteProcessor::class,
         ),
@@ -95,7 +92,6 @@ use ArrayObject;
                 ),
                 security: [['JWT' => []]]
             ),
-            security: "is_granted('" . RoleSet::ROLE_ADMIN . "')",
             input: UserAvatarInput::class,
             output: UserResource::class,
             name: self::PREFIX_NAME . '-avatar',
@@ -109,7 +105,6 @@ use ArrayObject;
                 security: [['JWT' => []]],
             ),
             paginationClientItemsPerPage: true,
-            security: "is_granted('" . RoleSet::ROLE_ADMIN . "')",
             output: UserResource::class,
             name: self::PREFIX_NAME . '-col',
             provider: UserAdminCollectionProvider::class,
@@ -125,7 +120,6 @@ use ArrayObject;
                 ),
                 security: [['JWT' => []]]
             ),
-            security: "is_granted('" . RoleSet::ROLE_ADMIN . "')",
             input: UserPostInput::class,
             output: UserResource::class,
             name: self::PREFIX_NAME . '-create',
@@ -133,6 +127,7 @@ use ArrayObject;
         ),
     ],
     order: ['createdAt' => 'DESC'],
+    security: "is_granted('" . RoleSet::ROLE_ADMIN . "')",
     stateOptions: new Options(entityClass: User::class),
 )]
 final class UserManagementResource
