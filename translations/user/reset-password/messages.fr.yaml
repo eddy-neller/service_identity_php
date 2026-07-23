@@ -2,5 +2,5 @@ user:
   reset:
     password:
       title: Réinitialisez votre mot de passe
-      content: "Bonjour %firstname%, <br><br>
+      content: "Bonjour %name%, <br><br>
       Vous recevez cet e-mail, car vous avez demandé une réinitialisation du mot de passe pour votre compte %appName%. Veuillez cliquer sur le bouton ci-dessous pour définir un nouveau mot de passe. Attention, ce lien ne sera valide que pendant <b>15 minutes</b>."

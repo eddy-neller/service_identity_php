@@ -2,6 +2,6 @@ user:
   register:
     activation:
       title: Activate your account
-      content: "Hello %firstname%, <br><br>In order to finalize your registration in %appName%, please click on the activation button below to validate your email address. Please note that this link will expire <b>48 hours</b> after this email was sent to you."
+      content: "Hello %name%, <br><br>In order to finalize your registration in %appName%, please click on the activation button below to validate your email address. Please note that this link will expire <b>48 hours</b> after this email was sent to you."
       selectedPlan: Selected plan
       planContent: After activation, you will be redirected to the finalization of your subscription

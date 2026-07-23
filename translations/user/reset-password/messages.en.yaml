@@ -2,6 +2,6 @@ user:
   reset:
     password:
       title: Reset your password
-      content: "Hello %firstname%, <br><br>
+      content: "Hello %name%, <br><br>
       You're receiving this email because you requested a password reset for your %appName% account. Please click on the button below to set a new password. Also note, this link will only be valid for <b>15 minutes</b>."
 

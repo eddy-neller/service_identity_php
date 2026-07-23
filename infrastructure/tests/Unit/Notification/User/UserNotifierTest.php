@@ -77,7 +77,7 @@ final class UserNotifierTest extends KernelTestCase
                     && $subject === $message->subject
                     && 'emails/user/register-activation.html.twig' === $message->template
                     && [
-                        'firstname' => 'John',
+                        'username' => 'testuser',
                         'link' => $expectedLink,
                         'userLocale' => 'en',
                     ] === $message->context;
@@ -115,7 +115,7 @@ final class UserNotifierTest extends KernelTestCase
                     && $subject === $message->subject
                     && 'emails/user/reset-password.html.twig' === $message->template
                     && [
-                        'firstname' => 'John',
+                        'username' => 'testuser',
                         'link' => $expectedLink,
                         'userLocale' => 'en',
                     ] === $message->context;
@@ -153,7 +153,7 @@ final class UserNotifierTest extends KernelTestCase
                     && $subject === $message->subject
                     && 'emails/user/register-activation.html.twig' === $message->template
                     && [
-                        'firstname' => 'John',
+                        'username' => 'testuser',
                         'link' => $expectedLink,
                         'userLocale' => 'fr',
                     ] === $message->context;
@@ -194,7 +194,7 @@ final class UserNotifierTest extends KernelTestCase
                     && $subject === $message->subject
                     && 'emails/user/register-activation.html.twig' === $message->template
                     && [
-                        'firstname' => 'John',
+                        'username' => 'testuser',
                         'link' => $expectedLink,
                         'userLocale' => 'en',
                     ] === $message->context;
@@ -236,45 +236,7 @@ final class UserNotifierTest extends KernelTestCase
                     && $subject === $message->subject
                     && 'emails/user/register-activation.html.twig' === $message->template
                     && [
-                        'firstname' => 'John',
-                        'link' => $expectedLink,
-                        'userLocale' => 'en',
-                    ] === $message->context;
-            }))
-            ->willReturnCallback(static fn (SendEmailMessage $message): Envelope => new Envelope($message));
-
-        $this->userNotifier->sendActivationEmail($user, $encodedToken);
-    }
-
-    public function testSendActivationEmailWithoutFirstname(): void
-    {
-        $user = $this->createUserWithoutFirstname('en');
-        $subject = 'Account Activation Required';
-        $baseLink = 'https://example.com/activate/';
-        $encodedToken = 'encoded-token-pqr';
-        $expectedLink = $baseLink . '?token=' . urlencode($encodedToken);
-
-        $this->translator->expects($this->once())
-            ->method('trans')
-            ->with('user.register.activation.title', [], 'messages', 'en')
-            ->willReturn($subject);
-
-        $this->parameterBag->expects($this->exactly(3))
-            ->method('get')
-            ->willReturnMap([
-                ['mailerFrontLinkRegisterValidation', $baseLink],
-                ['app.enabled_locales', ['en', 'fr']],
-                ['app.default_locale', 'en'],
-            ]);
-
-        $this->bus->expects($this->once())
-            ->method('dispatch')
-            ->with($this->callback(static function (SendEmailMessage $message) use ($subject, $expectedLink): bool {
-                return 'test@example.com' === $message->to
-                    && $subject === $message->subject
-                    && 'emails/user/register-activation.html.twig' === $message->template
-                    && [
-                        'firstname' => null,
+                        'username' => 'testuser',
                         'link' => $expectedLink,
                         'userLocale' => 'en',
                     ] === $message->context;
@@ -296,20 +258,6 @@ final class UserNotifierTest extends KernelTestCase
             preferences: $preferences,
             now: new DateTimeImmutable(),
             firstname: Firstname::fromString('John'),
-        );
-    }
-
-    private function createUserWithoutFirstname(?string $lang): User
-    {
-        $preferences = Preferences::fromArray($lang ? ['lang' => $lang] : ['lang' => 'invalid-lang']);
-
-        return User::register(
-            id: UserId::fromString('550e8400-e29b-41d4-a716-446655440001'),
-            username: Username::fromString('testuser'),
-            email: EmailAddress::fromString('test@example.com'),
-            password: HashedPassword::fromString('hashed-password'),
-            preferences: $preferences,
-            now: new DateTimeImmutable(),
         );
     }
 }

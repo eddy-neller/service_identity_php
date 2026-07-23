@@ -8,7 +8,7 @@
 
 {% block content %}
     <p>
-        {{ ('user.register.activation.content')|trans({'%firstname%': firstname, '%appName%': app_title}, 'messages', locale)|raw }}
+        {{ ('user.register.activation.content')|trans({'%name%': username, '%appName%': app_title}, 'messages', locale)|raw }}
     </p>
 
     {% if plan is defined and plan %}

@@ -2,6 +2,6 @@ user:
   register:
     activation:
       title: Activez votre compte
-      content: "Bonjour %firstname%,<br><br>Afin de finaliser votre inscription sur %appName% et activer votre compte, veuillez cliquer sur le bouton ci-dessous afin de valider votre adresse email. Veuillez noter que ce lien expirera <b>48 heures</b> après l'envoi de cet e-mail."
+      content: "Bonjour %name%,<br><br>Afin de finaliser votre inscription sur %appName% et activer votre compte, veuillez cliquer sur le bouton ci-dessous afin de valider votre adresse email. Veuillez noter que ce lien expirera <b>48 heures</b> après l'envoi de cet e-mail."
       selectedPlan: Plan sélectionné
       planContent: Après activation, vous serez redirigé vers la finalisation de votre souscription

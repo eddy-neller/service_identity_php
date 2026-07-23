@@ -59,7 +59,7 @@ final readonly class UserNotifier implements UserNotifierInterface
         $link = $base . '?token=' . urlencode($encodedToken);
 
         $payload = [
-            'firstname' => $user->getFirstname()?->toString(),
+            'username' => $user->getUsername()->toString(),
             'link' => $link,
             'userLocale' => $locale,
         ];

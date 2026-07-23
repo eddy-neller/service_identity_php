@@ -70,20 +70,6 @@ final readonly class UserEventSubscriber implements EventSubscriberInterface
         ]);
 
         $this->syncCustomerForUser($event->getUserId()->toString());
-
-        $user = $this->repository->findById($event->getUserId());
-
-        if (null === $user) {
-            return;
-        }
-
-        $activeEmail = $user->getActiveEmail();
-        $token = $activeEmail->getToken();
-
-        if (null !== $token) {
-            $encoded = $this->tokenProvider->encode($token, $event->getEmail());
-            $this->notifier->sendActivationEmail($user, $encoded);
-        }
     }
 
     public function onPasswordResetRequested(PasswordResetRequestedEvent $event): void
