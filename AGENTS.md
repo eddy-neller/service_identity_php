@@ -129,8 +129,9 @@ Lancer la suite correspondante **avant chaque livraison** si le périmètre est 
 
 - Branches : `main` (stable), `feat/*`, `fix/*`, `chore/*`.
 - Commits : sujet impératif ≤ 70 chars (« Add … », « Fix … », « Refactor … »). Body pour contexte, breaking changes, décisions d'architecture.
-- Ne jamais committer de secrets (`.env.local*`, `makefile.conf`, secrets CI). `.env.test` = valeurs par défaut test uniquement.
-- Si ports/services Docker changent : mettre à jour **à la fois** `makefile.conf` ET `docker-compose*.yml`.
+- Ne jamais committer de secrets (`.env`, `makefile.conf`, secrets CI). `.env.test` = valeurs par défaut test uniquement.
+- `.env` est l’unique configuration locale, ignorée par Git ; `.env.dist` est son modèle complet et versionné.
+- Si les ports/services Docker changent : mettre à jour **à la fois** `.env`, `.env.dist` ET `docker-compose*.yml`.
 
 ---
 

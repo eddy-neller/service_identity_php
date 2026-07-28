@@ -40,6 +40,9 @@ include makefile.conf
 .PHONY: install
 install:
 	@echo "$(YELLOW)** Starting installation... **$(RESET)"
+	@echo "$(YELLOW)** Update Git Repository **$(RESET)"
+	@git fa && git plr
+	@echo "$(YELLOW)** Update Docker Images **$(RESET)"
 	@make down-hard
 	@echo "$(YELLOW)** Update Docker Images **$(RESET)"
 	@docker pull postgres:18-alpine && docker pull rabbitmq:4-management-alpine && docker pull varnish:8-alpine && docker pull redis:8-alpine
