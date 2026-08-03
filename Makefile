@@ -175,7 +175,7 @@ csr:
 ## Execute composer symfony:recipes:install
 .PHONY: csri $(p)
 csri:
-	@composer symfony:recipes:install --force -v ${p}
+	@composer symfony:recipes:install -v ${p}
 
 ## Execute composer version
 .PHONY: cv

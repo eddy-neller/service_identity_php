@@ -23,6 +23,7 @@ use App\Domain\User\ValueObject\Security\HashedPassword;
 use DateTimeImmutable;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
+use RuntimeException;
 
 final class UpdateAvatarTest extends TestCase
 {
@@ -207,7 +208,7 @@ final class UpdateAvatarTest extends TestCase
 
         $this->transactional->expects($this->once())
             ->method('transactional')
-            ->willThrowException(new \RuntimeException('Database failure.'));
+            ->willThrowException(new RuntimeException('Database failure.'));
 
         $this->repository->expects($this->never())
             ->method('save');
@@ -215,7 +216,7 @@ final class UpdateAvatarTest extends TestCase
         $this->clock->expects($this->never())
             ->method('now');
 
-        $this->expectException(\RuntimeException::class);
+        $this->expectException(RuntimeException::class);
         $this->expectExceptionMessage('Database failure.');
 
         $this->handler->handle($command);

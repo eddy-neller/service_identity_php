@@ -139,7 +139,6 @@ final class UpdateUserByAdminTest extends TestCase
 
         $command = new UpdateUserByAdminCommand(
             userId: $userId->toString(),
-            email: null,
             username: $newUsername,
         );
 

@@ -108,8 +108,6 @@ final class CategoryCollectionProviderTest extends TestCase
             slug: Slug::fromString('category-title'),
             createdAt: new DateTimeImmutable('2025-01-01 10:00:00'),
             updatedAt: new DateTimeImmutable('2025-02-01 10:00:00'),
-            parentId: null,
-            description: null,
             productCount: 0,
             level: 1,
         );

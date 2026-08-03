@@ -4,9 +4,7 @@ declare(strict_types=1);
 
 namespace App\Domain\User\Exception\Security;
 
-use App\Domain\User\Exception\UserDomainException;
-
-final class UserLockedException extends UserDomainException
+final class UserLockedException extends SecurityDomainException
 {
     public function __construct()
     {

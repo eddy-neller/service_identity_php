@@ -5,9 +5,8 @@ declare(strict_types=1);
 namespace App\Domain\User\Exception\Profile;
 
 use App\Domain\SharedKernel\Exception\InvalidArgumentInterface;
-use App\Domain\User\Exception\UserDomainException;
 
-final class InvalidFirstnameException extends UserDomainException implements InvalidArgumentInterface
+final class InvalidFirstnameException extends ProfileDomainException implements InvalidArgumentInterface
 {
     public static function empty(): self
     {
