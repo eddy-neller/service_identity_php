@@ -4,9 +4,13 @@ declare(strict_types=1);
 
 namespace App\Application\Tests\Unit\Shared\CQRS;
 
+use App\Application\Shared\CQRS\Command\CommandHandlerInterface;
+use App\Application\Shared\CQRS\Query\QueryHandlerInterface;
 use PHPUnit\Framework\TestCase;
 use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
+use ReflectionMethod;
+use ReflectionNamedType;
 use RegexIterator;
 
 final class HandlerConventionTest extends TestCase
@@ -25,7 +29,7 @@ final class HandlerConventionTest extends TestCase
 
             $this->assertTrue(class_exists($handlerClass), sprintf('Missing handler for command: %s (expected %s)', $commandClass, $handlerClass));
 
-            $this->assertTrue(method_exists($handlerClass, 'handle'), sprintf('Handler %s must define handle()', $handlerClass));
+            $this->assertHandlerContract($handlerClass, $commandClass, CommandHandlerInterface::class);
         }
     }
 
@@ -43,7 +47,7 @@ final class HandlerConventionTest extends TestCase
 
             $this->assertTrue(class_exists($handlerClass), sprintf('Missing handler for query: %s (expected %s)', $queryClass, $handlerClass));
 
-            $this->assertTrue(method_exists($handlerClass, 'handle'), sprintf('Handler %s must define handle()', $handlerClass));
+            $this->assertHandlerContract($handlerClass, $queryClass, QueryHandlerInterface::class);
         }
     }
 
@@ -123,6 +127,35 @@ final class HandlerConventionTest extends TestCase
             ['/', '.php'],
             ['\\', ''],
             $relative
+        );
+    }
+
+    /**
+     * @param class-string $handlerClass
+     * @param class-string $messageClass
+     * @param class-string $handlerInterface
+     */
+    private function assertHandlerContract(string $handlerClass, string $messageClass, string $handlerInterface): void
+    {
+        $this->assertTrue(
+            is_subclass_of($handlerClass, $handlerInterface),
+            sprintf('Handler %s must implement %s.', $handlerClass, $handlerInterface),
+        );
+        $this->assertTrue(method_exists($handlerClass, 'handle'), sprintf('Handler %s must define handle().', $handlerClass));
+
+        $parameters = (new ReflectionMethod($handlerClass, 'handle'))->getParameters();
+        $this->assertCount(1, $parameters, sprintf('Handler %s::handle() must accept exactly one message.', $handlerClass));
+
+        $messageType = $parameters[0]->getType();
+        $this->assertInstanceOf(
+            ReflectionNamedType::class,
+            $messageType,
+            sprintf('Handler %s::handle() must type its message.', $handlerClass),
+        );
+        $this->assertSame(
+            $messageClass,
+            $messageType->getName(),
+            sprintf('Handler %s::handle() must accept %s.', $handlerClass, $messageClass),
         );
     }
 }

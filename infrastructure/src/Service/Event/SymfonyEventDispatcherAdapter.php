@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Infrastructure\Event;
+namespace App\Infrastructure\Service\Event;
 
 use App\Application\Shared\Port\EventDispatcherInterface;
 use App\Domain\SharedKernel\Event\DomainEventInterface;
@@ -15,15 +15,15 @@ final readonly class SymfonyEventDispatcherAdapter implements EventDispatcherInt
     ) {
     }
 
-    public function dispatch(DomainEventInterface $event): void
-    {
-        $this->eventDispatcher->dispatch($event, $event->eventName());
-    }
-
     public function dispatchAll(array $events): void
     {
         foreach ($events as $event) {
             $this->dispatch($event);
         }
+    }
+
+    private function dispatch(DomainEventInterface $event): void
+    {
+        $this->eventDispatcher->dispatch($event, $event->eventName());
     }
 }

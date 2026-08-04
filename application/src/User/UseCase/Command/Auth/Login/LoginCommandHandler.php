@@ -7,6 +7,7 @@ namespace App\Application\User\UseCase\Command\Auth\Login;
 use App\Application\Shared\CQRS\Command\CommandHandlerInterface;
 use App\Application\Shared\Port\ClockInterface;
 use App\Application\Shared\Port\ConfigInterface;
+use App\Application\Shared\Port\EventDispatcherInterface;
 use App\Application\Shared\Port\TransactionalInterface;
 use App\Application\User\Port\PasswordHasherInterface;
 use App\Application\User\Port\UserRepositoryInterface;
@@ -26,6 +27,7 @@ final readonly class LoginCommandHandler implements CommandHandlerInterface
         private ClockInterface $clock,
         private ConfigInterface $config,
         private TransactionalInterface $transactional,
+        private EventDispatcherInterface $eventDispatcher,
     ) {
     }
 
@@ -55,6 +57,8 @@ final readonly class LoginCommandHandler implements CommandHandlerInterface
                 return $user->isLocked();
             });
 
+            $this->eventDispatcher->dispatchAll($user->releaseEvents());
+
             if ($locked) {
                 throw new UserLockedException();
             }
@@ -66,7 +70,7 @@ final readonly class LoginCommandHandler implements CommandHandlerInterface
             throw new AccountNotActivatedException();
         }
 
-        return $this->transactional->transactional(function () use ($user, $now): AuthTokens {
+        $tokens = $this->transactional->transactional(function () use ($user, $now): AuthTokens {
             $user->resetWrongPasswordAttempts($now);
             $user->recordSuccessfulLogin($now);
 
@@ -74,5 +78,9 @@ final readonly class LoginCommandHandler implements CommandHandlerInterface
 
             return $this->tokenIssuer->issue($user, $now);
         });
+
+        $this->eventDispatcher->dispatchAll($user->releaseEvents());
+
+        return $tokens;
     }
 }

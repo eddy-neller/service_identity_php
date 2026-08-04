@@ -6,8 +6,10 @@ namespace App\Application\User\UseCase\Command\Account\ResetWrongPasswordAttempt
 
 use App\Application\Shared\CQRS\Command\CommandHandlerInterface;
 use App\Application\Shared\Port\ClockInterface;
+use App\Application\Shared\Port\EventDispatcherInterface;
 use App\Application\Shared\Port\TransactionalInterface;
 use App\Application\User\Port\UserRepositoryInterface;
+use App\Domain\User\Model\User;
 use App\Domain\User\ValueObject\Identity\UserId;
 
 final readonly class ResetWrongPasswordAttemptsCommandHandler implements CommandHandlerInterface
@@ -16,6 +18,7 @@ final readonly class ResetWrongPasswordAttemptsCommandHandler implements Command
         private UserRepositoryInterface $repository,
         private ClockInterface $clock,
         private TransactionalInterface $transactional,
+        private EventDispatcherInterface $eventDispatcher,
     ) {
     }
 
@@ -23,16 +26,22 @@ final readonly class ResetWrongPasswordAttemptsCommandHandler implements Command
     {
         $userId = UserId::fromString($command->userId);
 
-        $this->transactional->transactional(function () use ($userId): void {
+        $user = $this->transactional->transactional(function () use ($userId): ?User {
             $user = $this->repository->findById($userId);
 
             if (null === $user) {
-                return;
+                return null;
             }
 
             $user->resetWrongPasswordAttempts($this->clock->now());
 
             $this->repository->save($user);
+
+            return $user;
         });
+
+        if (null !== $user) {
+            $this->eventDispatcher->dispatchAll($user->releaseEvents());
+        }
     }
 }

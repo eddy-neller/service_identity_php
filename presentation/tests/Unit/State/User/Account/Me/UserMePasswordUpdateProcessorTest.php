@@ -68,9 +68,7 @@ final class UserMePasswordUpdateProcessorTest extends KernelTestCase
                 return true;
             }));
 
-        $result = $this->processor->process($input, $this->operation);
-
-        $this->assertNull($result);
+        $this->processor->process($input, $this->operation);
     }
 
     public function testProcessThrowsLogicExceptionForInvalidInput(): void

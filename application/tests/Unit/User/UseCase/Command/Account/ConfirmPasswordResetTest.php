@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Application\Tests\Unit\User\UseCase\Command\Account;
 
 use App\Application\Shared\Port\ClockInterface;
+use App\Application\Shared\Port\EventDispatcherInterface;
 use App\Application\Shared\Port\TransactionalInterface;
 use App\Application\User\Port\PasswordHasherInterface;
 use App\Application\User\Port\TokenProviderInterface;
@@ -36,6 +37,8 @@ final class ConfirmPasswordResetTest extends TestCase
 
     private ClockInterface&MockObject $clock;
 
+    private EventDispatcherInterface&MockObject $eventDispatcher;
+
     private ConfirmPasswordResetCommandHandler $handler;
 
     protected function setUp(): void
@@ -45,17 +48,21 @@ final class ConfirmPasswordResetTest extends TestCase
         $this->passwordHasher = $this->createMock(PasswordHasherInterface::class);
         $this->clock = $this->createMock(ClockInterface::class);
         $this->transactional = $this->createMock(TransactionalInterface::class);
+        $this->eventDispatcher = $this->createMock(EventDispatcherInterface::class);
         $this->handler = new ConfirmPasswordResetCommandHandler(
             $this->repository,
             $this->tokenProvider,
             $this->passwordHasher,
             $this->clock,
             $this->transactional,
+            $this->eventDispatcher,
         );
     }
 
     public function testHandleResetsPasswordWhenTokenIsValid(): void
     {
+        $this->eventDispatcher->expects($this->once())->method('dispatchAll');
+
         $token = 'encoded-token';
         $email = 'test@example.com';
         $rawToken = 'raw-token';
@@ -100,6 +107,8 @@ final class ConfirmPasswordResetTest extends TestCase
 
     public function testHandleThrowsExceptionWhenUserNotFound(): void
     {
+        $this->eventDispatcher->expects($this->never())->method('dispatchAll');
+
         $token = 'encoded-token';
         $email = 'test@example.com';
         $rawToken = 'raw-token';
@@ -135,6 +144,8 @@ final class ConfirmPasswordResetTest extends TestCase
 
     public function testHandleThrowsExceptionWhenTokenExpired(): void
     {
+        $this->eventDispatcher->expects($this->never())->method('dispatchAll');
+
         $token = 'encoded-token';
         $email = 'test@example.com';
         $rawToken = 'raw-token';
@@ -175,6 +186,8 @@ final class ConfirmPasswordResetTest extends TestCase
 
     public function testHandleThrowsExceptionWhenTokenMismatch(): void
     {
+        $this->eventDispatcher->expects($this->never())->method('dispatchAll');
+
         $token = 'encoded-token';
         $email = 'test@example.com';
         $rawToken = 'raw-token';

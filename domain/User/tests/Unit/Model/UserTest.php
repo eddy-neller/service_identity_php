@@ -64,6 +64,27 @@ final class UserTest extends TestCase
         $this->assertInstanceOf(UserRegisteredEvent::class, $events[0]);
     }
 
+    public function testReleaseEventsReturnsEventsInOrderAndClearsThem(): void
+    {
+        $now = new DateTimeImmutable('2025-01-01 10:00:00');
+        $user = User::register(
+            id: UserId::fromString('550e8400-e29b-41d4-a716-446655440000'),
+            username: Username::fromString('john'),
+            email: EmailAddress::fromString('john@example.com'),
+            password: HashedPassword::fromString('hash'),
+            preferences: Preferences::create(),
+            now: $now,
+        );
+        $user->requestActivation('activation-token', $now->modify('+1 day'), $now);
+
+        $events = $user->releaseEvents();
+
+        $this->assertCount(2, $events);
+        $this->assertInstanceOf(UserRegisteredEvent::class, $events[0]);
+        $this->assertInstanceOf(ActivationEmailRequestedEvent::class, $events[1]);
+        $this->assertSame([], $user->getDomainEvents());
+    }
+
     public function testCreateByAdminCreatesUserWithCustomRolesAndStatus(): void
     {
         $roles = ['ROLE_ADMIN', 'ROLE_USER'];

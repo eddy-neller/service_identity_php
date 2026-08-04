@@ -9,6 +9,7 @@ use ApiPlatform\State\ProcessorInterface;
 use App\Application\Shared\CQRS\Command\CommandBusInterface;
 use App\Application\User\UseCase\Command\Onboarding\RegisterUser\RegisterUserCommand;
 use App\Presentation\Shared\State\PresentationErrorCode;
+use App\Presentation\User\ApiResource\UserResource;
 use App\Presentation\User\Dto\Onboarding\UserRegisterInput;
 use App\Presentation\User\Presenter\UserResourcePresenter;
 use LogicException;
@@ -21,7 +22,7 @@ final readonly class UserRegisterProcessor implements ProcessorInterface
     ) {
     }
 
-    public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): mixed
+    public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): UserResource
     {
         if (!$data instanceof UserRegisterInput) {
             throw new LogicException(PresentationErrorCode::INVALID_INPUT->value);

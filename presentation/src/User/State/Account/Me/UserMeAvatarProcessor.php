@@ -10,6 +10,7 @@ use App\Application\Shared\CQRS\Command\CommandBusInterface;
 use App\Application\User\UseCase\Command\Account\UpdateAvatar\UpdateAvatarCommand;
 use App\Presentation\Shared\Adapter\SymfonyFileAdapter;
 use App\Presentation\Shared\State\PresentationErrorCode;
+use App\Presentation\User\ApiResource\UserResource;
 use App\Presentation\User\Dto\Account\Me\UserMeAvatarInput;
 use App\Presentation\User\Presenter\UserResourcePresenter;
 use App\Presentation\User\Security\UserMeSecurityTrait;
@@ -27,7 +28,7 @@ final readonly class UserMeAvatarProcessor implements ProcessorInterface
     ) {
     }
 
-    public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): mixed
+    public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): UserResource
     {
         if (!$data instanceof UserMeAvatarInput) {
             throw new LogicException(PresentationErrorCode::INVALID_INPUT->value);

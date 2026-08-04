@@ -6,6 +6,7 @@ namespace App\Application\User\UseCase\Command\Account\UpdateAvatar;
 
 use App\Application\Shared\CQRS\Command\CommandHandlerInterface;
 use App\Application\Shared\Port\ClockInterface;
+use App\Application\Shared\Port\EventDispatcherInterface;
 use App\Application\Shared\Port\TransactionalInterface;
 use App\Application\User\Port\AvatarImageValidatorInterface;
 use App\Application\User\Port\AvatarStorageInterface;
@@ -23,6 +24,7 @@ final readonly class UpdateAvatarCommandHandler implements CommandHandlerInterfa
         private AvatarStorageInterface $avatarStorage,
         private ClockInterface $clock,
         private TransactionalInterface $transactional,
+        private EventDispatcherInterface $eventDispatcher,
     ) {
     }
 
@@ -48,7 +50,7 @@ final readonly class UpdateAvatarCommandHandler implements CommandHandlerInterfa
 
                 return [
                     'previousAvatarName' => $previousAvatarName,
-                    'userItem' => UserItem::fromUser($user),
+                    'user' => $user,
                 ];
             });
         } catch (Exception $exception) {
@@ -57,6 +59,8 @@ final readonly class UpdateAvatarCommandHandler implements CommandHandlerInterfa
             throw $exception;
         }
 
+        $this->eventDispatcher->dispatchAll($update['user']->releaseEvents());
+
         if (
             null !== $update['previousAvatarName']
             && $update['previousAvatarName'] !== $avatar
@@ -64,6 +68,6 @@ final readonly class UpdateAvatarCommandHandler implements CommandHandlerInterfa
             $this->avatarStorage->delete($update['previousAvatarName']);
         }
 
-        return $update['userItem'];
+        return UserItem::fromUser($update['user']);
     }
 }

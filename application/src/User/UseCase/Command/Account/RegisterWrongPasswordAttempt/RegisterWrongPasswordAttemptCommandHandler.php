@@ -7,8 +7,10 @@ namespace App\Application\User\UseCase\Command\Account\RegisterWrongPasswordAtte
 use App\Application\Shared\CQRS\Command\CommandHandlerInterface;
 use App\Application\Shared\Port\ClockInterface;
 use App\Application\Shared\Port\ConfigInterface;
+use App\Application\Shared\Port\EventDispatcherInterface;
 use App\Application\Shared\Port\TransactionalInterface;
 use App\Application\User\Port\UserRepositoryInterface;
+use App\Domain\User\Model\User;
 use App\Domain\User\ValueObject\Identity\EmailAddress;
 
 final readonly class RegisterWrongPasswordAttemptCommandHandler implements CommandHandlerInterface
@@ -18,6 +20,7 @@ final readonly class RegisterWrongPasswordAttemptCommandHandler implements Comma
         private ClockInterface $clock,
         private ConfigInterface $config,
         private TransactionalInterface $transactional,
+        private EventDispatcherInterface $eventDispatcher,
     ) {
     }
 
@@ -26,16 +29,22 @@ final readonly class RegisterWrongPasswordAttemptCommandHandler implements Comma
         $email = EmailAddress::fromString($command->email);
         $maxAttempts = (int) $this->config->get('app.security.max_login_attempts');
 
-        $this->transactional->transactional(function () use ($email, $maxAttempts): void {
+        $user = $this->transactional->transactional(function () use ($email, $maxAttempts): ?User {
             $user = $this->repository->findByEmail($email);
 
             if (null === $user) {
-                return;
+                return null;
             }
 
             $user->registerWrongPasswordAttempt($maxAttempts, $this->clock->now());
 
             $this->repository->save($user);
+
+            return $user;
         });
+
+        if (null !== $user) {
+            $this->eventDispatcher->dispatchAll($user->releaseEvents());
+        }
     }
 }

@@ -6,6 +6,7 @@ namespace App\Application\User\UseCase\Command\UserManagement\CreateUserByAdmin;
 
 use App\Application\Shared\CQRS\Command\CommandHandlerInterface;
 use App\Application\Shared\Port\ClockInterface;
+use App\Application\Shared\Port\EventDispatcherInterface;
 use App\Application\Shared\Port\TransactionalInterface;
 use App\Application\User\Port\PasswordHasherInterface;
 use App\Application\User\Port\UserRepositoryInterface;
@@ -29,6 +30,7 @@ final readonly class CreateUserByAdminCommandHandler implements CommandHandlerIn
         private ClockInterface $clock,
         private TransactionalInterface $transactional,
         private UserUniquenessCheckerInterface $uniquenessChecker,
+        private EventDispatcherInterface $eventDispatcher,
     ) {
     }
 
@@ -62,6 +64,8 @@ final readonly class CreateUserByAdminCommandHandler implements CommandHandlerIn
 
             return $user;
         });
+
+        $this->eventDispatcher->dispatchAll($user->releaseEvents());
 
         return UserItem::fromUser($user);
     }

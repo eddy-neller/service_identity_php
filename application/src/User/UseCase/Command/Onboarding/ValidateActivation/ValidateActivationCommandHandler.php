@@ -6,10 +6,12 @@ namespace App\Application\User\UseCase\Command\Onboarding\ValidateActivation;
 
 use App\Application\Shared\CQRS\Command\CommandHandlerInterface;
 use App\Application\Shared\Port\ClockInterface;
+use App\Application\Shared\Port\EventDispatcherInterface;
 use App\Application\Shared\Port\TransactionalInterface;
 use App\Application\User\Port\TokenProviderInterface;
 use App\Application\User\Port\UserRepositoryInterface;
 use App\Domain\User\Exception\UserNotFoundException;
+use App\Domain\User\Model\User;
 use App\Domain\User\ValueObject\Identity\EmailAddress;
 
 final readonly class ValidateActivationCommandHandler implements CommandHandlerInterface
@@ -19,6 +21,7 @@ final readonly class ValidateActivationCommandHandler implements CommandHandlerI
         private TokenProviderInterface $tokenProvider,
         private ClockInterface $clock,
         private TransactionalInterface $transactional,
+        private EventDispatcherInterface $eventDispatcher,
     ) {
     }
 
@@ -28,7 +31,7 @@ final readonly class ValidateActivationCommandHandler implements CommandHandlerI
         $email = EmailAddress::fromString($split['email'] ?? '');
         $rawToken = $split['token'] ?? '';
 
-        $this->transactional->transactional(function () use ($email, $rawToken): void {
+        $user = $this->transactional->transactional(function () use ($email, $rawToken): User {
             $user = $this->repository->findByActivationToken($rawToken);
 
             if (null === $user || !$user->getEmail()->equals($email)) {
@@ -38,6 +41,10 @@ final readonly class ValidateActivationCommandHandler implements CommandHandlerI
             $user->activate($rawToken, $this->clock->now());
 
             $this->repository->save($user);
+
+            return $user;
         });
+
+        $this->eventDispatcher->dispatchAll($user->releaseEvents());
     }
 }

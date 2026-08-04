@@ -71,7 +71,7 @@ Presentation  →  Application  →  Domain
 
 - Tout cas d'usage passe par `CommandBusInterface` (écritures) / `QueryBusInterface` (lectures).
 - **« Toujours via le Bus, jamais via le Handler »** : aucun code hors Application n'appelle `handle()`.
-- Découverte automatique par convention : `FooCommand` → `FooCommandHandler`, `BarQuery` → `BarQueryHandler`. Détails : [`application/AGENTS.md`](application/AGENTS.md).
+- Découverte automatique par Messenger, avec convention obligatoire : `FooCommand` → `FooCommandHandler`, `BarQuery` → `BarQueryHandler`. Détails : [`application/AGENTS.md`](application/AGENTS.md).
 
 ### Structure des dossiers
 
@@ -147,7 +147,7 @@ Lancer la suite correspondante **avant chaque livraison** si le périmètre est 
 ## Documentation
 
 - `README.md` : quickstart, env, commandes, architecture courte.
-- `docs/` : références techniques (`CQRS_handler_resolver.md`, `varnish_cache.md`) et **audits** d'architecture datés dans `docs/audits/` (instantanés d'évaluation, **non normatifs** — les règles font foi dans les `AGENTS.md`).
+- `docs/` : références techniques (`CQRS_messenger.md`, `varnish_cache.md`) et **audits** d'architecture datés dans `docs/audits/` (instantanés d'évaluation, **non normatifs** — les règles font foi dans les `AGENTS.md`).
 
 ## Référence nouvelle API
 

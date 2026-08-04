@@ -9,6 +9,7 @@ use ApiPlatform\State\ProviderInterface;
 use App\Application\Shared\CQRS\Query\QueryBusInterface;
 use App\Application\Shop\UseCase\Query\Customer\DisplayAddress\DisplayAddressQuery;
 use App\Presentation\Shared\State\PresentationErrorCode;
+use App\Presentation\Shop\ApiResource\Customer\AddressResource;
 use App\Presentation\Shop\Presenter\Customer\AddressResourcePresenter;
 use App\Presentation\Shop\State\Shared\CurrentCustomerResolver;
 use LogicException;
@@ -22,7 +23,7 @@ final readonly class AddressGetProvider implements ProviderInterface
     ) {
     }
 
-    public function provide(Operation $operation, array $uriVariables = [], array $context = []): object
+    public function provide(Operation $operation, array $uriVariables = [], array $context = []): AddressResource
     {
         $addressId = $uriVariables['id'] ?? null;
         if (!is_string($addressId) || '' === $addressId) {

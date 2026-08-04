@@ -20,7 +20,7 @@ final readonly class AddressDeleteProcessor implements ProcessorInterface
     ) {
     }
 
-    public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): ?object
+    public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): void
     {
         $addressId = $uriVariables['id'] ?? null;
 
@@ -32,7 +32,5 @@ final readonly class AddressDeleteProcessor implements ProcessorInterface
             addressId: $addressId,
             ownerId: $this->customerResolver->resolve(),
         ));
-
-        return null;
     }
 }

@@ -10,6 +10,7 @@ use App\Application\Shared\Messenger\Message\SendEmailMessage;
 use App\Presentation\SendMail\Dto\SendMailInput;
 use App\Presentation\Shared\State\PresentationErrorCode;
 use LogicException;
+use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Messenger\MessageBusInterface;
@@ -17,6 +18,7 @@ use Symfony\Component\Messenger\MessageBusInterface;
 final readonly class SendMailProcessor implements ProcessorInterface
 {
     public function __construct(
+        #[Autowire(service: 'async.bus')]
         private MessageBusInterface $bus,
         private ParameterBagInterface $parameterBag,
     ) {

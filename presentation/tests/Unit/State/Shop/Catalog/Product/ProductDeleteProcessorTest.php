@@ -45,9 +45,7 @@ final class ProductDeleteProcessorTest extends TestCase
                 return true;
             }));
 
-        $result = $this->processor->process(null, $this->operation, ['id' => $productId]);
-
-        $this->assertNull($result);
+        $this->processor->process(null, $this->operation, ['id' => $productId]);
     }
 
     public function testProcessThrowsLogicExceptionWhenIdIsMissing(): void

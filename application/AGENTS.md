@@ -35,7 +35,7 @@ Un Port représente une dépendance externe ou technique que l'Application doit 
 - `UseCase/Command/...` : `*Command` + `*CommandHandler`.
 - `UseCase/Query/...` : `*Query` + `*QueryHandler`.
 - Handler : une seule méthode publique `handle(SomethingCommand|SomethingQuery $message)`.
-- Buses & resolvers dans `Application/Shared/CQRS/` — indépendants des frameworks (PSR-11, PSR-3, convention-based, avec cache).
+- Contrats des buses et messages dans `Application/Shared/CQRS/`, sans dépendance framework. Leurs adapters et middlewares Messenger vivent dans Infrastructure.
 
 ### Contrat des Commands et Queries
 
@@ -50,15 +50,15 @@ Un Port représente une dépendance externe ou technique que l'Application doit 
 
 - Toujours passer par `CommandBusInterface` / `QueryBusInterface` — **jamais** appeler `handle()` directement.
 - Mantra : **« toujours via le Bus, jamais via le Handler »**.
-- **Aucun mapping manuel** Command → Handler : découverte automatique par convention.
+- **Aucun mapping manuel** Command → Handler : enregistrement automatique par Messenger et convention obligatoire.
   - `FooCommand` → `FooCommandHandler`, `BarQuery` → `BarQueryHandler`.
-  - Les resolvers (`CommandHandlerResolver`, `QueryHandlerResolver`) appliquent la convention, résolvent via PSR-11 et mettent en cache les callables. Voir `docs/CQRS_handler_resolver.md`.
+  - Les handlers implémentent leur interface marqueur et exposent `handle()` ; le wiring Infrastructure les limite à `command.bus` ou `query.bus`. La convention est vérifiée par `HandlerConventionTest`. Voir `docs/CQRS_messenger.md`.
 
 ### Middlewares CQRS
 
-- Vivent dans `Application/Shared/CQRS/Middleware/`.
-- Rôles **cross-cutting uniquement** : logging (PSR-3), metrics, validation croisée — **pas de logique métier**.
-- Ordre / activation câblés dans `config/services.yaml` (Infrastructure) via `!tagged_iterator`.
+- Les middlewares d'exécution vivent dans Infrastructure car ils implémentent les contrats Symfony Messenger.
+- Rôles **cross-cutting uniquement** : logging, cache, métriques, validation croisée — **pas de logique métier**.
+- Leur ordre est déclaré par bus dans `config/packages/messenger.yaml`.
 
 ---
 
@@ -75,6 +75,10 @@ Les commandes d'écriture utilisent `TransactionalInterface`, avec des transacti
 - **Avant la transaction** : préparer tout ce qui est pur et indépendant de l'état persistant : validation de format, parsing d'identifiants, construction de Value Objects, calculs, génération locale de slug/UUID et validation de fichier. Une erreur à ce stade ne doit pas ouvrir de transaction.
 - **Dans la transaction** : toute lecture de repository qui conditionne une écriture, puis les mutations et persistance associées. Cela couvre les contrôles d'existence, d'appartenance, de stock, de parenté, d'unicité applicative et les relectures nécessaires au résultat de la commande.
 - **Hors transaction** : les lectures réellement indépendantes de l'écriture (par exemple un use case de lecture) et tout I/O externe ou potentiellement long (HTTP, stockage de fichier, queue). Ces effets doivent être coordonnés par un mécanisme adapté, pas maintenus sous verrou DB.
+
+Les Domain Events enregistrés par un agrégat sont publiés par le handler via `EventDispatcherInterface`,
+**uniquement après** le retour réussi de `TransactionalInterface::transactional()`. Le handler appelle alors
+`releaseEvents()` et transmet le résultat au dispatcher. Si la transaction échoue, aucun événement n'est publié.
 
 Les tests de commande reflètent ce découpage : une erreur de validation pure attend que `transactional()` ne soit pas appelé ; un échec issu d'une lecture DB décisionnelle attend l'exécution du callback transactionnel.
 
@@ -106,10 +110,11 @@ Calculs de montants/totaux, conversions d'unités monétaires (euros↔cents), a
 
 ---
 
-## Messenger (asynchrone)
+## Messenger
 
-- Messages (DTO immuables) dans `application/src/Shared/Messenger/Message`.
-- Les **handlers** Messenger sont côté Infrastructure (`#[AsMessageHandler]`, routage `config/packages/messenger.yaml`) : pas de logique métier dedans, l'orchestration reste dans les use-cases Application.
+- Commands et Queries utilisent Messenger synchroniquement derrière les interfaces CQRS ; elles ne sont routées vers aucun transport.
+- Les messages techniques asynchrones sont des DTO immuables dans `application/src/Shared/Messenger/Message`.
+- Leurs handlers sont côté Infrastructure (`#[AsMessageHandler]`, routage `config/packages/messenger.yaml`) : pas de logique métier dedans, l'orchestration reste dans les use cases Application.
 
 ---
 
@@ -161,6 +166,7 @@ $this->transactional->expects($this->once())
 - [ ] Presentation/Infra n'appellent jamais `handle()` directement — uniquement via les Buses.
 - [ ] Le handler dépend uniquement de Ports, Domain et services applicatifs purs internes injectés directement ; aucun Port/adaptateur artificiel n'est créé pour ces derniers.
 - [ ] Le temps est géré via `ClockInterface`.
+- [ ] Les Domain Events sont libérés et publiés par le handler après le retour réussi de la transaction.
 - [ ] **Aucune logique métier** : calculs de montants/totaux, conversions d'unités, arithmétique prix/quantités et décisions métier délégués au Domain (VOs/agrégats).
 - [ ] Aucun attribut framework dans Application.
 - [ ] Les tests mockent les Ports et tournent sans kernel.

@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Infrastructure\Persistence\Doctrine\User;
 
-use App\Application\Shared\Port\EventDispatcherInterface;
 use App\Application\Shared\Port\UuidGeneratorInterface;
 use App\Application\User\Port\UserRepositoryInterface;
 use App\Domain\User\Model\User as DomainUser;
@@ -26,7 +25,6 @@ final readonly class DoctrineUserRepository implements UserRepositoryInterface
         private UserRepository $repository,
         private UserMapper $mapper,
         private UuidGeneratorInterface $uuidGenerator,
-        private EventDispatcherInterface $eventDispatcher,
     ) {
     }
 
@@ -73,8 +71,6 @@ final readonly class DoctrineUserRepository implements UserRepositoryInterface
 
         $this->em->persist($entity);
         $this->em->flush();
-
-        $this->dispatchDomainEvents($user);
     }
 
     public function delete(DomainUser $user): void
@@ -86,8 +82,6 @@ final readonly class DoctrineUserRepository implements UserRepositoryInterface
             $this->em->remove($entity);
             $this->em->flush();
         }
-
-        $this->dispatchDomainEvents($user);
     }
 
     public function findById(UserId $id): ?DomainUser
@@ -123,16 +117,6 @@ final readonly class DoctrineUserRepository implements UserRepositoryInterface
         $entity = $this->repository->findInJsonField('resetPassword', 'token', $token);
 
         return $entity ? $this->mapper->toDomain($entity) : null;
-    }
-
-    private function dispatchDomainEvents(DomainUser $user): void
-    {
-        $events = $user->getDomainEvents();
-
-        if (!empty($events)) {
-            $this->eventDispatcher->dispatchAll($events);
-            $user->clearDomainEvents();
-        }
     }
 
     private function findEntity(?UserId $id): ?DoctrineUser

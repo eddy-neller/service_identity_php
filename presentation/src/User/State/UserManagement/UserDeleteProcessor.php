@@ -18,7 +18,7 @@ final readonly class UserDeleteProcessor implements ProcessorInterface
     ) {
     }
 
-    public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): null
+    public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): void
     {
         $userId = $uriVariables['id'] ?? null;
 
@@ -27,7 +27,5 @@ final readonly class UserDeleteProcessor implements ProcessorInterface
         }
 
         $this->commandBus->dispatch(new DeleteUserByAdminCommand($userId));
-
-        return null;
     }
 }

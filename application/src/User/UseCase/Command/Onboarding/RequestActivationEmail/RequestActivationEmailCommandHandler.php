@@ -8,9 +8,11 @@ use App\Application\Shared\CQRS\Command\CommandHandlerInterface;
 use App\Application\Shared\DateIntervalTrait;
 use App\Application\Shared\Port\ClockInterface;
 use App\Application\Shared\Port\ConfigInterface;
+use App\Application\Shared\Port\EventDispatcherInterface;
 use App\Application\Shared\Port\TransactionalInterface;
 use App\Application\User\Port\TokenProviderInterface;
 use App\Application\User\Port\UserRepositoryInterface;
+use App\Domain\User\Model\User;
 use App\Domain\User\ValueObject\Identity\EmailAddress;
 
 final readonly class RequestActivationEmailCommandHandler implements CommandHandlerInterface
@@ -23,6 +25,7 @@ final readonly class RequestActivationEmailCommandHandler implements CommandHand
         private ClockInterface $clock,
         private TransactionalInterface $transactional,
         private ConfigInterface $config,
+        private EventDispatcherInterface $eventDispatcher,
     ) {
     }
 
@@ -33,16 +36,22 @@ final readonly class RequestActivationEmailCommandHandler implements CommandHand
         $now = $this->clock->now();
         $expiredAt = $now->add($this->createInterval($this->config->getString('register_token_ttl', 'P2D')));
 
-        $this->transactional->transactional(function () use ($email, $token, $expiredAt, $now): void {
+        $user = $this->transactional->transactional(function () use ($email, $token, $expiredAt, $now): ?User {
             $user = $this->repository->findByEmail($email);
 
             if (null === $user) {
-                return;
+                return null;
             }
 
             $user->requestActivation($token, $expiredAt, $now);
 
             $this->repository->save($user);
+
+            return $user;
         });
+
+        if (null !== $user) {
+            $this->eventDispatcher->dispatchAll($user->releaseEvents());
+        }
     }
 }

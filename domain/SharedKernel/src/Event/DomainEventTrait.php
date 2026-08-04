@@ -22,6 +22,17 @@ trait DomainEventTrait
         return $this->domainEvents;
     }
 
+    /**
+     * @return DomainEventInterface[]
+     */
+    public function releaseEvents(): array
+    {
+        $events = $this->domainEvents;
+        $this->clearDomainEvents();
+
+        return $events;
+    }
+
     public function clearDomainEvents(): void
     {
         $this->domainEvents = [];

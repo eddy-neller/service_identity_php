@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Application\Tests\Unit\User\UseCase\Command\UserManagement;
 
 use App\Application\Shared\Port\ClockInterface;
+use App\Application\Shared\Port\EventDispatcherInterface;
 use App\Application\Shared\Port\TransactionalInterface;
 use App\Application\User\Port\PasswordHasherInterface;
 use App\Application\User\Port\UserRepositoryInterface;
@@ -34,6 +35,8 @@ final class CreateUserByAdminTest extends TestCase
 
     private UserUniquenessCheckerInterface&MockObject $uniquenessChecker;
 
+    private EventDispatcherInterface&MockObject $eventDispatcher;
+
     private CreateUserByAdminCommandHandler $handler;
 
     protected function setUp(): void
@@ -43,17 +46,21 @@ final class CreateUserByAdminTest extends TestCase
         $this->clock = $this->createMock(ClockInterface::class);
         $this->transactional = $this->createMock(TransactionalInterface::class);
         $this->uniquenessChecker = $this->createMock(UserUniquenessCheckerInterface::class);
+        $this->eventDispatcher = $this->createMock(EventDispatcherInterface::class);
         $this->handler = new CreateUserByAdminCommandHandler(
             $this->repository,
             $this->passwordHasher,
             $this->clock,
             $this->transactional,
             $this->uniquenessChecker,
+            $this->eventDispatcher,
         );
     }
 
     public function testHandleCreatesUserWithAllFields(): void
     {
+        $this->eventDispatcher->expects($this->once())->method('dispatchAll');
+
         $now = new DateTimeImmutable('2024-01-01 12:00:00');
         $userId = UserId::fromString('550e8400-e29b-41d4-a716-446655440000');
         $email = 'admin@example.com';
@@ -125,6 +132,8 @@ final class CreateUserByAdminTest extends TestCase
 
     public function testHandleThrowsWhenEmailAlreadyUsed(): void
     {
+        $this->eventDispatcher->expects($this->never())->method('dispatchAll');
+
         $email = 'admin@example.com';
         $username = 'adminuser';
         $userId = UserId::fromString('550e8400-e29b-41d4-a716-446655440000');
@@ -167,6 +176,8 @@ final class CreateUserByAdminTest extends TestCase
 
     public function testHandleThrowsWhenUsernameAlreadyUsed(): void
     {
+        $this->eventDispatcher->expects($this->never())->method('dispatchAll');
+
         $email = 'new@example.com';
         $username = 'existing-admin';
         $userId = UserId::fromString('550e8400-e29b-41d4-a716-446655440000');

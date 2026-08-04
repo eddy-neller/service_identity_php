@@ -8,7 +8,7 @@ use App\Application\Shared\Messenger\Message\SendEmailMessage;
 use App\Infrastructure\Notification\Mailer\Mailer;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 
-#[AsMessageHandler]
+#[AsMessageHandler(bus: 'async.bus')]
 final readonly class SendEmailMessageHandler
 {
     public function __construct(private Mailer $mailer)

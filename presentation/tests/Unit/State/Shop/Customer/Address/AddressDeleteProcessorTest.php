@@ -72,9 +72,7 @@ final class AddressDeleteProcessorTest extends TestCase
                 return null;
             });
 
-        $result = $processor->process(null, $this->operation, ['id' => '550e8400-e29b-41d4-a716-446655440602']);
-
-        $this->assertNull($result);
+        $processor->process(null, $this->operation, ['id' => '550e8400-e29b-41d4-a716-446655440602']);
     }
 
     public function testProcessThrowsOnInvalidId(): void

@@ -6,6 +6,7 @@ namespace App\Application\Tests\Unit\User\UseCase\Command\Onboarding;
 
 use App\Application\Shared\Port\ClockInterface;
 use App\Application\Shared\Port\ConfigInterface;
+use App\Application\Shared\Port\EventDispatcherInterface;
 use App\Application\Shared\Port\TransactionalInterface;
 use App\Application\User\Port\PasswordHasherInterface;
 use App\Application\User\Port\TokenProviderInterface;
@@ -13,6 +14,8 @@ use App\Application\User\Port\UserRepositoryInterface;
 use App\Application\User\Port\UserUniquenessCheckerInterface;
 use App\Application\User\UseCase\Command\Onboarding\RegisterUser\RegisterUserCommand;
 use App\Application\User\UseCase\Command\Onboarding\RegisterUser\RegisterUserCommandHandler;
+use App\Domain\User\Event\Lifecycle\ActivationEmailRequestedEvent;
+use App\Domain\User\Event\Lifecycle\UserRegisteredEvent;
 use App\Domain\User\Exception\Uniqueness\EmailAlreadyUsedException;
 use App\Domain\User\Exception\Uniqueness\UsernameAlreadyUsedException;
 use App\Domain\User\Model\User;
@@ -22,6 +25,7 @@ use App\Domain\User\ValueObject\Identity\Username;
 use DateTimeImmutable;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
+use RuntimeException;
 
 final class RegisterUserTest extends TestCase
 {
@@ -39,6 +43,8 @@ final class RegisterUserTest extends TestCase
 
     private UserUniquenessCheckerInterface&MockObject $uniquenessChecker;
 
+    private EventDispatcherInterface&MockObject $eventDispatcher;
+
     private RegisterUserCommandHandler $handler;
 
     protected function setUp(): void
@@ -50,6 +56,7 @@ final class RegisterUserTest extends TestCase
         $this->transactional = $this->createMock(TransactionalInterface::class);
         $this->config = $this->createMock(ConfigInterface::class);
         $this->uniquenessChecker = $this->createMock(UserUniquenessCheckerInterface::class);
+        $this->eventDispatcher = $this->createMock(EventDispatcherInterface::class);
         $this->handler = new RegisterUserCommandHandler(
             $this->repository,
             $this->passwordHasher,
@@ -58,6 +65,7 @@ final class RegisterUserTest extends TestCase
             $this->transactional,
             $this->config,
             $this->uniquenessChecker,
+            $this->eventDispatcher,
         );
     }
 
@@ -70,6 +78,7 @@ final class RegisterUserTest extends TestCase
         $plainPassword = 'password123';
         $hashedPassword = 'hashed-password';
         $token = 'activation-token';
+        $transactionCompleted = false;
 
         $command = new RegisterUserCommand(
             email: $email,
@@ -115,8 +124,20 @@ final class RegisterUserTest extends TestCase
 
         $this->transactional->expects($this->once())
             ->method('transactional')
-            ->willReturnCallback(function (callable $callback) {
-                return $callback();
+            ->willReturnCallback(function (callable $callback) use (&$transactionCompleted) {
+                $result = $callback();
+                $transactionCompleted = true;
+
+                return $result;
+            });
+
+        $this->eventDispatcher->expects($this->once())
+            ->method('dispatchAll')
+            ->willReturnCallback(function (array $events) use (&$transactionCompleted): void {
+                $this->assertTrue($transactionCompleted);
+                $this->assertCount(2, $events);
+                $this->assertInstanceOf(UserRegisteredEvent::class, $events[0]);
+                $this->assertInstanceOf(ActivationEmailRequestedEvent::class, $events[1]);
             });
 
         $output = $this->handler->handle($command);
@@ -165,6 +186,9 @@ final class RegisterUserTest extends TestCase
             ->willReturn('P2D');
 
         $this->expectException(EmailAlreadyUsedException::class);
+
+        $this->eventDispatcher->expects($this->never())
+            ->method('dispatchAll');
 
         $this->transactional->expects($this->once())
             ->method('transactional')
@@ -215,11 +239,60 @@ final class RegisterUserTest extends TestCase
 
         $this->expectException(UsernameAlreadyUsedException::class);
 
+        $this->eventDispatcher->expects($this->never())
+            ->method('dispatchAll');
+
         $this->transactional->expects($this->once())
             ->method('transactional')
             ->willReturnCallback(function (callable $callback) {
                 return $callback();
             });
+
+        $this->handler->handle($command);
+    }
+
+    public function testHandlePropagatesEventDispatchFailureAfterTransaction(): void
+    {
+        $now = new DateTimeImmutable('2024-01-01 12:00:00');
+        $userId = UserId::fromString('550e8400-e29b-41d4-a716-446655440000');
+        $transactionCompleted = false;
+        $command = new RegisterUserCommand(
+            email: 'test@example.com',
+            username: 'testuser',
+            plainPassword: 'password123',
+        );
+
+        $this->repository->expects($this->once())->method('nextIdentity')->willReturn($userId);
+        $this->repository->expects($this->once())->method('save');
+        $this->passwordHasher->expects($this->once())->method('hash')->willReturn('hashed-password');
+        $this->tokenProvider->expects($this->once())
+            ->method('generateRandomToken')
+            ->willReturn('activation-token');
+        $this->clock->expects($this->once())->method('now')->willReturn($now);
+        $this->config->expects($this->once())
+            ->method('getString')
+            ->with('register_token_ttl', 'P2D')
+            ->willReturn('P2D');
+        $this->uniquenessChecker->expects($this->once())
+            ->method('ensureEmailAndUsernameAvailable');
+        $this->transactional->expects($this->once())
+            ->method('transactional')
+            ->willReturnCallback(function (callable $callback) use (&$transactionCompleted): mixed {
+                $result = $callback();
+                $transactionCompleted = true;
+
+                return $result;
+            });
+        $this->eventDispatcher->expects($this->once())
+            ->method('dispatchAll')
+            ->willReturnCallback(function () use (&$transactionCompleted): never {
+                $this->assertTrue($transactionCompleted);
+
+                throw new RuntimeException('Event dispatch failed.');
+            });
+
+        $this->expectException(RuntimeException::class);
+        $this->expectExceptionMessage('Event dispatch failed.');
 
         $this->handler->handle($command);
     }

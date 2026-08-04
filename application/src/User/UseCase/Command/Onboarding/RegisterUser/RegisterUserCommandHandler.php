@@ -8,6 +8,7 @@ use App\Application\Shared\CQRS\Command\CommandHandlerInterface;
 use App\Application\Shared\DateIntervalTrait;
 use App\Application\Shared\Port\ClockInterface;
 use App\Application\Shared\Port\ConfigInterface;
+use App\Application\Shared\Port\EventDispatcherInterface;
 use App\Application\Shared\Port\TransactionalInterface;
 use App\Application\User\Port\PasswordHasherInterface;
 use App\Application\User\Port\TokenProviderInterface;
@@ -32,6 +33,7 @@ final readonly class RegisterUserCommandHandler implements CommandHandlerInterfa
         private TransactionalInterface $transactional,
         private ConfigInterface $config,
         private UserUniquenessCheckerInterface $uniquenessChecker,
+        private EventDispatcherInterface $eventDispatcher,
     ) {
     }
 
@@ -63,6 +65,8 @@ final readonly class RegisterUserCommandHandler implements CommandHandlerInterfa
 
             return $user;
         });
+
+        $this->eventDispatcher->dispatchAll($user->releaseEvents());
 
         return UserItem::fromUser($user);
     }

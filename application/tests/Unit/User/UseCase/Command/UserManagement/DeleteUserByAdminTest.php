@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Application\Tests\Unit\User\UseCase\Command\UserManagement;
 
 use App\Application\Shared\Port\ClockInterface;
+use App\Application\Shared\Port\EventDispatcherInterface;
 use App\Application\Shared\Port\TransactionalInterface;
 use App\Application\User\Port\UserRepositoryInterface;
 use App\Application\User\UseCase\Command\UserManagement\DeleteUserByAdmin\DeleteUserByAdminCommand;
@@ -28,6 +29,8 @@ final class DeleteUserByAdminTest extends TestCase
 
     private TransactionalInterface&MockObject $transactional;
 
+    private EventDispatcherInterface&MockObject $eventDispatcher;
+
     private DeleteUserByAdminCommandHandler $handler;
 
     protected function setUp(): void
@@ -35,15 +38,19 @@ final class DeleteUserByAdminTest extends TestCase
         $this->repository = $this->createMock(UserRepositoryInterface::class);
         $this->clock = $this->createMock(ClockInterface::class);
         $this->transactional = $this->createMock(TransactionalInterface::class);
+        $this->eventDispatcher = $this->createMock(EventDispatcherInterface::class);
         $this->handler = new DeleteUserByAdminCommandHandler(
             $this->repository,
             $this->clock,
             $this->transactional,
+            $this->eventDispatcher,
         );
     }
 
     public function testHandleDeletesUserWhenFound(): void
     {
+        $this->eventDispatcher->expects($this->once())->method('dispatchAll');
+
         $userId = UserId::fromString('550e8400-e29b-41d4-a716-446655440000');
         $user = $this->createUser($userId);
 
@@ -75,6 +82,8 @@ final class DeleteUserByAdminTest extends TestCase
 
     public function testHandleThrowsExceptionWhenUserNotFound(): void
     {
+        $this->eventDispatcher->expects($this->never())->method('dispatchAll');
+
         $userId = UserId::fromString('550e8400-e29b-41d4-a716-446655440001');
         $command = new DeleteUserByAdminCommand(
             userId: $userId->toString(),

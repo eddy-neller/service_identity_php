@@ -20,9 +20,11 @@ services:
 
     _instanceof:
         App\Application\Shared\CQRS\Command\CommandHandlerInterface:
-            tags: [ "app.cqrs.command_handler" ]
+            tags:
+                - { name: "messenger.message_handler", bus: "command.bus", method: "handle" }
         App\Application\Shared\CQRS\Query\QueryHandlerInterface:
-            tags: [ "app.cqrs.query_handler" ]
+            tags:
+                - { name: "messenger.message_handler", bus: "query.bus", method: "handle" }
 
     # makes classes in src/ available to be used as services
     # this creates a service per class whose id is the fully-qualified class name
@@ -45,18 +47,8 @@ services:
             - "../presentation/src/**/ApiResource/"
             - "../presentation/src/**/Dto/"
 
-    App\Application\Shared\CQRS\Command\CommandHandlerResolver:
-        arguments:
-            $handlers: !tagged_locator { tag: "app.cqrs.command_handler" }
+    App\Application\Shared\CQRS\Command\CommandBusInterface:
+        alias: App\Infrastructure\Messenger\CQRS\MessengerCommandBus
 
-    App\Application\Shared\CQRS\Query\QueryHandlerResolver:
-        arguments:
-            $handlers: !tagged_locator { tag: "app.cqrs.query_handler" }
-
-    App\Application\Shared\CQRS\Command\CommandBus:
-        arguments:
-            $middlewares: !tagged_iterator { tag: "app.cqrs.command_middleware" }
-
-    App\Application\Shared\CQRS\Query\QueryBus:
-        arguments:
-            $middlewares: !tagged_iterator { tag: "app.cqrs.query_middleware" }
+    App\Application\Shared\CQRS\Query\QueryBusInterface:
+        alias: App\Infrastructure\Messenger\CQRS\MessengerQueryBus

@@ -18,7 +18,7 @@ final readonly class CategoryDeleteProcessor implements ProcessorInterface
     ) {
     }
 
-    public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): ?object
+    public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): void
     {
         $categoryId = $uriVariables['id'] ?? null;
 
@@ -27,7 +27,5 @@ final readonly class CategoryDeleteProcessor implements ProcessorInterface
         }
 
         $this->commandBus->dispatch(new DeleteCategoryByAdminCommand($categoryId));
-
-        return null;
     }
 }

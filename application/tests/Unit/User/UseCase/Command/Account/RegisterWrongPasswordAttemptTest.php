@@ -6,6 +6,7 @@ namespace App\Application\Tests\Unit\User\UseCase\Command\Account;
 
 use App\Application\Shared\Port\ClockInterface;
 use App\Application\Shared\Port\ConfigInterface;
+use App\Application\Shared\Port\EventDispatcherInterface;
 use App\Application\Shared\Port\TransactionalInterface;
 use App\Application\User\Port\UserRepositoryInterface;
 use App\Application\User\UseCase\Command\Account\RegisterWrongPasswordAttempt\RegisterWrongPasswordAttemptCommand;
@@ -30,6 +31,8 @@ final class RegisterWrongPasswordAttemptTest extends TestCase
 
     private TransactionalInterface&MockObject $transactional;
 
+    private EventDispatcherInterface&MockObject $eventDispatcher;
+
     private RegisterWrongPasswordAttemptCommandHandler $handler;
 
     protected function setUp(): void
@@ -38,16 +41,20 @@ final class RegisterWrongPasswordAttemptTest extends TestCase
         $this->clock = $this->createMock(ClockInterface::class);
         $this->config = $this->createMock(ConfigInterface::class);
         $this->transactional = $this->createMock(TransactionalInterface::class);
+        $this->eventDispatcher = $this->createMock(EventDispatcherInterface::class);
         $this->handler = new RegisterWrongPasswordAttemptCommandHandler(
             repository: $this->repository,
             clock: $this->clock,
             config: $this->config,
             transactional: $this->transactional,
+            eventDispatcher: $this->eventDispatcher,
         );
     }
 
     public function testHandleIncrementsAttemptsAndBlocksOnThreshold(): void
     {
+        $this->eventDispatcher->expects($this->exactly(2))->method('dispatchAll');
+
         $command = new RegisterWrongPasswordAttemptCommand(email: 'john@example.com');
         $user = $this->createUser();
 
@@ -84,6 +91,8 @@ final class RegisterWrongPasswordAttemptTest extends TestCase
 
     public function testHandleDoesNothingWhenUserNotFound(): void
     {
+        $this->eventDispatcher->expects($this->never())->method('dispatchAll');
+
         $command = new RegisterWrongPasswordAttemptCommand(email: 'unknown@example.com');
 
         $this->config->expects($this->once())

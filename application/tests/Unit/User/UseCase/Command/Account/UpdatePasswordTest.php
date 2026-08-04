@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Application\Tests\Unit\User\UseCase\Command\Account;
 
 use App\Application\Shared\Port\ClockInterface;
+use App\Application\Shared\Port\EventDispatcherInterface;
 use App\Application\Shared\Port\TransactionalInterface;
 use App\Application\User\Port\PasswordHasherInterface;
 use App\Application\User\Port\UserRepositoryInterface;
@@ -33,6 +34,8 @@ final class UpdatePasswordTest extends TestCase
 
     private TransactionalInterface&MockObject $transactional;
 
+    private EventDispatcherInterface&MockObject $eventDispatcher;
+
     private UpdatePasswordCommandHandler $handler;
 
     protected function setUp(): void
@@ -41,16 +44,20 @@ final class UpdatePasswordTest extends TestCase
         $this->passwordHasher = $this->createMock(PasswordHasherInterface::class);
         $this->clock = $this->createMock(ClockInterface::class);
         $this->transactional = $this->createMock(TransactionalInterface::class);
+        $this->eventDispatcher = $this->createMock(EventDispatcherInterface::class);
         $this->handler = new UpdatePasswordCommandHandler(
             $this->repository,
             $this->passwordHasher,
             $this->clock,
             $this->transactional,
+            $this->eventDispatcher,
         );
     }
 
     public function testHandleUpdatesPasswordWhenUserExists(): void
     {
+        $this->eventDispatcher->expects($this->once())->method('dispatchAll');
+
         $userId = UserId::fromString('550e8400-e29b-41d4-a716-446655440000');
         $user = $this->createUser($userId);
         $currentPassword = 'current-password';
@@ -96,6 +103,8 @@ final class UpdatePasswordTest extends TestCase
 
     public function testHandleThrowsExceptionWhenUserNotFound(): void
     {
+        $this->eventDispatcher->expects($this->never())->method('dispatchAll');
+
         $userId = UserId::fromString('550e8400-e29b-41d4-a716-446655440001');
         $command = new UpdatePasswordCommand($userId->toString(), 'current-password', 'new-password');
 
@@ -127,6 +136,8 @@ final class UpdatePasswordTest extends TestCase
 
     public function testHandleThrowsExceptionWhenCurrentPasswordIsInvalid(): void
     {
+        $this->eventDispatcher->expects($this->never())->method('dispatchAll');
+
         $userId = UserId::fromString('550e8400-e29b-41d4-a716-446655440002');
         $user = $this->createUser($userId);
         $command = new UpdatePasswordCommand($userId->toString(), 'wrong-password', 'new-password');
@@ -163,6 +174,8 @@ final class UpdatePasswordTest extends TestCase
 
     public function testHandleThrowsExceptionWhenNewPasswordMatchesCurrentPassword(): void
     {
+        $this->eventDispatcher->expects($this->never())->method('dispatchAll');
+
         $userId = UserId::fromString('550e8400-e29b-41d4-a716-446655440003');
         $user = $this->createUser($userId);
         $password = 'current-password';

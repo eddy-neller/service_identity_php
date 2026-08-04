@@ -7,6 +7,7 @@ namespace App\Infrastructure\Notification\User;
 use App\Application\Shared\Messenger\Message\SendEmailMessage;
 use App\Application\User\Port\UserNotifierInterface;
 use App\Domain\User\Model\User;
+use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Component\Messenger\MessageBusInterface;
 use Symfony\Contracts\Translation\TranslatorInterface;
@@ -20,6 +21,7 @@ final readonly class UserNotifier implements UserNotifierInterface
     public function __construct(
         private TranslatorInterface $translator,
         private ParameterBagInterface $bag,
+        #[Autowire(service: 'async.bus')]
         private MessageBusInterface $bus,
     ) {
     }

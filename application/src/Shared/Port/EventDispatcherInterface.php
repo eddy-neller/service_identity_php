@@ -8,7 +8,8 @@ use App\Domain\SharedKernel\Event\DomainEventInterface;
 
 interface EventDispatcherInterface
 {
-    public function dispatch(DomainEventInterface $event): void;
-
+    /**
+     * @param DomainEventInterface[] $events
+     */
     public function dispatchAll(array $events): void;
 }

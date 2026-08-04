@@ -6,6 +6,7 @@ namespace App\Application\Tests\Unit\User\UseCase\Command\Account;
 
 use App\Application\Shared\Port\ClockInterface;
 use App\Application\Shared\Port\ConfigInterface;
+use App\Application\Shared\Port\EventDispatcherInterface;
 use App\Application\Shared\Port\TransactionalInterface;
 use App\Application\User\Port\TokenProviderInterface;
 use App\Application\User\Port\UserRepositoryInterface;
@@ -33,6 +34,8 @@ final class RequestPasswordResetTest extends TestCase
 
     private ConfigInterface&MockObject $config;
 
+    private EventDispatcherInterface&MockObject $eventDispatcher;
+
     private RequestPasswordResetCommandHandler $handler;
 
     protected function setUp(): void
@@ -42,17 +45,21 @@ final class RequestPasswordResetTest extends TestCase
         $this->clock = $this->createMock(ClockInterface::class);
         $this->transactional = $this->createMock(TransactionalInterface::class);
         $this->config = $this->createMock(ConfigInterface::class);
+        $this->eventDispatcher = $this->createMock(EventDispatcherInterface::class);
         $this->handler = new RequestPasswordResetCommandHandler(
             $this->repository,
             $this->tokenProvider,
             $this->clock,
             $this->transactional,
             $this->config,
+            $this->eventDispatcher,
         );
     }
 
     public function testHandleSendsResetEmailWhenUserExists(): void
     {
+        $this->eventDispatcher->expects($this->once())->method('dispatchAll');
+
         $email = 'test@example.com';
         $now = new DateTimeImmutable('2024-01-01 12:00:00');
         $token = 'reset-token';
@@ -92,6 +99,8 @@ final class RequestPasswordResetTest extends TestCase
 
     public function testHandleDoesNothingWhenUserNotFound(): void
     {
+        $this->eventDispatcher->expects($this->never())->method('dispatchAll');
+
         $email = 'nonexistent@example.com';
         $command = new RequestPasswordResetCommand($email);
 

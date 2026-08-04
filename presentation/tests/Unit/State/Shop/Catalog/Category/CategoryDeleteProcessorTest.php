@@ -45,9 +45,7 @@ final class CategoryDeleteProcessorTest extends TestCase
                 return true;
             }));
 
-        $result = $this->processor->process(null, $this->operation, ['id' => $categoryId]);
-
-        $this->assertNull($result);
+        $this->processor->process(null, $this->operation, ['id' => $categoryId]);
     }
 
     public function testProcessThrowsLogicExceptionWhenIdIsMissing(): void

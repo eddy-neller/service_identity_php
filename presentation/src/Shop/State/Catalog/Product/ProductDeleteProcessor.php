@@ -18,7 +18,7 @@ final readonly class ProductDeleteProcessor implements ProcessorInterface
     ) {
     }
 
-    public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): ?object
+    public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): void
     {
         $productId = $uriVariables['id'] ?? null;
 
@@ -27,7 +27,5 @@ final readonly class ProductDeleteProcessor implements ProcessorInterface
         }
 
         $this->commandBus->dispatch(new DeleteProductByAdminCommand($productId));
-
-        return null;
     }
 }

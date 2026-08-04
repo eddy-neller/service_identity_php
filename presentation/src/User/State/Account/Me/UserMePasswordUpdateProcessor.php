@@ -24,7 +24,7 @@ final readonly class UserMePasswordUpdateProcessor implements ProcessorInterface
     ) {
     }
 
-    public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): mixed
+    public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): void
     {
         if (!$data instanceof UserMePasswordUpdateInput) {
             throw new LogicException(PresentationErrorCode::INVALID_INPUT->value);
@@ -35,8 +35,6 @@ final readonly class UserMePasswordUpdateProcessor implements ProcessorInterface
 
         $command = new UpdatePasswordCommand($userId, $data->currentPassword, $data->newPassword);
         $this->commandBus->dispatch($command);
-
-        return null;
     }
 
     protected function getSecurity(): Security

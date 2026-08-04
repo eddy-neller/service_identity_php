@@ -9,7 +9,8 @@
 
 - Implémenter **tous les Ports** Application : repos, hashers, file storage, email, queues, etc.
 - Encapsuler : Doctrine (ORM, migrations), Symfony (services, events, console), Vich (upload), Ramsey (UUID), HTTP clients, queues, FS, etc.
-- Héberger les **handlers Messenger** (`#[AsMessageHandler]`) : adaptation/IO uniquement, l'orchestration métier reste en Application.
+- Implémenter les buses CQRS avec les bus Symfony Messenger synchrones et héberger leurs middlewares techniques.
+- Héberger les **handlers de messages techniques Messenger** (`#[AsMessageHandler]`) : adaptation/IO uniquement, l'orchestration métier reste en Application.
 
 ---
 
@@ -100,7 +101,7 @@ services:
 
 ## Tests Infrastructure
 
-Suites : `infra.persist`, `infra.command.user`, `infra.notif.user`, `infra.service.encoder`, `infra.service.token`, `infra.service.user` (cf. `AGENTS.md` racine).
+Suites : `infra.command`, `infra.persist`, `infra.notif`, `infra.service.encoder`, `infra.service.token`, `infra.service.storage` (cf. `phpunit.dist.xml`).
 
 ---
 
