@@ -20,6 +20,8 @@ framework:
                 adapter: cache.adapter.redis_tag_aware
             cache.rate_limiter:
                 adapter: cache.adapter.redis
+            cache.jwt_auth:
+                adapter: cache.adapter.redis
 
 when@test:
     framework:
@@ -31,3 +33,5 @@ when@test:
                     tags: cache.app
                 cache.rate_limiter:
                     adapter: cache.adapter.array
+                cache.jwt_auth:
+                    adapter: cache.adapter.filesystem

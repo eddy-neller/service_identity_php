@@ -12,7 +12,7 @@ use Lexik\Bundle\JWTAuthenticationBundle\Events;
 use Lexik\Bundle\JWTAuthenticationBundle\Response\JWTAuthenticationFailureResponse;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 
-final readonly class JWTSubscriber implements EventSubscriberInterface
+final readonly class JwtSubscriber implements EventSubscriberInterface
 {
     public static function getSubscribedEvents(): array
     {

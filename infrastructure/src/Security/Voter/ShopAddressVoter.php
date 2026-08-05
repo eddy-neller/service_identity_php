@@ -6,7 +6,6 @@ namespace App\Infrastructure\Security\Voter;
 
 use App\Domain\User\ValueObject\Access\RoleSet;
 use App\Infrastructure\Entity\Shop\Address;
-use App\Infrastructure\Entity\User\User;
 use Doctrine\ORM\EntityManagerInterface;
 use Ramsey\Uuid\Uuid;
 use Ramsey\Uuid\UuidInterface;
@@ -14,6 +13,7 @@ use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
 use Symfony\Component\Security\Core\Authorization\Voter\Vote;
 use Symfony\Component\Security\Core\Authorization\Voter\Voter;
+use Symfony\Component\Security\Core\User\UserInterface;
 
 final class ShopAddressVoter extends Voter
 {
@@ -53,7 +53,12 @@ final class ShopAddressVoter extends Voter
     {
         $user = $token->getUser();
 
-        if (!$user instanceof User) {
+        if (!$user instanceof UserInterface || !method_exists($user, 'getId')) {
+            return false;
+        }
+
+        $userId = $user->getId();
+        if (!$userId instanceof UuidInterface) {
             return false;
         }
 
@@ -71,7 +76,7 @@ final class ShopAddressVoter extends Voter
             return false;
         }
 
-        return $user->getId()->toString() === $address->getCustomer()->getUserAccountId()->toString();
+        return $userId->toString() === $address->getCustomer()->getUserAccountId()->toString();
     }
 
     private function extractId(mixed $subject): ?string

@@ -10,6 +10,7 @@ use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
 use Symfony\Component\Security\Core\Authorization\Voter\Vote;
 use Symfony\Component\Security\Core\Authorization\Voter\Voter;
+use Symfony\Component\Security\Core\User\UserInterface;
 
 class UserVoter extends Voter
 {
@@ -31,13 +32,18 @@ class UserVoter extends Voter
     {
         $user = $token->getUser();
 
-        if (!$user instanceof User) {
+        if (!$user instanceof UserInterface || !method_exists($user, 'getId')) {
             // the user must be logged in; if not, deny access
             return false;
         }
 
+        $userId = $user->getId();
+        if (!is_object($userId) || !method_exists($userId, 'toString')) {
+            return false;
+        }
+
         return match ($attribute) {
-            'user:item:write' => $this->security->isGranted(RoleSet::ROLE_ADMIN) || $user->getId()->toString() === $subject->getId()->toString(),
+            'user:item:write' => $this->security->isGranted(RoleSet::ROLE_ADMIN) || $userId->toString() === $subject->getId()->toString(),
             default => false,
         };
     }

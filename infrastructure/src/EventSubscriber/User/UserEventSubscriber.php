@@ -22,10 +22,12 @@ use App\Domain\User\Event\Management\UserUpdatedByAdminEvent;
 use App\Domain\User\Event\Profile\UserAvatarUpdatedEvent;
 use App\Domain\User\Event\Security\PasswordResetCompletedEvent;
 use App\Domain\User\Event\Security\PasswordResetRequestedEvent;
+use App\Domain\User\Event\Security\ReauthenticationReason;
 use App\Domain\User\Event\Security\UserPasswordUpdatedEvent;
 use App\Domain\User\Event\Security\UserReauthenticationRequiredEvent;
 use App\Domain\User\Event\Security\UserWrongPasswordAttemptRegisteredEvent;
 use App\Domain\User\Event\Security\UserWrongPasswordAttemptsResetEvent;
+use App\Infrastructure\Service\Token\AuthVersionStoreInterface;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 
@@ -37,6 +39,7 @@ final readonly class UserEventSubscriber implements EventSubscriberInterface
         private TokenProviderInterface $tokenProvider,
         private UserNotifierInterface $notifier,
         private RefreshTokenRepositoryInterface $refreshTokenRepository,
+        private AuthVersionStoreInterface $authVersionStore,
         private LoggerInterface $logger,
         private CommandBusInterface $commandBus,
     ) {
@@ -228,7 +231,12 @@ final readonly class UserEventSubscriber implements EventSubscriberInterface
             'occurred_on' => $event->occurredOn()->format('Y-m-d H:i:s'),
         ]);
 
+        if (ReauthenticationReason::ROLES_CHANGED === $event->getReason()) {
+            return;
+        }
+
         $this->refreshTokenRepository->deleteAllForUser($event->getUserId());
+        $this->authVersionStore->rotate($event->getUserId()->toString());
     }
 
     public function onUserWrongPasswordAttemptRegistered(UserWrongPasswordAttemptRegisteredEvent $event): void

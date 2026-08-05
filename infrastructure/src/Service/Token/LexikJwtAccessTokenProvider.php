@@ -14,6 +14,7 @@ final readonly class LexikJwtAccessTokenProvider implements AccessTokenProviderI
     public function __construct(
         private JWTTokenManagerInterface $jwtTokenManager,
         private ParameterBagInterface $parameterBag,
+        private AuthVersionStoreInterface $authVersionStore,
     ) {
     }
 
@@ -23,14 +24,13 @@ final readonly class LexikJwtAccessTokenProvider implements AccessTokenProviderI
     public function issue(User $user): array
     {
         $tokenUser = new JwtAccessTokenUser(
-            email: $user->getEmail()->toString(),
+            userId: $user->getId()->toString(),
             roles: $user->getRoles()->all(),
         );
 
         return [
             'token' => $this->jwtTokenManager->createFromPayload($tokenUser, [
-                'id' => $user->getId()->toString(),
-                'username' => $user->getUsername()->toString(),
+                'auth_version' => $this->authVersionStore->getOrCreate($user->getId()->toString()),
             ]),
             'expiresIn' => (int) $this->parameterBag->get('jwt_ttl'),
         ];

@@ -15,12 +15,13 @@ contrainte de framework exclusivement dans Infrastructure.
 
 Il ne contient que les données nécessaires à la signature :
 
-- l'email, utilisé par Lexik comme claim d'identité (`user_id_claim: email`) ;
+- l'UUID, utilisé par Lexik comme claim d'identité (`user_id_claim: sub`) ;
 - les rôles ;
 - les méthodes requises par `UserInterface`.
 
-Les claims applicatifs supplémentaires (`id`, `username`) sont fournis
-explicitement par `LexikJwtAccessTokenProvider` au moment de l'émission.
+`LexikJwtAccessTokenProvider` ajoute également `auth_version`, valeur opaque
+vérifiée dans Redis à chaque requête authentifiée. Le contrat complet est
+documenté dans [`docs/JWT_authentication.md`](../../../../JWT_authentication.md).
 
 ## Pourquoi ne pas réutiliser l'entité Doctrine User ?
 
@@ -47,5 +48,5 @@ localisé, pas un second modèle utilisateur.
 
 Cette classe ne vérifie pas un mot de passe, ne charge aucun utilisateur et ne
 sert jamais à authentifier une requête entrante. La vérification des JWT et le
-rechargement de l'utilisateur restent confiés au firewall Lexik/Symfony. La
-gestion de session (rotation, révocation) est assurée par les refresh tokens.
+chargement de l'identité restent confiés au firewall Lexik/Symfony. La gestion
+de session combine les refresh tokens et la vérification Redis de `auth_version`.

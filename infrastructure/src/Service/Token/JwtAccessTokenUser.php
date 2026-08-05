@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Infrastructure\Service\Token;
 
+use Deprecated;
 use Symfony\Component\Security\Core\User\UserInterface;
 
 final readonly class JwtAccessTokenUser implements UserInterface
@@ -12,7 +13,7 @@ final readonly class JwtAccessTokenUser implements UserInterface
      * @param string[] $roles
      */
     public function __construct(
-        private string $email,
+        private string $userId,
         private array $roles,
     ) {
     }
@@ -22,12 +23,13 @@ final readonly class JwtAccessTokenUser implements UserInterface
         return $this->roles;
     }
 
+    #[Deprecated]
     public function eraseCredentials(): void
     {
     }
 
     public function getUserIdentifier(): string
     {
-        return $this->email;
+        return $this->userId;
     }
 }
