@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace App\Infrastructure\Persistence\Doctrine\Shop\Customer;
 
-use App\Application\Shared\Port\UuidGeneratorInterface;
 use App\Application\Shop\Port\AddressRepositoryInterface;
 use App\Domain\Shop\Customer\Model\Address as DomainAddress;
 use App\Domain\Shop\Customer\ValueObject\AddressId;
 use App\Domain\Shop\Customer\ValueObject\CustomerId;
 use App\Infrastructure\Entity\Shop\Address as DoctrineAddress;
 use App\Infrastructure\Entity\Shop\Customer as DoctrineCustomer;
+use App\Infrastructure\Service\Uuid\UuidGeneratorInterface;
 use Doctrine\DBAL\LockMode;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\QueryBuilder;

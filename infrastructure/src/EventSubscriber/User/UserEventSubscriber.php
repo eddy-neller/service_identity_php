@@ -10,7 +10,6 @@ use App\Application\Shop\UseCase\Command\Customer\CreateCustomer\CreateCustomerC
 use App\Application\Shop\UseCase\Command\Customer\DisableCustomer\DisableCustomerCommand;
 use App\Application\User\Port\RefreshTokenRepositoryInterface;
 use App\Application\User\Port\TokenProviderInterface;
-use App\Application\User\Port\UserNotifierInterface;
 use App\Application\User\Port\UserRepositoryInterface;
 use App\Domain\Shop\Customer\ValueObject\UserAccountId;
 use App\Domain\User\Event\Lifecycle\ActivationEmailRequestedEvent;
@@ -27,6 +26,7 @@ use App\Domain\User\Event\Security\UserPasswordUpdatedEvent;
 use App\Domain\User\Event\Security\UserReauthenticationRequiredEvent;
 use App\Domain\User\Event\Security\UserWrongPasswordAttemptRegisteredEvent;
 use App\Domain\User\Event\Security\UserWrongPasswordAttemptsResetEvent;
+use App\Infrastructure\Notification\User\UserNotifierInterface;
 use App\Infrastructure\Service\Token\AuthVersionStoreInterface;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;

@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Infrastructure\Persistence\Doctrine\Shop\Catalog;
 
 use App\Application\Shared\Port\FileInterface;
-use App\Application\Shared\Port\UuidGeneratorInterface;
 use App\Application\Shop\Port\ProductRepositoryInterface;
 use App\Domain\Shop\Catalog\Model\Category as DomainCategory;
 use App\Domain\Shop\Catalog\Model\Product as DomainProduct;
@@ -14,6 +13,7 @@ use App\Domain\Shop\Catalog\ValueObject\ProductId;
 use App\Domain\Shop\Catalog\ValueObject\ProductTitle;
 use App\Infrastructure\Entity\Shop\Category as DoctrineCategory;
 use App\Infrastructure\Entity\Shop\Product as DoctrineProduct;
+use App\Infrastructure\Service\Uuid\UuidGeneratorInterface;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\QueryBuilder;
 use Doctrine\ORM\Tools\Pagination\Paginator;

@@ -21,7 +21,7 @@ Un Port représente une dépendance externe ou technique que l'Application doit 
 
 **Shared Ports** (`Application/Shared/Port/`) :
 - `ClockInterface` (temps `now()`), `ConfigInterface` (config), `TransactionalInterface` (exécution atomique),
-- `FileInterface` (fichier — pas d'`UploadedFile` Symfony), `EventDispatcherInterface` (events), `UuidGeneratorInterface` (UUID).
+- `FileInterface` (fichier — pas d'`UploadedFile` Symfony), `EventDispatcherInterface` (events).
 
 **Ports métier** (ex. `Application/User/Port/`) :
 - `UserRepositoryInterface`, `PasswordHasherInterface`, `TokenProviderInterface`, `AvatarUploaderInterface`, etc.

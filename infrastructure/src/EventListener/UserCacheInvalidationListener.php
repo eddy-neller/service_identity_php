@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Infrastructure\EventListener;
 
-use App\Application\Shared\Port\QueryCacheInterface;
 use App\Domain\User\Event\Lifecycle\ActivationEmailRequestedEvent;
 use App\Domain\User\Event\Lifecycle\UserActivatedEvent;
 use App\Domain\User\Event\Lifecycle\UserRegisteredEvent;
@@ -17,6 +16,7 @@ use App\Domain\User\Event\Security\PasswordResetRequestedEvent;
 use App\Domain\User\Event\Security\UserPasswordUpdatedEvent;
 use App\Domain\User\Event\Security\UserWrongPasswordAttemptRegisteredEvent;
 use App\Domain\User\Event\Security\UserWrongPasswordAttemptsResetEvent;
+use App\Infrastructure\Service\Cache\QueryCacheInterface;
 use Symfony\Component\EventDispatcher\Attribute\AsEventListener;
 
 #[AsEventListener(event: 'user.created_by_admin', method: 'onUserEvent')]

@@ -15,16 +15,18 @@ intercepte chaque Query sur `query.bus`. Si la Query n'implémente pas `Cacheabl
 middleware est un no-op et délègue directement à la suite de la chaîne. Voir
 [`CQRS_messenger.md`](CQRS_messenger.md) pour la place de ce middleware dans le pipeline complet.
 
-## 2) Contrats (Application)
+## 2) Contrats
 
-- `App\Application\Shared\CQRS\Query\CacheableQueryInterface`
+- **Application** — `App\Application\Shared\CQRS\Query\CacheableQueryInterface`
   (`application/src/Shared/CQRS/Query/CacheableQueryInterface.php`) : étend `QueryInterface`, ajoute
   `cacheKey(): string`, `cacheTtl(): int`, `cacheTags(): array`. Une Query cacheable porte donc
-  elle-même la logique de clé/TTL/tags — aucune configuration externe.
-- `App\Application\Shared\Port\QueryCacheInterface`
-  (`application/src/Shared/Port/QueryCacheInterface.php`) : Port générique
-  `get(key, ttlSeconds, tags, callback)` / `invalidateTags(tags)`. Application ne connaît que ce
-  contrat, jamais Redis ni Symfony Cache directement (règle des couches, cf. `AGENTS.md`).
+  elle-même la logique de clé/TTL/tags — aucune configuration externe. C'est le **seul** contrat de
+  cache connu de l'Application.
+- **Infrastructure** — `App\Infrastructure\Service\Cache\QueryCacheInterface`
+  (`infrastructure/src/Service/Cache/QueryCacheInterface.php`) : contrat interne
+  `get(key, ttlSeconds, tags, callback)` / `invalidateTags(tags)`. Ce n'est **pas** un Port : aucun
+  use case ne l'injecte, seuls le middleware et les listeners Infrastructure le consomment
+  (cf. `infrastructure/AGENTS.md`).
 
 ## 3) Implémentation (Infrastructure)
 

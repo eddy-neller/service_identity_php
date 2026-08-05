@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Infrastructure\Service\Cache;
 
-use App\Application\Shared\Port\QueryCacheInterface;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Contracts\Cache\ItemInterface;
 use Symfony\Contracts\Cache\TagAwareCacheInterface;

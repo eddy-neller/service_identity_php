@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Infrastructure\Tests\Unit\Persistence\User;
 
-use App\Application\Shared\Port\UuidGeneratorInterface;
 use App\Domain\User\Model\RefreshToken;
 use App\Domain\User\ValueObject\Identity\UserId;
 use App\Domain\User\ValueObject\Security\RefreshTokenHash;
@@ -12,6 +11,7 @@ use App\Domain\User\ValueObject\Security\RefreshTokenId;
 use App\Infrastructure\Entity\User\RefreshToken as DoctrineRefreshToken;
 use App\Infrastructure\Persistence\Doctrine\User\DoctrineRefreshTokenRepository;
 use App\Infrastructure\Persistence\Doctrine\User\RefreshTokenMapper;
+use App\Infrastructure\Service\Uuid\UuidGeneratorInterface;
 use DateTimeImmutable;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;

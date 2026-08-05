@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Infrastructure\Persistence\Doctrine\Shop\Ordering;
 
-use App\Application\Shared\Port\UuidGeneratorInterface;
 use App\Application\Shop\Port\CartRepositoryInterface;
 use App\Domain\Shop\Customer\ValueObject\CustomerId;
 use App\Domain\Shop\Ordering\Model\Cart as DomainCart;
@@ -14,6 +13,7 @@ use App\Infrastructure\Entity\Shop\Cart as DoctrineCart;
 use App\Infrastructure\Entity\Shop\CartLine as DoctrineCartLine;
 use App\Infrastructure\Entity\Shop\Customer as DoctrineCustomer;
 use App\Infrastructure\Entity\Shop\Product as DoctrineProduct;
+use App\Infrastructure\Service\Uuid\UuidGeneratorInterface;
 use Doctrine\DBAL\LockMode;
 use Doctrine\ORM\EntityManagerInterface;
 use Ramsey\Uuid\Uuid;

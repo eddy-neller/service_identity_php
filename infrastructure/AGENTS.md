@@ -30,13 +30,27 @@
 | `TransactionalInterface` | `DoctrineTransactional` |
 | `FileInterface` | `SymfonyFileAdapter` |
 | `EventDispatcherInterface` | `SymfonyEventDispatcherAdapter` |
-| `UuidGeneratorInterface` | `RamseyUuidGenerator` |
 | `UserRepositoryInterface` | `DoctrineUserRepository` |
 | `PasswordHasherInterface` | `SymfonyPasswordHasherAdapter` |
 | `TokenProviderInterface` | `TokenProvider` |
 | `AvatarUploaderInterface` | `AvatarUploader` |
 
 > **Règle** : interface dans `application/…/Port`, implémentation + dépendances framework dans `infrastructure/...`, **binding dans `config/services.yaml`**.
+
+### Contrats internes à Infrastructure (≠ Ports)
+
+Une interface dont **aucun** use case / service applicatif n'est consommateur n'est pas un Port : elle
+reste dans `infrastructure/`, à côté de son implémentation.
+
+| Contrat interne | Implémentation | Consommateurs |
+|---|---|---|
+| `Service\Cache\QueryCacheInterface` | `SymfonyTagAwareQueryCache` | `QueryCacheMiddleware`, `UserCacheInvalidationListener` |
+| `Service\Uuid\UuidGeneratorInterface` | `RamseyUuidGenerator` | repositories Doctrine |
+| `Service\Token\AuthVersionStoreInterface` | `RedisAuthVersionStore` | `JwtAuthVersionSubscriber`, `LexikJwtAccessTokenProvider` |
+| `Notification\User\UserNotifierInterface` | `UserNotifier` | `UserEventSubscriber` |
+
+> Avant de créer une interface dans `application/…/Port`, vérifier qu'elle est bien injectée par un
+> handler ou un service applicatif. Sinon → `infrastructure/`.
 
 ---
 

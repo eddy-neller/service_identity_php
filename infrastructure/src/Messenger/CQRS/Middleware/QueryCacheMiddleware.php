@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Infrastructure\Messenger\CQRS\Middleware;
 
 use App\Application\Shared\CQRS\Query\CacheableQueryInterface;
-use App\Application\Shared\Port\QueryCacheInterface;
 use App\Infrastructure\Messenger\CQRS\HandledResultExtractor;
+use App\Infrastructure\Service\Cache\QueryCacheInterface;
 use Symfony\Component\Messenger\Envelope;
 use Symfony\Component\Messenger\Middleware\MiddlewareInterface;
 use Symfony\Component\Messenger\Middleware\StackInterface;

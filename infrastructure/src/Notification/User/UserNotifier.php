@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Infrastructure\Notification\User;
 
 use App\Application\Shared\Messenger\Message\SendEmailMessage;
-use App\Application\User\Port\UserNotifierInterface;
 use App\Domain\User\Model\User;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;

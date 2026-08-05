@@ -6,9 +6,9 @@ namespace App\Infrastructure\Tests\Unit\Command\CQRS\Middleware;
 
 use App\Application\Shared\CQRS\Query\CacheableQueryInterface;
 use App\Application\Shared\CQRS\Query\QueryInterface;
-use App\Application\Shared\Port\QueryCacheInterface;
 use App\Infrastructure\Messenger\CQRS\HandledResultExtractor;
 use App\Infrastructure\Messenger\CQRS\Middleware\QueryCacheMiddleware;
+use App\Infrastructure\Service\Cache\QueryCacheInterface;
 use PHPUnit\Framework\TestCase;
 use RuntimeException;
 use Symfony\Component\Messenger\Envelope;

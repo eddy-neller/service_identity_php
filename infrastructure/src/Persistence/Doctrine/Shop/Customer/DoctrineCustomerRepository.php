@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Infrastructure\Persistence\Doctrine\Shop\Customer;
 
-use App\Application\Shared\Port\UuidGeneratorInterface;
 use App\Application\Shop\Port\CustomerRepositoryInterface;
 use App\Domain\Shop\Customer\Model\Customer as DomainCustomer;
 use App\Domain\Shop\Customer\ValueObject\CustomerId;
@@ -12,6 +11,7 @@ use App\Domain\Shop\Customer\ValueObject\CustomerStatus;
 use App\Domain\Shop\Customer\ValueObject\UserAccountId;
 use App\Infrastructure\Entity\Shop\Customer as DoctrineCustomer;
 use App\Infrastructure\Entity\User\User as DoctrineUser;
+use App\Infrastructure\Service\Uuid\UuidGeneratorInterface;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\QueryBuilder;
 use Doctrine\ORM\Tools\Pagination\Paginator;

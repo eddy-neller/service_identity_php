@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Application\User\Port;
+namespace App\Infrastructure\Notification\User;
 
 use App\Domain\User\Model\User;
 

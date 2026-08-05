@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Application\Shared\Port;
+namespace App\Infrastructure\Service\Cache;
 
 interface QueryCacheInterface
 {
