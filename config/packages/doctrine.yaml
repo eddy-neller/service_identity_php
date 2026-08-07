@@ -7,6 +7,10 @@ doctrine:
         #server_version: '16'
 
         profiling_collect_backtrace: '%kernel.debug%'
+
+        # Table d'idempotence pilotée par migration, hors métadonnées ORM :
+        # on l'exclut de l'introspection pour que migrations:diff ne propose pas de la supprimer.
+        schema_filter: '~^(?!processed_domain_event$)~'
     orm:
         validate_xml_mapping: true
         naming_strategy: doctrine.orm.naming_strategy.underscore

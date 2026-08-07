@@ -22,10 +22,10 @@ use App\Presentation\User\State\UserManagement\UserGetProvider;
 use DateTimeImmutable;
 use LogicException;
 use PHPUnit\Framework\MockObject\MockObject;
+use PHPUnit\Framework\TestCase;
 use Ramsey\Uuid\Uuid;
-use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 
-final class UserGetProviderTest extends KernelTestCase
+final class UserGetProviderTest extends TestCase
 {
     private QueryBusInterface&MockObject $queryBus;
 

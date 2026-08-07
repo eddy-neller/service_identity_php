@@ -13,14 +13,14 @@ RUN apt-get install -y \
     librabbitmq-dev libssl-dev \
     && rm -rf /var/lib/apt/lists/*
 
-RUN pecl install apcu xdebug amqp
+RUN pecl install apcu xdebug amqp redis
 RUN docker-php-ext-install xml
 RUN docker-php-ext-install zip
 RUN docker-php-ext-install sockets
 RUN docker-php-ext-install opcache
 RUN docker-php-ext-install intl
 RUN docker-php-ext-install pdo_pgsql
-RUN docker-php-ext-enable apcu xdebug amqp xml zip sockets opcache intl pdo_pgsql
+RUN docker-php-ext-enable apcu xdebug amqp redis xml zip sockets opcache intl pdo_pgsql
 
 # Ajouter le php.ini modifié
 COPY php-fpm/php.ini /usr/local/etc/php/php.ini

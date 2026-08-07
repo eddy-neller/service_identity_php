@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Application\Tests\Unit\User\UseCase\Command\Onboarding;
 
 use App\Application\Shared\Port\ClockInterface;
-use App\Application\Shared\Port\EventDispatcherInterface;
+use App\Application\Shared\Port\DomainEventBusInterface;
 use App\Application\Shared\Port\TransactionalInterface;
 use App\Application\User\Port\TokenProviderInterface;
 use App\Application\User\Port\UserRepositoryInterface;
@@ -34,7 +34,7 @@ final class ValidateActivationTest extends TestCase
 
     private ClockInterface&MockObject $clock;
 
-    private EventDispatcherInterface&MockObject $eventDispatcher;
+    private DomainEventBusInterface&MockObject $eventBus;
 
     private ValidateActivationCommandHandler $handler;
 
@@ -44,19 +44,19 @@ final class ValidateActivationTest extends TestCase
         $this->tokenProvider = $this->createMock(TokenProviderInterface::class);
         $this->clock = $this->createMock(ClockInterface::class);
         $this->transactional = $this->createMock(TransactionalInterface::class);
-        $this->eventDispatcher = $this->createMock(EventDispatcherInterface::class);
+        $this->eventBus = $this->createMock(DomainEventBusInterface::class);
         $this->handler = new ValidateActivationCommandHandler(
             $this->repository,
             $this->tokenProvider,
             $this->clock,
             $this->transactional,
-            $this->eventDispatcher,
+            $this->eventBus,
         );
     }
 
     public function testHandleActivatesUserWhenTokenIsValid(): void
     {
-        $this->eventDispatcher->expects($this->once())->method('dispatchAll');
+        $this->eventBus->expects($this->once())->method('publishAll');
 
         $token = 'encoded-token';
         $email = 'test@example.com';
@@ -95,7 +95,7 @@ final class ValidateActivationTest extends TestCase
 
     public function testHandleThrowsExceptionWhenUserNotFound(): void
     {
-        $this->eventDispatcher->expects($this->never())->method('dispatchAll');
+        $this->eventBus->expects($this->never())->method('publishAll');
 
         $token = 'encoded-token';
         $email = 'test@example.com';
@@ -127,7 +127,7 @@ final class ValidateActivationTest extends TestCase
 
     public function testHandleThrowsExceptionWhenEmailMismatch(): void
     {
-        $this->eventDispatcher->expects($this->never())->method('dispatchAll');
+        $this->eventBus->expects($this->never())->method('publishAll');
 
         $token = 'encoded-token';
         $email = 'test@example.com';
@@ -160,7 +160,7 @@ final class ValidateActivationTest extends TestCase
 
     public function testHandleThrowsExceptionWhenTokenExpired(): void
     {
-        $this->eventDispatcher->expects($this->never())->method('dispatchAll');
+        $this->eventBus->expects($this->never())->method('publishAll');
 
         $token = 'encoded-token';
         $email = 'test@example.com';
@@ -196,7 +196,7 @@ final class ValidateActivationTest extends TestCase
 
     public function testHandleThrowsExceptionWhenTokenMismatch(): void
     {
-        $this->eventDispatcher->expects($this->never())->method('dispatchAll');
+        $this->eventBus->expects($this->never())->method('publishAll');
 
         $token = 'encoded-token';
         $email = 'test@example.com';

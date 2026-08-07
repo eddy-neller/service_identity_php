@@ -3,8 +3,8 @@ vcl 4.0;
 import std;
 
 backend default {
-  .host = "host.docker.internal";
-  .port = "20900";
+  .host = "nginx";
+  .port = "80";
   #.connect_timeout = 1s;
   #.first_byte_timeout = 30s;
   # Health check
@@ -20,6 +20,9 @@ backend default {
 # Hosts allowed to send BAN requests
 acl invalidators {
   "localhost";
+  "app";
+  # réseau interne du bridge Docker
+  "172.16.0.0"/12;
 }
 
 sub vcl_recv {

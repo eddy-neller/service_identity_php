@@ -6,11 +6,11 @@ namespace App\Infrastructure\Tests\Unit\Service\Encoder;
 
 use App\Infrastructure\Service\Encoder\MultipartDecoder;
 use PHPUnit\Framework\MockObject\Stub;
-use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
+use PHPUnit\Framework\TestCase;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\RequestStack;
 
-final class MultipartDecoderTest extends KernelTestCase
+final class MultipartDecoderTest extends TestCase
 {
     private RequestStack&Stub $requestStack;
 

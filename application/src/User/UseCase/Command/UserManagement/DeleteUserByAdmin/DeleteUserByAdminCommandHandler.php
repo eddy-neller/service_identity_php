@@ -6,11 +6,10 @@ namespace App\Application\User\UseCase\Command\UserManagement\DeleteUserByAdmin;
 
 use App\Application\Shared\CQRS\Command\CommandHandlerInterface;
 use App\Application\Shared\Port\ClockInterface;
-use App\Application\Shared\Port\EventDispatcherInterface;
+use App\Application\Shared\Port\DomainEventBusInterface;
 use App\Application\Shared\Port\TransactionalInterface;
 use App\Application\User\Port\UserRepositoryInterface;
 use App\Domain\User\Exception\UserNotFoundException;
-use App\Domain\User\Model\User;
 use App\Domain\User\ValueObject\Identity\UserId;
 
 final readonly class DeleteUserByAdminCommandHandler implements CommandHandlerInterface
@@ -19,7 +18,7 @@ final readonly class DeleteUserByAdminCommandHandler implements CommandHandlerIn
         private UserRepositoryInterface $repository,
         private ClockInterface $clock,
         private TransactionalInterface $transactional,
-        private EventDispatcherInterface $eventDispatcher,
+        private DomainEventBusInterface $eventBus,
     ) {
     }
 
@@ -27,7 +26,7 @@ final readonly class DeleteUserByAdminCommandHandler implements CommandHandlerIn
     {
         $userId = UserId::fromString($command->userId);
 
-        $user = $this->transactional->transactional(function () use ($userId): User {
+        $this->transactional->transactional(function () use ($userId): void {
             $user = $this->repository->findById($userId);
 
             if (null === $user) {
@@ -37,10 +36,7 @@ final readonly class DeleteUserByAdminCommandHandler implements CommandHandlerIn
             $user->deleteByAdmin($this->clock->now());
 
             $this->repository->delete($user);
-
-            return $user;
+            $this->eventBus->publishAll($user->releaseEvents());
         });
-
-        $this->eventDispatcher->dispatchAll($user->releaseEvents());
     }
 }

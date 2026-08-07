@@ -26,12 +26,16 @@
 
 ## Commandes principales
 
-Utiliser **`make`** (Docker = runtime par défaut) :
+Utiliser **`make`** — **tout s'exécute dans le conteneur `app`** (`docker compose exec app`).
+Ne jamais lancer `composer`, `bin/console` ou `vendor/bin/*` directement sur l'hôte.
 
 ```bash
 make install              # Build images, containers, vendors, init DB dev+test
+make reinstall            # Recrée les DB dev+test (migrations + fixtures) sans rebuild
 make up / make down       # Docker up/down (down-hard pour prune images/volumes)
-make serve-start / -stop  # Symfony local server si non Docker
+make bash-app             # Shell dans le conteneur applicatif
+make console c="…"        # bin/console dans le conteneur
+make logs s=app           # Logs d'un service
 
 # Qualité
 make stan                 # PHPStan
@@ -47,6 +51,21 @@ make unit-filter f=ClassNameTest  # Test ciblé
 make unit-suite s=<suite>         # Suite ciblée (voir table)
 make unit-coverage                # Coverage HTML dans coverage/
 ```
+
+### Topologie Docker
+
+```text
+navigateur ──> varnish:20901 ──> nginx:20900 ──> app (php-fpm:9000)
+                                                  ├─ database (postgres)
+                                                  ├─ rabbitmq · redis
+                                                  └─ mailer (mailpit:20907)
+```
+
+- `app` = image PHP 8.4-fpm pilotée par **supervisor** : php-fpm + cron + workers Messenger
+  (`async` et `domain_events`). Le code est bind-monté sur `/var/www`.
+- Dans `.env`, les hôtes sont les **noms de services** (`database`, `rabbitmq`, `redis`, `mailer`,
+  `varnish`) avec leurs ports internes ; les variables `*_EXPOSED_PORT` ne servent qu'à publier
+  les ports sur la machine hôte (accès depuis un client SQL, Mailpit, etc.).
 
 ---
 
@@ -106,12 +125,16 @@ Lancer la suite correspondante **avant chaque livraison** si le périmètre est 
 | `domain/SharedKernel` | `domain.shared` |
 | `application/**/User/UseCase` | `appli.user` |
 | `application/**/Shop/UseCase` + `Shared` | `appli.shop` |
-| `infrastructure/**/Persistence` | `infra.persist` |
-| `infrastructure/**/Command/User` | `infra.command.user` |
-| `infrastructure/**/Notification/User` | `infra.notif.user` |
+| `infrastructure/**/Persistence` (Doctrine réel) | `infra.persist` |
+| `infrastructure/**/Messenger/Event` | `infra.messenger.event` |
+| outbox / atomicité (Doctrine réel) | `infra.outbox` |
+| câblage Messenger / bus CQRS (conteneur réel) | `infra.cqrs` |
+| `infrastructure/**/Command` | `infra.command` |
+| `infrastructure/**/Notification` | `infra.notif` |
 | `infrastructure/**/Service/Encoder` | `infra.service.encoder` |
+| `infrastructure/**/Service/Hasher` + `security.password_hashers` | `infra.service.hasher` |
+| `infrastructure/**/Service/Storage` | `infra.service.storage` |
 | `infrastructure/**/Service/Token` | `infra.service.token` |
-| `infrastructure/**/Service/User` | `infra.service.user` |
 | `presentation/**/State/SendMail` | `pres.state.sendmail` |
 | `presentation/**/State/Shared` | `pres.state.shared` |
 | `presentation/**/State/User` | `pres.state.user` |
@@ -120,6 +143,9 @@ Lancer la suite correspondante **avant chaque livraison** si le périmètre est 
 | `presentation/tests/Api/User` | `api.user` |
 
 - Les suites API (`api.*`) ne sont **pas** exécutables dans l'environnement courant.
+- **`tests/Unit/` vs `tests/Integration/`** : un test qui boote le kernel Symfony, touche la DB ou lit le
+  conteneur DI est un test d'**intégration** → `tests/Integration/`. `tests/Unit/` n'accueille que des
+  `PHPUnit\Framework\TestCase` sans kernel (doubles pour toutes les dépendances).
 - Ne pas ajouter de tests dans les dossiers exclus de `phpunit.dist.xml` (`<exclude>`) ; placer les nouveaux tests dans les suites existantes.
 - DB de test dédiée, initialisée par `make install` — ne **jamais** réutiliser la DB de dev pour les tests.
 
@@ -147,7 +173,7 @@ Lancer la suite correspondante **avant chaque livraison** si le périmètre est 
 ## Documentation
 
 - `README.md` : quickstart, env, commandes, architecture courte.
-- `docs/` : références techniques (`CQRS_messenger.md`, `varnish_cache.md`) et **audits** d'architecture datés dans `docs/audits/` (instantanés d'évaluation, **non normatifs** — les règles font foi dans les `AGENTS.md`).
+- `docs/` : références techniques (`CQRS_messenger.md`, `domain_events.md`, `varnish_cache.md`) et **audits** d'architecture datés dans `docs/audits/` (instantanés d'évaluation, **non normatifs** — les règles font foi dans les `AGENTS.md`).
 
 ## Référence nouvelle API
 

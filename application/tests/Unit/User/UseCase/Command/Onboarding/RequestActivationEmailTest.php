@@ -6,7 +6,7 @@ namespace App\Application\Tests\Unit\User\UseCase\Command\Onboarding;
 
 use App\Application\Shared\Port\ClockInterface;
 use App\Application\Shared\Port\ConfigInterface;
-use App\Application\Shared\Port\EventDispatcherInterface;
+use App\Application\Shared\Port\DomainEventBusInterface;
 use App\Application\Shared\Port\TransactionalInterface;
 use App\Application\User\Port\TokenProviderInterface;
 use App\Application\User\Port\UserRepositoryInterface;
@@ -34,7 +34,7 @@ final class RequestActivationEmailTest extends TestCase
 
     private ConfigInterface&MockObject $config;
 
-    private EventDispatcherInterface&MockObject $eventDispatcher;
+    private DomainEventBusInterface&MockObject $eventBus;
 
     private RequestActivationEmailCommandHandler $handler;
 
@@ -45,20 +45,20 @@ final class RequestActivationEmailTest extends TestCase
         $this->clock = $this->createMock(ClockInterface::class);
         $this->transactional = $this->createMock(TransactionalInterface::class);
         $this->config = $this->createMock(ConfigInterface::class);
-        $this->eventDispatcher = $this->createMock(EventDispatcherInterface::class);
+        $this->eventBus = $this->createMock(DomainEventBusInterface::class);
         $this->handler = new RequestActivationEmailCommandHandler(
             $this->repository,
             $this->tokenProvider,
             $this->clock,
             $this->transactional,
             $this->config,
-            $this->eventDispatcher,
+            $this->eventBus,
         );
     }
 
     public function testHandleSendsActivationEmailWhenUserExists(): void
     {
-        $this->eventDispatcher->expects($this->once())->method('dispatchAll');
+        $this->eventBus->expects($this->once())->method('publishAll');
 
         $email = 'test@example.com';
         $now = new DateTimeImmutable('2024-01-01 12:00:00');
@@ -99,7 +99,7 @@ final class RequestActivationEmailTest extends TestCase
 
     public function testHandleDoesNothingWhenUserNotFound(): void
     {
-        $this->eventDispatcher->expects($this->never())->method('dispatchAll');
+        $this->eventBus->expects($this->never())->method('publishAll');
 
         $email = 'nonexistent@example.com';
         $command = new RequestActivationEmailCommand($email);

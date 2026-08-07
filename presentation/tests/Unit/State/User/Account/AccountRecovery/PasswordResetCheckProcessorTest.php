@@ -12,11 +12,11 @@ use App\Presentation\User\Dto\Account\AccountRecovery\PasswordResetCheckInput;
 use App\Presentation\User\State\Account\AccountRecovery\PasswordResetCheckProcessor;
 use LogicException;
 use PHPUnit\Framework\MockObject\MockObject;
+use PHPUnit\Framework\TestCase;
 use stdClass;
-use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 
-final class PasswordResetCheckProcessorTest extends KernelTestCase
+final class PasswordResetCheckProcessorTest extends TestCase
 {
     private QueryBusInterface&MockObject $queryBus;
 

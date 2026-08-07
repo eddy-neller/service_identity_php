@@ -34,9 +34,11 @@ final readonly class CategoryMapper
 
     public function toDoctrine(DomainCategory $category, ?DoctrineCategory $entity = null): DoctrineCategory
     {
-        $entity ??= new DoctrineCategory();
+        if (null === $entity) {
+            $entity = new DoctrineCategory();
+            $entity->setId(Uuid::fromString($category->getId()->toString()));
+        }
 
-        $entity->setId(Uuid::fromString($category->getId()->toString()));
         $entity->setTitle($category->getTitle()->toString());
         $entity->setDescription($category->getDescription()?->toString());
         $entity->setSlug($category->getSlug()->toString());

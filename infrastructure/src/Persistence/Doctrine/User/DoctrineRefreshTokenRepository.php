@@ -30,8 +30,7 @@ final readonly class DoctrineRefreshTokenRepository implements RefreshTokenRepos
 
     public function save(RefreshToken $refreshToken): void
     {
-        $entity = $this->em->find(DoctrineRefreshToken::class, $refreshToken->getId()->toString());
-        $this->em->persist($this->mapper->toDoctrine($refreshToken, $entity));
+        $this->em->persist($this->mapper->toDoctrine($refreshToken));
         $this->em->flush();
     }
 

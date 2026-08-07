@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Domain\Shop\Ordering\Event;
 
+use App\Domain\SharedKernel\Event\DomainEventIdentityTrait;
 use App\Domain\SharedKernel\Event\DomainEventInterface;
 use App\Domain\Shop\Ordering\ValueObject\OrderId;
 use App\Domain\Shop\Ordering\ValueObject\OrderReference;
@@ -11,11 +12,14 @@ use DateTimeImmutable;
 
 final class OrderPaidEvent implements DomainEventInterface
 {
+    use DomainEventIdentityTrait;
+
     public function __construct(
         private readonly OrderId $orderId,
         private readonly OrderReference $reference,
         private readonly DateTimeImmutable $occurredOn,
     ) {
+        $this->eventId = self::generateEventId();
     }
 
     public function orderId(): OrderId
@@ -26,6 +30,11 @@ final class OrderPaidEvent implements DomainEventInterface
     public function reference(): OrderReference
     {
         return $this->reference;
+    }
+
+    public function aggregateId(): string
+    {
+        return $this->orderId->toString();
     }
 
     public function occurredOn(): DateTimeImmutable

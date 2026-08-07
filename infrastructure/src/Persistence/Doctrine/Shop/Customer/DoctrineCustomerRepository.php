@@ -49,7 +49,9 @@ final readonly class DoctrineCustomerRepository implements CustomerRepositoryInt
         $offset = max(0, ($page - 1) * $itemsPerPage);
         $qb->setFirstResult($offset)->setMaxResults($itemsPerPage);
 
-        $paginator = new Paginator($qb);
+        $paginator = new Paginator($qb, false);
+        $paginator->setUseOutputWalkers(false);
+
         $totalItems = count($paginator);
         $totalPages = $itemsPerPage > 0 ? (int) ceil($totalItems / $itemsPerPage) : 1;
 
@@ -181,5 +183,7 @@ final readonly class DoctrineCustomerRepository implements CustomerRepositoryInt
 
             $qb->addOrderBy($allowedFields[$field], $normalizedDirection);
         }
+
+        $qb->addOrderBy('c.id', 'ASC');
     }
 }

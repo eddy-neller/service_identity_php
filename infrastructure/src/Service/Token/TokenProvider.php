@@ -24,17 +24,41 @@ final readonly class TokenProvider implements TokenProviderInterface
         return implode('', $pieces);
     }
 
+    /**
+     * Encodage en base64url (RFC 4648 §5) : alphabet `-`/`_` au lieu de `+`/`/`, et sans
+     * padding `=`. Le jeton voyage dans l'URL d'un e-mail : aucun de ces caractères n'a
+     * donc besoin d'être percent-encodé, ce qui supprime toute étape d'encodage/décodage
+     * sur le trajet — et avec elle les jetons corrompus qu'un `%3D` ou un `+` transformé
+     * en espace produisait.
+     */
     public function encode(string $token, EmailAddress $email): string
     {
-        return base64_encode($email->toString() . self::TOKEN_SEPARATOR . $token);
+        $payload = $email->toString() . self::TOKEN_SEPARATOR . $token;
+
+        return rtrim(strtr(base64_encode($payload), '+/', '-_'), '=');
     }
 
-    public function split(string $encodedToken): array
+    public function split(string $encodedToken): ?array
     {
-        $decodedToken = base64_decode($encodedToken);
-        $email = strtok($decodedToken, self::TOKEN_SEPARATOR);
-        $token = substr($decodedToken, strpos($decodedToken, self::TOKEN_SEPARATOR) + 1);
+        // Décodage strict : un caractère hors alphabet fait échouer le décodage au lieu
+        // d'être silencieusement ignoré. En mode permissif, un `%3D` resté encodé voyait
+        // son `%` sauté mais ses `3` et `D` absorbés comme données : le jeton obtenu était
+        // faux d'un caractère et l'erreur remontait en « utilisateur introuvable ».
+        $decoded = base64_decode(strtr($encodedToken, '-_', '+/'), true);
 
-        return ['email' => $email, 'token' => $token];
+        if (false === $decoded) {
+            return null;
+        }
+
+        $separator = strpos($decoded, self::TOKEN_SEPARATOR);
+
+        if (false === $separator) {
+            return null;
+        }
+
+        return [
+            'email' => substr($decoded, 0, $separator),
+            'token' => substr($decoded, $separator + 1),
+        ];
     }
 }

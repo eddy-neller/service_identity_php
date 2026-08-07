@@ -14,6 +14,15 @@ use Symfony\Component\Filesystem\Filesystem;
 
 final readonly class LocalAvatarStorage implements AvatarStorageInterface
 {
+    /**
+     * `Filesystem::copy()` reporte les droits de la source sur la cible
+     * (`fileperms($origin) & 0777 & ~umask()`). La source étant le fichier temporaire
+     * d'upload PHP — créé en 0600 — l'avatar héritait de droits que le worker nginx,
+     * autre utilisateur dans un autre conteneur, ne peut pas lire : 403 sur l'image.
+     * On fixe donc les droits explicitement, sans dépendre du tmp ni de l'umask de php-fpm.
+     */
+    private const int FILE_MODE = 0644;
+
     public function __construct(
         private ParameterBagInterface $parameterBag,
         private Filesystem $filesystem,
@@ -28,6 +37,7 @@ final readonly class LocalAvatarStorage implements AvatarStorageInterface
         try {
             $this->filesystem->mkdir($this->uploadDirectory(), 0755);
             $this->filesystem->copy($file->getPathname(), $this->pathFor($fileName), true);
+            $this->filesystem->chmod($this->pathFor($fileName), self::FILE_MODE);
         } catch (IOExceptionInterface $exception) {
             throw new RuntimeException('Unable to store avatar.', previous: $exception);
         }

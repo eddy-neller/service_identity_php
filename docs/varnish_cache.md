@@ -15,18 +15,18 @@ What it does:
 - Builds a Varnish container from `varnish:stable`.
 - Loads VCL from `docker/varnish/conf/default.vcl`.
 - Exposes Varnish on port `20901` in dev.
-- Uses `host.docker.internal` to reach the local Symfony server (`20900`).
+- Uses the `nginx` service (port `80`) as backend; nginx forwards to the `app` container (php-fpm).
 
 Notes:
-- When Symfony runs locally, it must listen on `0.0.0.0` so the container can reach it.
-- If the backend becomes a Docker service later (nginx/app), update the VCL backend to that service name.
+- The whole stack runs in Docker: `varnish -> nginx -> app`. Nothing is served from the host anymore.
+- API Platform sends its `BAN` requests to `VARNISH_URL` (`http://varnish`), resolved on the compose network.
 
 ## 2) VCL rules (default.vcl)
 
 File: `docker/varnish/conf/default.vcl`
 
 Key rules:
-- `backend default`: points to `host.docker.internal:20900` (local Symfony server).
+- `backend default`: points to `nginx:80` (the reverse proxy in front of php-fpm).
 - `BAN` support: accepts BAN requests with `ApiPlatform-Ban-Regex` and invalidates by `Cache-Tags`.
 - `pass` on auth/cookies:
   - `if (req.http.Authorization || req.http.Cookie) { return (pass); }`

@@ -44,9 +44,11 @@ final class UserMapper
 
     public function toDoctrine(DomainUser $user, ?DoctrineUser $entity = null): DoctrineUser
     {
-        $entity = $entity ?? new DoctrineUser();
+        if (null === $entity) {
+            $entity = new DoctrineUser();
+            $entity->setId(Uuid::fromString($user->getId()->toString()));
+        }
 
-        $entity->setId(Uuid::fromString($user->getId()->toString()));
         $entity->setUsername($user->getUsername()->toString());
         $entity->firstname = $user->getFirstname()?->toString();
         $entity->lastname = $user->getLastname()?->toString();

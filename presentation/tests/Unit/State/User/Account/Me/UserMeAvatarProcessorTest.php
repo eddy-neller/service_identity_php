@@ -25,13 +25,13 @@ use App\Presentation\User\State\Account\Me\UserMeAvatarProcessor;
 use DateTimeImmutable;
 use LogicException;
 use PHPUnit\Framework\MockObject\MockObject;
+use PHPUnit\Framework\TestCase;
 use Ramsey\Uuid\Uuid;
 use stdClass;
-use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 
-final class UserMeAvatarProcessorTest extends KernelTestCase
+final class UserMeAvatarProcessorTest extends TestCase
 {
     private Security&MockObject $security;
 

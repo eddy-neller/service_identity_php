@@ -49,3 +49,13 @@ when@prod:
             invalidation:
                 enabled: true
                 urls: ["%env(VARNISH_URL)%"]
+
+when@test:
+    api_platform:
+        http_cache:
+            invalidation:
+                # Active PurgeHttpCacheListener en test : sans lui, tout chargement
+                # d'association provoqué par le listener est indétectable par la suite.
+                enabled: true
+                # Pas de clé `urls` : aucun ScopingHttpClient n'est créé.
+                purger: App\Infrastructure\Tests\Double\HttpCache\NullPurger

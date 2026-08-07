@@ -11,13 +11,12 @@ use App\Infrastructure\Persistence\Doctrine\Shop\ProductRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\EntityRepository;
 use Doctrine\ORM\Mapping\ClassMetadata;
+use PHPUnit\Framework\TestCase;
 use Ramsey\Uuid\Uuid;
-use Symfony\Bundle\FrameworkBundle\Console\Application;
-use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Tester\CommandTester;
 
-final class NbProductCommandTest extends KernelTestCase
+final class NbProductCommandTest extends TestCase
 {
     public function testNoModification(): void
     {
@@ -111,9 +110,6 @@ final class NbProductCommandTest extends KernelTestCase
 
         // Instancie la commande
         $command = new NbProductCommand($em);
-
-        $application = new Application(self::bootKernel());
-        $application->addCommand($command);
 
         return new CommandTester($command);
     }

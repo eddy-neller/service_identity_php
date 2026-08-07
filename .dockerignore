@@ -1,0 +1,18 @@
+# Secrets locaux : jamais dans une image. En dev le bind-mount les remet à disposition.
+.env
+makefile.conf
+
+# Artefacts régénérés dans le conteneur (make ci / make purge)
+vendor/
+var/
+coverage/
+public/bundles/
+
+# Outillage hôte
+.git/
+.idea/
+.claude/
+.phpunit.cache/
+.php-cs-fixer.cache
+.phpcs-cache
+node_modules/

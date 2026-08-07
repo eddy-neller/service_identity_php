@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Application\Tests\Unit\User\UseCase\Command\UserManagement;
 
 use App\Application\Shared\Port\ClockInterface;
-use App\Application\Shared\Port\EventDispatcherInterface;
+use App\Application\Shared\Port\DomainEventBusInterface;
 use App\Application\Shared\Port\TransactionalInterface;
 use App\Application\User\Port\PasswordHasherInterface;
 use App\Application\User\Port\UserRepositoryInterface;
@@ -35,7 +35,7 @@ final class CreateUserByAdminTest extends TestCase
 
     private UserUniquenessCheckerInterface&MockObject $uniquenessChecker;
 
-    private EventDispatcherInterface&MockObject $eventDispatcher;
+    private DomainEventBusInterface&MockObject $eventBus;
 
     private CreateUserByAdminCommandHandler $handler;
 
@@ -46,20 +46,20 @@ final class CreateUserByAdminTest extends TestCase
         $this->clock = $this->createMock(ClockInterface::class);
         $this->transactional = $this->createMock(TransactionalInterface::class);
         $this->uniquenessChecker = $this->createMock(UserUniquenessCheckerInterface::class);
-        $this->eventDispatcher = $this->createMock(EventDispatcherInterface::class);
+        $this->eventBus = $this->createMock(DomainEventBusInterface::class);
         $this->handler = new CreateUserByAdminCommandHandler(
             $this->repository,
             $this->passwordHasher,
             $this->clock,
             $this->transactional,
             $this->uniquenessChecker,
-            $this->eventDispatcher,
+            $this->eventBus,
         );
     }
 
     public function testHandleCreatesUserWithAllFields(): void
     {
-        $this->eventDispatcher->expects($this->once())->method('dispatchAll');
+        $this->eventBus->expects($this->once())->method('publishAll');
 
         $now = new DateTimeImmutable('2024-01-01 12:00:00');
         $userId = UserId::fromString('550e8400-e29b-41d4-a716-446655440000');
@@ -101,7 +101,7 @@ final class CreateUserByAdminTest extends TestCase
             ->willReturn($hashedPassword);
 
         $this->repository->expects($this->once())
-            ->method('save')
+            ->method('add')
             ->with($this->callback(function (User $user) use ($userId, $username, $email, $firstname, $lastname, $hashedPassword, $status, $roles) {
                 return $user->getId()->equals($userId)
                     && $user->getUsername()->toString() === $username
@@ -132,11 +132,10 @@ final class CreateUserByAdminTest extends TestCase
 
     public function testHandleThrowsWhenEmailAlreadyUsed(): void
     {
-        $this->eventDispatcher->expects($this->never())->method('dispatchAll');
+        $this->eventBus->expects($this->never())->method('publishAll');
 
         $email = 'admin@example.com';
         $username = 'adminuser';
-        $userId = UserId::fromString('550e8400-e29b-41d4-a716-446655440000');
 
         $command = new CreateUserByAdminCommand(
             email: $email,
@@ -145,42 +144,31 @@ final class CreateUserByAdminTest extends TestCase
             roles: ['ROLE_ADMIN'],
             status: UserStatus::ACTIVE,
         );
-
-        $this->repository->expects($this->once())
-            ->method('nextIdentity')
-            ->willReturn($userId);
-
-        $this->clock->expects($this->once())
-            ->method('now')
-            ->willReturn(new DateTimeImmutable('2024-01-01 12:00:00'));
 
         $this->uniquenessChecker->expects($this->once())
             ->method('ensureEmailAndUsernameAvailable')
             ->with(EmailAddress::fromString($email), Username::fromString($username))
             ->willThrowException(new EmailAlreadyUsedException());
 
-        $this->passwordHasher->expects($this->once())
-            ->method('hash')
-            ->willReturn('hashed-password');
+        // Le contrôle passe avant le hash : un conflit ne doit coûter aucun bcrypt,
+        // ni ouvrir de transaction.
+        $this->passwordHasher->expects($this->never())->method('hash');
+        $this->repository->expects($this->never())->method('nextIdentity');
+        $this->repository->expects($this->never())->method('add');
+        $this->clock->expects($this->never())->method('now');
+        $this->transactional->expects($this->never())->method('transactional');
 
         $this->expectException(EmailAlreadyUsedException::class);
-
-        $this->transactional->expects($this->once())
-            ->method('transactional')
-            ->willReturnCallback(function (callable $callback) {
-                return $callback();
-            });
 
         $this->handler->handle($command);
     }
 
     public function testHandleThrowsWhenUsernameAlreadyUsed(): void
     {
-        $this->eventDispatcher->expects($this->never())->method('dispatchAll');
+        $this->eventBus->expects($this->never())->method('publishAll');
 
         $email = 'new@example.com';
         $username = 'existing-admin';
-        $userId = UserId::fromString('550e8400-e29b-41d4-a716-446655440000');
 
         $command = new CreateUserByAdminCommand(
             email: $email,
@@ -190,30 +178,18 @@ final class CreateUserByAdminTest extends TestCase
             status: UserStatus::ACTIVE,
         );
 
-        $this->repository->expects($this->once())
-            ->method('nextIdentity')
-            ->willReturn($userId);
-
-        $this->clock->expects($this->once())
-            ->method('now')
-            ->willReturn(new DateTimeImmutable('2024-01-01 12:00:00'));
-
         $this->uniquenessChecker->expects($this->once())
             ->method('ensureEmailAndUsernameAvailable')
             ->with(EmailAddress::fromString($email), Username::fromString($username))
             ->willThrowException(new UsernameAlreadyUsedException());
 
-        $this->passwordHasher->expects($this->once())
-            ->method('hash')
-            ->willReturn('hashed-password');
+        $this->passwordHasher->expects($this->never())->method('hash');
+        $this->repository->expects($this->never())->method('nextIdentity');
+        $this->repository->expects($this->never())->method('add');
+        $this->clock->expects($this->never())->method('now');
+        $this->transactional->expects($this->never())->method('transactional');
 
         $this->expectException(UsernameAlreadyUsedException::class);
-
-        $this->transactional->expects($this->once())
-            ->method('transactional')
-            ->willReturnCallback(function (callable $callback) {
-                return $callback();
-            });
 
         $this->handler->handle($command);
     }

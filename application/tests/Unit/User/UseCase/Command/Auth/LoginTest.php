@@ -6,7 +6,7 @@ namespace App\Application\Tests\Unit\User\UseCase\Command\Auth;
 
 use App\Application\Shared\Port\ClockInterface;
 use App\Application\Shared\Port\ConfigInterface;
-use App\Application\Shared\Port\EventDispatcherInterface;
+use App\Application\Shared\Port\DomainEventBusInterface;
 use App\Application\Shared\Port\TransactionalInterface;
 use App\Application\User\Port\AccessTokenProviderInterface;
 use App\Application\User\Port\PasswordHasherInterface;
@@ -47,7 +47,7 @@ final class LoginTest extends TestCase
 
     private TransactionalInterface&MockObject $transactional;
 
-    private EventDispatcherInterface&MockObject $eventDispatcher;
+    private DomainEventBusInterface&MockObject $eventBus;
 
     private AccessTokenProviderInterface&MockObject $accessTokenProvider;
 
@@ -66,7 +66,7 @@ final class LoginTest extends TestCase
         $this->clock = $this->createMock(ClockInterface::class);
         $this->config = $this->createMock(ConfigInterface::class);
         $this->transactional = $this->createMock(TransactionalInterface::class);
-        $this->eventDispatcher = $this->createMock(EventDispatcherInterface::class);
+        $this->eventBus = $this->createMock(DomainEventBusInterface::class);
         $this->accessTokenProvider = $this->createMock(AccessTokenProviderInterface::class);
         $this->tokenProvider = $this->createMock(TokenProviderInterface::class);
         $this->refreshTokenHasher = $this->createMock(RefreshTokenHasherInterface::class);
@@ -87,11 +87,11 @@ final class LoginTest extends TestCase
             $this->clock,
             $this->config,
             $this->transactional,
-            $this->eventDispatcher,
+            $this->eventBus,
         );
     }
 
-    public function testHandlePublishesWrongPasswordEventAfterTransactionBeforeInvalidCredentials(): void
+    public function testHandlePublishesWrongPasswordEventInsideTransactionBeforeInvalidCredentials(): void
     {
         $now = new DateTimeImmutable('2026-07-18 11:00:00');
         $user = $this->createActiveUser();
@@ -116,10 +116,10 @@ final class LoginTest extends TestCase
 
                 return $result;
             });
-        $this->eventDispatcher->expects($this->once())
-            ->method('dispatchAll')
+        $this->eventBus->expects($this->once())
+            ->method('publishAll')
             ->willReturnCallback(function (array $events) use (&$transactionCompleted): void {
-                $this->assertTrue($transactionCompleted);
+                $this->assertFalse($transactionCompleted, 'La publication doit avoir lieu dans la transaction.');
                 $this->assertCount(1, $events);
                 $this->assertInstanceOf(UserWrongPasswordAttemptRegisteredEvent::class, $events[0]);
             });
@@ -129,7 +129,7 @@ final class LoginTest extends TestCase
         $this->handler->handle(new LoginCommand('john@example.com', 'invalid-password'));
     }
 
-    public function testHandlePublishesLockEventsAfterTransactionBeforeLockedException(): void
+    public function testHandlePublishesLockEventsInsideTransactionBeforeLockedException(): void
     {
         $now = new DateTimeImmutable('2026-07-18 11:00:00');
         $user = $this->createActiveUser();
@@ -151,10 +151,10 @@ final class LoginTest extends TestCase
 
                 return $result;
             });
-        $this->eventDispatcher->expects($this->once())
-            ->method('dispatchAll')
+        $this->eventBus->expects($this->once())
+            ->method('publishAll')
             ->willReturnCallback(function (array $events) use (&$transactionCompleted): void {
-                $this->assertTrue($transactionCompleted);
+                $this->assertFalse($transactionCompleted, 'La publication doit avoir lieu dans la transaction.');
                 $this->assertCount(2, $events);
                 $this->assertInstanceOf(UserWrongPasswordAttemptRegisteredEvent::class, $events[0]);
                 $this->assertInstanceOf(UserReauthenticationRequiredEvent::class, $events[1]);
@@ -165,7 +165,7 @@ final class LoginTest extends TestCase
         $this->handler->handle(new LoginCommand('john@example.com', 'invalid-password'));
     }
 
-    public function testHandlePublishesResetEventAfterTransactionBeforeReturningTokens(): void
+    public function testHandlePublishesResetEventInsideTransactionBeforeReturningTokens(): void
     {
         $now = new DateTimeImmutable('2026-07-18 11:00:00');
         $user = $this->createActiveUser();
@@ -204,10 +204,10 @@ final class LoginTest extends TestCase
 
                 return $result;
             });
-        $this->eventDispatcher->expects($this->once())
-            ->method('dispatchAll')
+        $this->eventBus->expects($this->once())
+            ->method('publishAll')
             ->willReturnCallback(function (array $events) use (&$transactionCompleted): void {
-                $this->assertTrue($transactionCompleted);
+                $this->assertFalse($transactionCompleted, 'La publication doit avoir lieu dans la transaction.');
                 $this->assertCount(1, $events);
                 $this->assertInstanceOf(UserWrongPasswordAttemptsResetEvent::class, $events[0]);
             });

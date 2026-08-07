@@ -101,7 +101,7 @@ class Order
     protected UuidInterface $id;
 
     #[Groups(['shop_order:read'])]
-    #[ORM\ManyToOne(targetEntity: User::class, inversedBy: 'orders')]
+    #[ORM\ManyToOne(targetEntity: User::class)]
     #[ORM\JoinColumn(nullable: false)]
     private User $user;
 

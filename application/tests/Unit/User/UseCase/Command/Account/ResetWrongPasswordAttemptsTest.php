@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Application\Tests\Unit\User\UseCase\Command\Account;
 
 use App\Application\Shared\Port\ClockInterface;
-use App\Application\Shared\Port\EventDispatcherInterface;
+use App\Application\Shared\Port\DomainEventBusInterface;
 use App\Application\Shared\Port\TransactionalInterface;
 use App\Application\User\Port\UserRepositoryInterface;
 use App\Application\User\UseCase\Command\Account\ResetWrongPasswordAttempts\ResetWrongPasswordAttemptsCommand;
@@ -30,7 +30,7 @@ final class ResetWrongPasswordAttemptsTest extends TestCase
 
     private TransactionalInterface&MockObject $transactional;
 
-    private EventDispatcherInterface&MockObject $eventDispatcher;
+    private DomainEventBusInterface&MockObject $eventBus;
 
     private ResetWrongPasswordAttemptsCommandHandler $handler;
 
@@ -39,19 +39,19 @@ final class ResetWrongPasswordAttemptsTest extends TestCase
         $this->repository = $this->createMock(UserRepositoryInterface::class);
         $this->clock = $this->createMock(ClockInterface::class);
         $this->transactional = $this->createMock(TransactionalInterface::class);
-        $this->eventDispatcher = $this->createMock(EventDispatcherInterface::class);
+        $this->eventBus = $this->createMock(DomainEventBusInterface::class);
 
         $this->handler = new ResetWrongPasswordAttemptsCommandHandler(
             repository: $this->repository,
             clock: $this->clock,
             transactional: $this->transactional,
-            eventDispatcher: $this->eventDispatcher,
+            eventBus: $this->eventBus,
         );
     }
 
     public function testHandleResetsAttemptsWhenUserFound(): void
     {
-        $this->eventDispatcher->expects($this->once())->method('dispatchAll');
+        $this->eventBus->expects($this->once())->method('publishAll');
 
         $user = $this->createUser();
         $this->setResetPassword($user, ResetPassword::create(mailSent: 0, token: 't', tokenTtl: time() + 3600));
@@ -83,7 +83,7 @@ final class ResetWrongPasswordAttemptsTest extends TestCase
 
     public function testHandleDoesNothingWhenUserNotFound(): void
     {
-        $this->eventDispatcher->expects($this->never())->method('dispatchAll');
+        $this->eventBus->expects($this->never())->method('publishAll');
 
         $command = new ResetWrongPasswordAttemptsCommand('550e8400-e29b-41d4-a716-446655440000');
 

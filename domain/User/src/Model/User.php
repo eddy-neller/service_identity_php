@@ -101,7 +101,6 @@ final class User
 
         $user->recordEvent(new UserRegisteredEvent(
             userId: $id,
-            email: $email,
             occurredOn: $now,
         ));
 
@@ -142,7 +141,6 @@ final class User
 
         $user->recordEvent(new UserCreatedByAdminEvent(
             userId: $id,
-            email: $email,
             occurredOn: $now,
         ));
 

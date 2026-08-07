@@ -5,19 +5,20 @@ declare(strict_types=1);
 namespace App\Infrastructure\Persistence\Doctrine\User;
 
 use App\Application\User\Port\UserRepositoryInterface;
+use App\Domain\User\Exception\Uniqueness\EmailAlreadyUsedException;
+use App\Domain\User\Exception\Uniqueness\UsernameAlreadyUsedException;
 use App\Domain\User\Model\User as DomainUser;
 use App\Domain\User\ValueObject\Identity\EmailAddress;
 use App\Domain\User\ValueObject\Identity\UserId;
 use App\Domain\User\ValueObject\Identity\Username;
 use App\Infrastructure\Entity\User\User as DoctrineUser;
 use App\Infrastructure\Service\Uuid\UuidGeneratorInterface;
+use Doctrine\DBAL\Exception\UniqueConstraintViolationException;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\QueryBuilder;
 use Doctrine\ORM\Tools\Pagination\Paginator;
+use Throwable;
 
-/**
- * @codeCoverageIgnore
- */
 final readonly class DoctrineUserRepository implements UserRepositoryInterface
 {
     public function __construct(
@@ -33,9 +34,6 @@ final readonly class DoctrineUserRepository implements UserRepositoryInterface
         return UserId::fromString($this->uuidGenerator->generate());
     }
 
-    /**
-     * @return array{items: list<DomainUser>, totalItems: int, totalPages: int}
-     */
     public function list(array $filters, array $orderBy, int $page, int $itemsPerPage): array
     {
         $qb = $this->repository->createQueryBuilder('u');
@@ -46,7 +44,9 @@ final readonly class DoctrineUserRepository implements UserRepositoryInterface
         $offset = max(0, ($page - 1) * $itemsPerPage);
         $qb->setFirstResult($offset)->setMaxResults($itemsPerPage);
 
-        $paginator = new Paginator($qb);
+        $paginator = new Paginator($qb, false);
+        $paginator->setUseOutputWalkers(false);
+
         $totalItems = count($paginator);
         $totalPages = $itemsPerPage > 0 ? (int) ceil($totalItems / $itemsPerPage) : 1;
 
@@ -64,13 +64,21 @@ final readonly class DoctrineUserRepository implements UserRepositoryInterface
         ];
     }
 
+    public function add(DomainUser $user): void
+    {
+        $this->em->persist($this->mapper->toDoctrine($user));
+
+        $this->flushTranslatingUniqueViolations();
+    }
+
     public function save(DomainUser $user): void
     {
         $entity = $this->findEntity($user->getId());
         $entity = $this->mapper->toDoctrine($user, $entity);
 
         $this->em->persist($entity);
-        $this->em->flush();
+
+        $this->flushTranslatingUniqueViolations();
     }
 
     public function delete(DomainUser $user): void
@@ -119,6 +127,26 @@ final readonly class DoctrineUserRepository implements UserRepositoryInterface
         return $entity ? $this->mapper->toDomain($entity) : null;
     }
 
+    private function flushTranslatingUniqueViolations(): void
+    {
+        try {
+            $this->em->flush();
+        } catch (UniqueConstraintViolationException $exception) {
+            throw $this->translateUniqueViolation($exception);
+        }
+    }
+
+    private function translateUniqueViolation(UniqueConstraintViolationException $exception): Throwable
+    {
+        $message = strtolower($exception->getMessage());
+
+        return match (true) {
+            str_contains($message, 'useremailuniq') => new EmailAlreadyUsedException(),
+            str_contains($message, 'userusernameuniq') => new UsernameAlreadyUsedException(),
+            default => $exception,
+        };
+    }
+
     private function findEntity(?UserId $id): ?DoctrineUser
     {
         if (null === $id) {
@@ -163,5 +191,7 @@ final readonly class DoctrineUserRepository implements UserRepositoryInterface
 
             $qb->addOrderBy($allowedFields[$field], $normalizedDirection);
         }
+
+        $qb->addOrderBy('u.id', 'ASC');
     }
 }

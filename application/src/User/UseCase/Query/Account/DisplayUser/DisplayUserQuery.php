@@ -17,7 +17,7 @@ final readonly class DisplayUserQuery implements CacheableQueryInterface
 
     public function cacheKey(): string
     {
-        return 'user:item:' . $this->userId;
+        return 'user-item-' . $this->userId;
     }
 
     public function cacheTtl(): int

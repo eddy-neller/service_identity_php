@@ -9,11 +9,11 @@ use ApiPlatform\State\ProviderInterface;
 use App\Presentation\Shared\State\PaginatedCollectionProvider;
 use ArrayIterator;
 use PHPUnit\Framework\MockObject\MockObject;
+use PHPUnit\Framework\TestCase;
 use stdClass;
-use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 use Symfony\Component\HttpFoundation\Request;
 
-final class PaginatedCollectionProviderTest extends KernelTestCase
+final class PaginatedCollectionProviderTest extends TestCase
 {
     private ProviderInterface&MockObject $provider;
 

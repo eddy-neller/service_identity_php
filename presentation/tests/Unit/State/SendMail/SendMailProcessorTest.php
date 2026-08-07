@@ -11,14 +11,14 @@ use App\Presentation\SendMail\State\SendMailProcessor;
 use App\Presentation\Shared\State\PresentationErrorCode;
 use LogicException;
 use PHPUnit\Framework\MockObject\MockObject;
+use PHPUnit\Framework\TestCase;
 use stdClass;
-use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Messenger\Envelope;
 use Symfony\Component\Messenger\MessageBusInterface;
 
-final class SendMailProcessorTest extends KernelTestCase
+final class SendMailProcessorTest extends TestCase
 {
     private SendMailProcessor $sendMailProcessor;
 

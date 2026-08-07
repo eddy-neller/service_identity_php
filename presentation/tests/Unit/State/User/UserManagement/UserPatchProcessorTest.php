@@ -23,11 +23,11 @@ use App\Presentation\User\State\UserManagement\UserPatchProcessor;
 use DateTimeImmutable;
 use LogicException;
 use PHPUnit\Framework\MockObject\MockObject;
+use PHPUnit\Framework\TestCase;
 use Ramsey\Uuid\Uuid;
 use stdClass;
-use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 
-final class UserPatchProcessorTest extends KernelTestCase
+final class UserPatchProcessorTest extends TestCase
 {
     private CommandBusInterface&MockObject $commandBus;
 

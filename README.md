@@ -64,9 +64,11 @@ Je sépare **métier**, **application** et **infrastructure** pour limiter le co
 
 ### Prérequis
 
--   **Docker** + **docker-compose**
+-   **Docker** + **docker compose**
 -   **Make** (pour utiliser le `Makefile`)
--   (Optionnel) PHP 8.4 en local si tu veux lancer des commandes sans Docker
+
+Aucun PHP local n’est requis : **toute la stack tourne dans Docker**, y compris l’application
+(conteneur `app` = PHP 8.4-fpm piloté par supervisor, servi par `nginx`).
 
 ### Installation & lancement avec Docker
 
@@ -74,14 +76,25 @@ Depuis la racine du projet :
 
 ```bash
 cp makefile.conf.dist makefile.conf
-make install        # installe les dépendances, construit les conteneurs
-make start          # démarre l'environnement (API + DB)
+cp .env.dist .env   # puis remplacer les valeurs "change-me"
+make install        # build des images, conteneurs, vendors, DB dev + test
+make up             # démarre l'environnement
 ```
 
-Par défaut, l’API est accessible sur `http://localhost:8000`.  
-L’interface de documentation d’API Platform (Swagger / ReDoc) est disponible sur `http://localhost:8000/api`.
+| Service | URL / port hôte |
+|---|---|
+| API (nginx → php-fpm) | `http://localhost:20900` — doc API Platform sur `/api` |
+| Varnish (cache HTTP) | `http://localhost:20901` |
+| PostgreSQL | `localhost:20902` |
+| Redis | `localhost:20903` |
+| Mailpit (webmail) | `http://localhost:20907` |
+| RabbitMQ (management) | `http://localhost:20909` |
 
-> Si un port ou service doit être adapté, tout est centralisé dans `docker-compose.yaml` et `makefile.conf`.
+Commandes utiles : `make bash-app` (shell dans le conteneur), `make console c="debug:router"`,
+`make logs s=app`, `make unit`.
+
+> Les ports publiés sont pilotés par les variables `*_EXPOSED_PORT` de `.env` ; les services
+> communiquent entre eux par leur nom de conteneur sur le réseau compose.
 
 ---
 

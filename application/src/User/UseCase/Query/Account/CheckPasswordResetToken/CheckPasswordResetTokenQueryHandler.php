@@ -21,10 +21,15 @@ final readonly class CheckPasswordResetTokenQueryHandler implements QueryHandler
     public function handle(CheckPasswordResetTokenQuery $query): bool
     {
         $split = $this->tokenProvider->split($query->token);
-        $rawToken = $split['token'] ?? '';
+
+        if (null === $split) {
+            return false;
+        }
+
+        $rawToken = $split['token'];
 
         try {
-            $email = EmailAddress::fromString($split['email'] ?? '');
+            $email = EmailAddress::fromString($split['email']);
         } catch (Exception) {
             return false;
         }

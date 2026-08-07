@@ -24,11 +24,11 @@ use App\Presentation\User\State\Onboarding\UserRegisterProcessor;
 use DateTimeImmutable;
 use LogicException;
 use PHPUnit\Framework\MockObject\MockObject;
+use PHPUnit\Framework\TestCase;
 use Ramsey\Uuid\Uuid;
 use stdClass;
-use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 
-final class UserRegisterProcessorTest extends KernelTestCase
+final class UserRegisterProcessorTest extends TestCase
 {
     private CommandBusInterface&MockObject $commandBus;
 

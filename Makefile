@@ -35,6 +35,7 @@ help:
 
 #!make
 include makefile.conf
+export COMPOSE_BAKE = true
 
 ## Install Project
 .PHONY: install
@@ -42,25 +43,55 @@ install:
 	@echo "$(YELLOW)** Starting installation... **$(RESET)"
 	@echo "$(YELLOW)** Update Git Repository **$(RESET)"
 	@git fa && git plr
-	@echo "$(YELLOW)** Update Docker Images **$(RESET)"
+	@echo "$(YELLOW)** Destroy Docker Containers **$(RESET)"
 	@make down-hard
 	@echo "$(YELLOW)** Update Docker Images **$(RESET)"
-	@docker pull postgres:18-alpine && docker pull rabbitmq:4-management-alpine && docker pull varnish:8-alpine && docker pull redis:8-alpine
+	@docker pull php:8.4-fpm && docker pull nginx:1-alpine && docker pull postgres:18-alpine && docker pull rabbitmq:4-management-alpine && docker pull varnish:8-alpine && docker pull redis:8-alpine
 	@echo "$(YELLOW)** Build & Load Docker Containers **$(RESET)"
 	make binc && make up
 	@echo "$(YELLOW)** Load composer install & dump-autoload **$(RESET)"
 	@make ci && make cda
 	@echo "$(YELLOW)** Manage DEV database **$(RESET)"
-	@bin/console doctrine:database:create --if-not-exists && \
-		bin/console doctrine:migrations:migrate --no-interaction
-	@bin/console doctrine:fixtures:load --no-interaction --group=dev
+	@$(APP) sh -c "bin/console doctrine:database:create --if-not-exists && \
+		bin/console doctrine:migrations:migrate --no-interaction"
+	@$(APP) sh -c "bin/console doctrine:fixtures:load --no-interaction --group=dev"
 	@echo "$(YELLOW)** Manage TEST database **$(RESET)"
-	@bin/console doctrine:database:create -e test --if-not-exists && \
-		bin/console doctrine:migrations:migrate -e test --no-interaction
-	@bin/console doctrine:fixtures:load -e test --no-interaction --group=test
+	@$(APP) sh -c "bin/console doctrine:database:create -e test --if-not-exists && \
+		bin/console doctrine:migrations:migrate -e test --no-interaction"
+	@$(APP) sh -c "bin/console doctrine:fixtures:load -e test --no-interaction --group=test"
 	@echo "$(YELLOW)** Load composer outdated & symfony:recipes **$(RESET)"
 	@make co && make csr
 	@echo "$(GREEN)** Installation completed!!! **$(RESET)"
+
+## Re-install databases (dev + test) without rebuilding the containers
+.PHONY: reinstall
+reinstall:
+	@echo "$(YELLOW)** Starting re-installation... **$(RESET)"
+	@echo "$(YELLOW)** Manage DEV database **$(RESET)"
+	@$(APP) sh -c "bin/console doctrine:database:drop --force --if-exists && \
+		bin/console doctrine:database:create --if-not-exists && \
+		bin/console doctrine:migrations:migrate --no-interaction"
+	@$(APP) sh -c "bin/console doctrine:fixtures:load --no-interaction --group=dev"
+	@echo "$(YELLOW)** Manage TEST database **$(RESET)"
+	@$(APP) sh -c "bin/console doctrine:database:drop -e test --force --if-exists && \
+		bin/console doctrine:database:create -e test --if-not-exists && \
+		bin/console doctrine:migrations:migrate -e test --no-interaction"
+	@$(APP) sh -c "bin/console doctrine:fixtures:load -e test --no-interaction --group=test"
+	@echo "$(GREEN)** Re-installation completed!!! **$(RESET)"
+
+## Reload DEV and TEST fixtures without recreating databases
+.PHONY: reload-fixtures
+reload-fixtures:
+	@echo "$(YELLOW)** Reload DEV fixtures **$(RESET)"
+	@$(APP) sh -c "bin/console doctrine:fixtures:load --no-interaction --group=dev"
+	@echo "$(YELLOW)** Reload TEST fixtures **$(RESET)"
+	@$(APP) sh -c "bin/console doctrine:fixtures:load -e test --no-interaction --group=test"
+	@echo "$(GREEN)** Fixtures reloaded!!! **$(RESET)"
+
+## Execute bin/console dans le container app (Ex: make console c="debug:router")
+.PHONY: console $(c)
+console:
+	@$(APP) sh -c "bin/console ${c}"
 
 ##--------------------------------- Docker -----------------------------------
 
@@ -84,6 +115,21 @@ down:
 down-hard:
 	@$(DOCKER) down --rmi all -v --remove-orphans
 
+## Stoppe les containers SANS les détruire (Ex: make stop s=app)
+.PHONY: stop $(s)
+stop:
+	@$(DOCKER) stop ${s}
+
+## Redémarre les containers stoppés (Ex: make start s=app)
+.PHONY: start $(s)
+start:
+	@$(DOCKER) start ${s}
+
+## Redémarre les containers (Ex: make restart s=app)
+.PHONY: restart $(s)
+restart:
+	@$(DOCKER) restart ${s}
+
 ## Build les containers
 .PHONY: bi
 bi:
@@ -93,6 +139,16 @@ bi:
 .PHONY: binc
 binc:
 	@$(DOCKER) build --no-cache
+
+## Connection au ssh du container app
+.PHONY: bash-app
+bash-app:
+	@$(DOCKER) exec app bash
+
+## Connection au ssh du container nginx
+.PHONY: bash-nginx
+bash-nginx:
+	@$(DOCKER) exec nginx sh
 
 ## Connection au ssh du container db
 .PHONY: bash-db
@@ -109,105 +165,110 @@ bash-redis:
 bash-varnish:
 	@$(DOCKER) exec varnish sh
 
+## Affiche les logs des containers (Ex: make logs s=app)
+.PHONY: logs $(s)
+logs:
+	@$(DOCKER) logs -f ${s}
+
 ##--------------------------------- Composer -----------------------------------
 
 ## Execute composer
 .PHONY: c
 c:
-	@composer
+	@$(APP) sh -c "composer"
 
 ## Execute composer install
 .PHONY: ci
 ci:
-	@composer install
-	@find vendor/bin -name "*.bat" -delete
+	@$(APP) sh -c "composer install"
+	@$(APP) sh -c "find vendor/bin -name '*.bat' -delete"
 
 ## Execute composer install
 .PHONY: ci-dry
 ci-dry:
-	@composer install --dry-run
+	@$(APP) sh -c "composer install --dry-run"
 
 ## Execute composer update
 .PHONY: cu
 cu:
-	@composer update
+	@$(APP) sh -c "composer update"
 
 ## Execute composer update dry-run
 .PHONY: cu-dry
 cu-dry:
-	@composer update --dry-run
+	@$(APP) sh -c "composer update --dry-run"
 
 ## Execute composer outdated
 .PHONY: co
 co:
-	@composer outdated
+	@$(APP) sh -c "composer outdated"
 
 ## Execute composer dump-autoload
 .PHONY: cda
 cda:
-	@composer dump-autoload
+	@$(APP) sh -c "composer dump-autoload"
 
 ## Execute composer require
 .PHONY: creq $(p)
 creq:
-	@composer require ${p}
+	@$(APP) sh -c "composer require ${p}"
 
 ## Execute composer require --dev
 .PHONY: creqdev $(p)
 creqdev:
-	@composer require --dev ${p}
+	@$(APP) sh -c "composer require --dev ${p}"
 
 ## Execute composer remove
 .PHONY: crem $(p)
 crem:
-	@composer remove ${p}
+	@$(APP) sh -c "composer remove ${p}"
 
 ## Execute composer recipes
 .PHONY: cr
 cr:
-	@composer recipes
+	@$(APP) sh -c "composer recipes"
 
 ## Execute composer symfony:recipes
 .PHONY: csr
 csr:
-	@composer symfony:recipes
+	@$(APP) sh -c "composer symfony:recipes"
 
 ## Execute composer symfony:recipes:install
 .PHONY: csri $(p)
 csri:
-	@composer symfony:recipes:install -v ${p}
+	@$(APP) sh -c "composer symfony:recipes:install -v ${p}"
 
 ## Execute composer version
 .PHONY: cv
 cv:
-	@composer -V
+	@$(APP) sh -c "composer -V"
 
 ##--------------------------------- Symfony -----------------------------------
 
-## Démarre le Symfony Server
-.PHONY: serve-start
-serve-start:
-	@$(SYMFONY) server:start --allow-http --listen-ip=0.0.0.0 --port=20900 --no-tls -d
-
-## Affiche les logs du Symfony Server
+## Affiche les logs applicatifs (php-fpm + workers Messenger)
 .PHONY: serve-log
 serve-log:
-	@$(SYMFONY) server:log
+	@$(DOCKER) logs -f app
 
-## Stoppe le Symfony Server
-.PHONY: serve-stop
-serve-stop:
-	@$(SYMFONY) server:stop
-
-## Redémarre le Symfony Server
+## Redémarre php-fpm et les workers Messenger (supervisor)
 .PHONY: serve-restart
 serve-restart:
-	@make serve-stop && make serve-start
+	@$(APP) sh -c "supervisorctl restart all"
 
 ## Consomme les messages du transport async (Messenger)
 .PHONY: messenger-consume
 messenger-consume:
-	@$(APP) sh -c "bin/console messenger:consume async -vv"
+	@$(APP) sh -c "bin/console messenger:consume async -vv --time-limit=3600 --memory-limit=128M --limit=200 --failure-limit=5"
+
+## Consomme l'outbox des Domain Events (transport domain_events)
+.PHONY: messenger-consume-events
+messenger-consume-events:
+	@$(APP) sh -c "bin/console messenger:consume domain_events -vv --time-limit=3600 --memory-limit=256M --limit=100 --failure-limit=5"
+
+## Demande l'arrêt propre des workers Messenger après leur message en cours
+.PHONY: messenger-stop-workers
+messenger-stop-workers:
+	@$(APP) sh -c "bin/console messenger:stop-workers"
 
 ##--------------------------------- Tests -----------------------------------
 
@@ -293,20 +354,10 @@ rector-dry:
 
 ##--------------------------------- Autres -----------------------------------
 
-## Fix owner of project
-.PHONY: set-owner
-set-owner:
-	@chown -R venom .
-
-## Fix permissions of all public files
-.PHONY: fix-perms
-fix-perms:
-	@chmod -R 777 public; chmod -R 777 var
-
 ## Purge les dossiers cache and logs
 .PHONY: purge
 purge:
-	@rm -rf var/cache/ var/log/
+	@$(APP) sh -c "rm -rf var/cache/ var/log/"
 
 %:
 	@:

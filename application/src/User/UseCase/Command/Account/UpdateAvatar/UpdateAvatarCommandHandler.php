@@ -6,7 +6,7 @@ namespace App\Application\User\UseCase\Command\Account\UpdateAvatar;
 
 use App\Application\Shared\CQRS\Command\CommandHandlerInterface;
 use App\Application\Shared\Port\ClockInterface;
-use App\Application\Shared\Port\EventDispatcherInterface;
+use App\Application\Shared\Port\DomainEventBusInterface;
 use App\Application\Shared\Port\TransactionalInterface;
 use App\Application\User\Port\AvatarImageValidatorInterface;
 use App\Application\User\Port\AvatarStorageInterface;
@@ -24,7 +24,7 @@ final readonly class UpdateAvatarCommandHandler implements CommandHandlerInterfa
         private AvatarStorageInterface $avatarStorage,
         private ClockInterface $clock,
         private TransactionalInterface $transactional,
-        private EventDispatcherInterface $eventDispatcher,
+        private DomainEventBusInterface $eventBus,
     ) {
     }
 
@@ -47,6 +47,7 @@ final readonly class UpdateAvatarCommandHandler implements CommandHandlerInterfa
                 $user->updateAvatar($avatar, $this->clock->now());
 
                 $this->repository->save($user);
+                $this->eventBus->publishAll($user->releaseEvents());
 
                 return [
                     'previousAvatarName' => $previousAvatarName,
@@ -58,8 +59,6 @@ final readonly class UpdateAvatarCommandHandler implements CommandHandlerInterfa
 
             throw $exception;
         }
-
-        $this->eventDispatcher->dispatchAll($update['user']->releaseEvents());
 
         if (
             null !== $update['previousAvatarName']

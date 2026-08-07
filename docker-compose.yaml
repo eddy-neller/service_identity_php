@@ -25,6 +25,55 @@ services:
       # - ./docker/db/data:/var/lib/postgresql:rw
 ###< doctrine/doctrine-bundle ###
 
+  app:
+    container_name: en_shop_api_app
+    restart: unless-stopped
+    build:
+      context: .
+      dockerfile: ./docker/app/Dockerfile
+    depends_on:
+      database:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    environment:
+      PHP_IDE_CONFIG: serverName=${PHP_IDE_SERVER_NAME:-en-shop-api}
+      XDEBUG_MODE: ${XDEBUG_MODE:-debug}
+    volumes:
+      # Commenter la ligne suivante en production
+      - ./:/var/www:rw
+    extra_hosts:
+      - host.docker.internal:host-gateway
+
+  nginx:
+    container_name: en_shop_api_nginx
+    restart: unless-stopped
+    depends_on:
+      - app
+    build:
+      context: .
+      dockerfile: ./docker/nginx/Dockerfile
+    volumes:
+      # Commenter la ligne suivante en production
+      - ./:/var/www:rw
+      - ./docker/nginx/conf.d:/etc/nginx/conf.d:rw
+      - ./var/log/nginx:/var/log/nginx:cached
+
+  varnish:
+    container_name: en_shop_api_varnish
+    restart: unless-stopped
+    depends_on:
+      - nginx
+    build:
+      context: ./docker/varnish
+      dockerfile: ./Dockerfile
+    extra_hosts:
+      - host.docker.internal:host-gateway
+    volumes:
+      - ./docker/varnish/conf:/etc/varnish:ro
+
   ###> symfony/messenger with rabbitmq ###
   rabbitmq:
     container_name: en_shop_api_rabbitmq
@@ -45,17 +94,6 @@ services:
     volumes:
       - rabbitmq_data:/var/lib/rabbitmq
   ###< symfony/messenger with rabbitmq ###
-
-  varnish:
-    container_name: en_shop_api_varnish
-    restart: unless-stopped
-    build:
-      context: ./docker/varnish
-      dockerfile: ./Dockerfile
-    extra_hosts:
-      - host.docker.internal:host-gateway
-    volumes:
-      - ./docker/varnish/conf:/etc/varnish:ro
 
   redis:
     container_name: en_shop_api_redis

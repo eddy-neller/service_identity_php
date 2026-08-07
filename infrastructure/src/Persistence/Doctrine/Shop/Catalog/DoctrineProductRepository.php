@@ -17,8 +17,8 @@ use App\Infrastructure\Service\Uuid\UuidGeneratorInterface;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\QueryBuilder;
 use Doctrine\ORM\Tools\Pagination\Paginator;
+use Exception;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
-use Throwable;
 
 /**
  * @codeCoverageIgnore
@@ -51,7 +51,9 @@ final readonly class DoctrineProductRepository implements ProductRepositoryInter
         $offset = max(0, ($page - 1) * $itemsPerPage);
         $qb->setFirstResult($offset)->setMaxResults($itemsPerPage);
 
-        $paginator = new Paginator($qb);
+        $paginator = new Paginator($qb, false);
+        $paginator->setUseOutputWalkers(false);
+
         $totalItems = count($paginator);
         $totalPages = $itemsPerPage > 0 ? (int) ceil($totalItems / $itemsPerPage) : 1;
 
@@ -218,6 +220,8 @@ final readonly class DoctrineProductRepository implements ProductRepositoryInter
 
             $qb->addOrderBy($allowedFields[$field], $normalizedDirection);
         }
+
+        $qb->addOrderBy('p.id', 'ASC');
     }
 
     private function findCategoryEntity(CategoryId $id): ?DoctrineCategory
@@ -248,7 +252,7 @@ final readonly class DoctrineProductRepository implements ProductRepositoryInter
 
         try {
             return CategoryId::fromString($candidate)->toString();
-        } catch (Throwable) {
+        } catch (Exception) {
             return null;
         }
     }

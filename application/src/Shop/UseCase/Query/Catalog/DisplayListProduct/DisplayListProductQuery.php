@@ -29,7 +29,7 @@ final readonly class DisplayListProductQuery implements CacheableQueryInterface
 
         $encoded = serialize($payload);
 
-        return 'product:list:' . hash('sha256', $encoded);
+        return 'product-list-' . hash('sha256', $encoded);
     }
 
     public function cacheTtl(): int

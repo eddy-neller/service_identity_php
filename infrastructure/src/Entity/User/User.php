@@ -9,12 +9,9 @@ use App\Domain\User\ValueObject\Identity\ActiveEmail;
 use App\Domain\User\ValueObject\Lifecycle\UserStatus;
 use App\Domain\User\ValueObject\Security\ResetPassword;
 use App\Domain\User\ValueObject\Security\Security;
-use App\Entity\Shop\Order;
 use App\Infrastructure\Persistence\Doctrine\User\UserRepository;
 use DateTimeImmutable;
 use Deprecated;
-use Doctrine\Common\Collections\ArrayCollection;
-use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Gedmo\Mapping\Annotation as Gedmo;
@@ -23,8 +20,8 @@ use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
 
 #[ORM\Table(name: '`user`')]
-#[ORM\Index(name: 'UserUsernameIdx', columns: ['username'])]
-#[ORM\Index(name: 'UserEmailIdx', columns: ['email'])]
+#[ORM\UniqueConstraint(name: 'UserUsernameUniq', columns: ['username'])]
+#[ORM\UniqueConstraint(name: 'UserEmailUniq', columns: ['email'])]
 #[ORM\Index(name: 'UserCreatedAtIdx', columns: ['created_at'])]
 #[ORM\Entity(repositoryClass: UserRepository::class)]
 class User implements UserInterface, PasswordAuthenticatedUserInterface
@@ -75,9 +72,6 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column(type: Types::INTEGER)]
     private int $nbLogin = 0;
 
-    #[ORM\OneToMany(targetEntity: Order::class, mappedBy: 'user')]
-    private Collection $orders;
-
     #[ORM\Column(type: Types::DATETIME_IMMUTABLE)]
     #[Gedmo\Timestampable(on: 'create')]
     protected DateTimeImmutable $createdAt;
@@ -91,7 +85,6 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         $this->security = Security::create()->toArray();
         $this->activeEmail = ActiveEmail::create()->toArray();
         $this->resetPassword = ResetPassword::create()->toArray();
-        $this->orders = new ArrayCollection();
         $this->lastVisit = new DateTimeImmutable();
     }
 
@@ -298,34 +291,6 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function setNbLogin(mixed $nbLogin): self
     {
         $this->nbLogin = $nbLogin;
-
-        return $this;
-    }
-
-    /**
-     * @return Order[]
-     */
-    public function getOrders(): array
-    {
-        return $this->orders->getValues();
-    }
-
-    public function addOrder(Order $order): self
-    {
-        if (!$this->orders->contains($order)) {
-            $this->orders[] = $order;
-            $order->setUser($this);
-        }
-
-        return $this;
-    }
-
-    public function removeOrder(Order $order): self
-    {
-        // set the owning side to null (unless already changed)
-        if ($this->orders->removeElement($order) && $order->getUser() === $this) {
-            $order->setUser(null);
-        }
 
         return $this;
     }

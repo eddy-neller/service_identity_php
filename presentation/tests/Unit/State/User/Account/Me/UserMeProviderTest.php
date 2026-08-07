@@ -21,12 +21,12 @@ use App\Presentation\User\Presenter\UserResourcePresenter;
 use App\Presentation\User\State\Account\Me\UserMeProvider;
 use DateTimeImmutable;
 use PHPUnit\Framework\MockObject\MockObject;
+use PHPUnit\Framework\TestCase;
 use Ramsey\Uuid\Uuid;
-use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\Security\Core\Exception\AccessDeniedException;
 
-final class UserMeProviderTest extends KernelTestCase
+final class UserMeProviderTest extends TestCase
 {
     private Security&MockObject $security;
 

@@ -12,10 +12,10 @@ use App\Presentation\User\Dto\Account\AccountRecovery\PasswordResetRequestInput;
 use App\Presentation\User\State\Account\AccountRecovery\PasswordResetRequestProcessor;
 use LogicException;
 use PHPUnit\Framework\MockObject\MockObject;
+use PHPUnit\Framework\TestCase;
 use stdClass;
-use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 
-final class PasswordResetRequestProcessorTest extends KernelTestCase
+final class PasswordResetRequestProcessorTest extends TestCase
 {
     private CommandBusInterface&MockObject $commandBus;
 

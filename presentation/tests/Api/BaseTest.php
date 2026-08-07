@@ -10,12 +10,16 @@ use App\Presentation\Tests\Api\User\UserTest;
 use Doctrine\ORM\EntityManagerInterface;
 use Faker\Factory;
 use Faker\Generator;
+use JsonException;
 use RuntimeException;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Contracts\HttpClient\Exception\ClientExceptionInterface;
+use Symfony\Contracts\HttpClient\Exception\RedirectionExceptionInterface;
+use Symfony\Contracts\HttpClient\Exception\ServerExceptionInterface;
+use Symfony\Contracts\HttpClient\Exception\TransportExceptionInterface;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
 use Symfony\Contracts\HttpClient\ResponseInterface;
-use Throwable;
 
 /**
  * @SuppressWarnings("PMD")
@@ -144,7 +148,7 @@ abstract class BaseTest extends ApiTestCase
             }
 
             return $this->getApiClient()->request($method, $url, $options);
-        } catch (Throwable) {
+        } catch (TransportExceptionInterface) {
             return null;
         }
     }
@@ -175,7 +179,10 @@ abstract class BaseTest extends ApiTestCase
             }
 
             return $data;
-        } catch (Throwable $e) {
+        } catch (
+            ClientExceptionInterface|RedirectionExceptionInterface|
+            ServerExceptionInterface|TransportExceptionInterface|JsonException $e
+        ) {
             throw new RuntimeException('login: ' . $e->getMessage());
         }
     }
@@ -215,7 +222,10 @@ abstract class BaseTest extends ApiTestCase
                 $content = $res->getContent();
                 $result = json_decode($content, true, 512, JSON_THROW_ON_ERROR);
             }
-        } catch (Throwable $e) {
+        } catch (
+            ClientExceptionInterface|RedirectionExceptionInterface|
+            ServerExceptionInterface|TransportExceptionInterface|JsonException $e
+        ) {
             throw new RuntimeException('testSuccess: invalid response: ' . $e->getMessage());
         }
 

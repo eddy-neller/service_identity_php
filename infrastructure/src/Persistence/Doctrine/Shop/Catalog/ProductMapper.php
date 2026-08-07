@@ -38,9 +38,11 @@ final readonly class ProductMapper
 
     public function toDoctrine(DomainProduct $product, ?DoctrineProduct $entity = null): DoctrineProduct
     {
-        $entity ??= new DoctrineProduct();
+        if (null === $entity) {
+            $entity = new DoctrineProduct();
+            $entity->setId(Uuid::fromString($product->getId()->toString()));
+        }
 
-        $entity->setId(Uuid::fromString($product->getId()->toString()));
         $entity->setTitle($product->getTitle()->toString());
         $entity->setSubtitle($product->getSubtitle()->toString());
         $entity->setDescription($product->getDescription()->toString());

@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Application\Tests\Unit\User\UseCase\Command\UserManagement;
 
 use App\Application\Shared\Port\ClockInterface;
-use App\Application\Shared\Port\EventDispatcherInterface;
+use App\Application\Shared\Port\DomainEventBusInterface;
 use App\Application\Shared\Port\TransactionalInterface;
 use App\Application\User\Port\PasswordHasherInterface;
 use App\Application\User\Port\UserRepositoryInterface;
@@ -38,7 +38,7 @@ final class UpdateUserByAdminTest extends TestCase
 
     private UserUniquenessCheckerInterface&MockObject $uniquenessChecker;
 
-    private EventDispatcherInterface&MockObject $eventDispatcher;
+    private DomainEventBusInterface&MockObject $eventBus;
 
     private UpdateUserByAdminCommandHandler $handler;
 
@@ -49,20 +49,20 @@ final class UpdateUserByAdminTest extends TestCase
         $this->clock = $this->createMock(ClockInterface::class);
         $this->transactional = $this->createMock(TransactionalInterface::class);
         $this->uniquenessChecker = $this->createMock(UserUniquenessCheckerInterface::class);
-        $this->eventDispatcher = $this->createMock(EventDispatcherInterface::class);
+        $this->eventBus = $this->createMock(DomainEventBusInterface::class);
         $this->handler = new UpdateUserByAdminCommandHandler(
             $this->repository,
             $this->passwordHasher,
             $this->clock,
             $this->transactional,
             $this->uniquenessChecker,
-            $this->eventDispatcher,
+            $this->eventBus,
         );
     }
 
     public function testHandleUpdatesAllFieldsWhenProvided(): void
     {
-        $this->eventDispatcher->expects($this->once())->method('dispatchAll');
+        $this->eventBus->expects($this->once())->method('publishAll');
 
         $userId = UserId::fromString('550e8400-e29b-41d4-a716-446655440000');
         $user = $this->createUser($userId);
@@ -139,7 +139,7 @@ final class UpdateUserByAdminTest extends TestCase
 
     public function testHandleUpdatesOnlyProvidedFields(): void
     {
-        $this->eventDispatcher->expects($this->once())->method('dispatchAll');
+        $this->eventBus->expects($this->once())->method('publishAll');
 
         $userId = UserId::fromString('550e8400-e29b-41d4-a716-446655440001');
         $user = $this->createUser($userId);
@@ -191,7 +191,7 @@ final class UpdateUserByAdminTest extends TestCase
 
     public function testHandleUpdatesInactiveStatusWhenProvided(): void
     {
-        $this->eventDispatcher->expects($this->once())->method('dispatchAll');
+        $this->eventBus->expects($this->once())->method('publishAll');
 
         $userId = UserId::fromString('550e8400-e29b-41d4-a716-446655440009');
         $user = $this->createUser($userId);
@@ -233,7 +233,7 @@ final class UpdateUserByAdminTest extends TestCase
 
     public function testHandleThrowsExceptionWhenUserNotFound(): void
     {
-        $this->eventDispatcher->expects($this->never())->method('dispatchAll');
+        $this->eventBus->expects($this->never())->method('publishAll');
 
         $userId = UserId::fromString('550e8400-e29b-41d4-a716-446655440002');
         $command = new UpdateUserByAdminCommand(
@@ -269,7 +269,7 @@ final class UpdateUserByAdminTest extends TestCase
 
     public function testHandleThrowsExceptionWhenEmailAlreadyUsed(): void
     {
-        $this->eventDispatcher->expects($this->never())->method('dispatchAll');
+        $this->eventBus->expects($this->never())->method('publishAll');
 
         $userId = UserId::fromString('550e8400-e29b-41d4-a716-446655440003');
         $user = $this->createUser($userId);
@@ -313,7 +313,7 @@ final class UpdateUserByAdminTest extends TestCase
 
     public function testHandleThrowsExceptionWhenUsernameAlreadyUsed(): void
     {
-        $this->eventDispatcher->expects($this->never())->method('dispatchAll');
+        $this->eventBus->expects($this->never())->method('publishAll');
 
         $userId = UserId::fromString('550e8400-e29b-41d4-a716-446655440004');
         $user = $this->createUser($userId);

@@ -8,7 +8,7 @@ use App\Application\Shared\CQRS\Command\CommandHandlerInterface;
 use App\Application\Shared\DateIntervalTrait;
 use App\Application\Shared\Port\ClockInterface;
 use App\Application\Shared\Port\ConfigInterface;
-use App\Application\Shared\Port\EventDispatcherInterface;
+use App\Application\Shared\Port\DomainEventBusInterface;
 use App\Application\Shared\Port\TransactionalInterface;
 use App\Application\User\Port\PasswordHasherInterface;
 use App\Application\User\Port\TokenProviderInterface;
@@ -33,7 +33,7 @@ final readonly class RegisterUserCommandHandler implements CommandHandlerInterfa
         private TransactionalInterface $transactional,
         private ConfigInterface $config,
         private UserUniquenessCheckerInterface $uniquenessChecker,
-        private EventDispatcherInterface $eventDispatcher,
+        private DomainEventBusInterface $eventBus,
     ) {
     }
 
@@ -42,6 +42,12 @@ final readonly class RegisterUserCommandHandler implements CommandHandlerInterfa
         $username = Username::fromString($command->username);
         $email = EmailAddress::fromString($command->email);
         $preferences = Preferences::fromArray($command->preferences ?? []);
+
+        // Avant le hash : bcrypt coûte ~390 ms qu'il est inutile de payer pour une
+        // inscription qui repartira en 409. Ce contrôle ne fait pas foi — la course
+        // entre lui et l'INSERT est tranchée par l'index unique en base.
+        $this->uniquenessChecker->ensureEmailAndUsernameAvailable($email, $username);
+
         $hashedPassword = HashedPassword::fromString($this->passwordHasher->hash($command->plainPassword));
 
         $now = $this->clock->now();
@@ -58,15 +64,12 @@ final readonly class RegisterUserCommandHandler implements CommandHandlerInterfa
 
         $user->requestActivation($token, $expiredAt, $now);
 
-        $user = $this->transactional->transactional(function () use ($user, $username, $email): User {
-            $this->uniquenessChecker->ensureEmailAndUsernameAvailable($email, $username);
-
-            $this->repository->save($user);
+        $user = $this->transactional->transactional(function () use ($user): User {
+            $this->repository->add($user);
+            $this->eventBus->publishAll($user->releaseEvents());
 
             return $user;
         });
-
-        $this->eventDispatcher->dispatchAll($user->releaseEvents());
 
         return UserItem::fromUser($user);
     }

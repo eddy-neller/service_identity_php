@@ -6,7 +6,7 @@ namespace App\Application\User\UseCase\Command\UserManagement\CreateUserByAdmin;
 
 use App\Application\Shared\CQRS\Command\CommandHandlerInterface;
 use App\Application\Shared\Port\ClockInterface;
-use App\Application\Shared\Port\EventDispatcherInterface;
+use App\Application\Shared\Port\DomainEventBusInterface;
 use App\Application\Shared\Port\TransactionalInterface;
 use App\Application\User\Port\PasswordHasherInterface;
 use App\Application\User\Port\UserRepositoryInterface;
@@ -30,7 +30,7 @@ final readonly class CreateUserByAdminCommandHandler implements CommandHandlerIn
         private ClockInterface $clock,
         private TransactionalInterface $transactional,
         private UserUniquenessCheckerInterface $uniquenessChecker,
-        private EventDispatcherInterface $eventDispatcher,
+        private DomainEventBusInterface $eventBus,
     ) {
     }
 
@@ -38,6 +38,11 @@ final readonly class CreateUserByAdminCommandHandler implements CommandHandlerIn
     {
         $username = Username::fromString($command->username);
         $email = EmailAddress::fromString($command->email);
+
+        // Cf. RegisterUserCommandHandler : le contrôle passe avant le hash pour ne pas
+        // payer bcrypt sur une création qui part en 409, l'index unique faisant foi.
+        $this->uniquenessChecker->ensureEmailAndUsernameAvailable($email, $username);
+
         $hashedPassword = HashedPassword::fromString($this->passwordHasher->hash($command->plainPassword));
         $roles = RoleSet::fromArray($command->roles);
         $status = UserStatus::fromInt($command->status);
@@ -57,15 +62,12 @@ final readonly class CreateUserByAdminCommandHandler implements CommandHandlerIn
             preferences: Preferences::create(),
         );
 
-        $user = $this->transactional->transactional(function () use ($user, $username, $email): User {
-            $this->uniquenessChecker->ensureEmailAndUsernameAvailable($email, $username);
-
-            $this->repository->save($user);
+        $user = $this->transactional->transactional(function () use ($user): User {
+            $this->repository->add($user);
+            $this->eventBus->publishAll($user->releaseEvents());
 
             return $user;
         });
-
-        $this->eventDispatcher->dispatchAll($user->releaseEvents());
 
         return UserItem::fromUser($user);
     }

@@ -34,9 +34,11 @@ final readonly class AddressMapper
 
     public function toDoctrine(DomainAddress $address, ?DoctrineAddress $entity = null): DoctrineAddress
     {
-        $entity ??= new DoctrineAddress();
+        if (null === $entity) {
+            $entity = new DoctrineAddress();
+            $entity->setId(Uuid::fromString($address->getId()->toString()));
+        }
 
-        $entity->setId(Uuid::fromString($address->getId()->toString()));
         $entity->setName($address->getLabel());
         $entity->setFirstname($address->getFirstname());
         $entity->setLastname($address->getLastname());

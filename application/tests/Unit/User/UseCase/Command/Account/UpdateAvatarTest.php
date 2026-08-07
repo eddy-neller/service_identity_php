@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Application\Tests\Unit\User\UseCase\Command\Account;
 
 use App\Application\Shared\Port\ClockInterface;
-use App\Application\Shared\Port\EventDispatcherInterface;
+use App\Application\Shared\Port\DomainEventBusInterface;
 use App\Application\Shared\Port\FileInterface;
 use App\Application\Shared\Port\TransactionalInterface;
 use App\Application\User\Port\AvatarImageValidatorInterface;
@@ -38,7 +38,7 @@ final class UpdateAvatarTest extends TestCase
 
     private TransactionalInterface&MockObject $transactional;
 
-    private EventDispatcherInterface&MockObject $eventDispatcher;
+    private DomainEventBusInterface&MockObject $eventBus;
 
     private UpdateAvatarCommandHandler $handler;
 
@@ -49,20 +49,20 @@ final class UpdateAvatarTest extends TestCase
         $this->avatarStorage = $this->createMock(AvatarStorageInterface::class);
         $this->clock = $this->createMock(ClockInterface::class);
         $this->transactional = $this->createMock(TransactionalInterface::class);
-        $this->eventDispatcher = $this->createMock(EventDispatcherInterface::class);
+        $this->eventBus = $this->createMock(DomainEventBusInterface::class);
         $this->handler = new UpdateAvatarCommandHandler(
             $this->repository,
             $this->avatarImageValidator,
             $this->avatarStorage,
             $this->clock,
             $this->transactional,
-            $this->eventDispatcher,
+            $this->eventBus,
         );
     }
 
     public function testHandleUpdatesAvatarWhenUserExists(): void
     {
-        $this->eventDispatcher->expects($this->once())->method('dispatchAll');
+        $this->eventBus->expects($this->once())->method('publishAll');
 
         $userId = UserId::fromString('550e8400-e29b-41d4-a716-446655440000');
         $user = $this->createUser($userId);
@@ -118,7 +118,7 @@ final class UpdateAvatarTest extends TestCase
 
     public function testHandleDeletesStoredAvatarWhenUserIsNotFoundInTransaction(): void
     {
-        $this->eventDispatcher->expects($this->never())->method('dispatchAll');
+        $this->eventBus->expects($this->never())->method('publishAll');
 
         $userId = UserId::fromString('550e8400-e29b-41d4-a716-446655440001');
         $file = $this->createStub(FileInterface::class);
@@ -161,7 +161,7 @@ final class UpdateAvatarTest extends TestCase
 
     public function testHandleThrowsExceptionWhenAvatarFileIsInvalid(): void
     {
-        $this->eventDispatcher->expects($this->never())->method('dispatchAll');
+        $this->eventBus->expects($this->never())->method('publishAll');
 
         $userId = UserId::fromString('550e8400-e29b-41d4-a716-446655440002');
         $file = $this->createStub(FileInterface::class);
@@ -194,7 +194,7 @@ final class UpdateAvatarTest extends TestCase
 
     public function testHandleDeletesStoredAvatarWhenTransactionFails(): void
     {
-        $this->eventDispatcher->expects($this->never())->method('dispatchAll');
+        $this->eventBus->expects($this->never())->method('publishAll');
 
         $userId = UserId::fromString('550e8400-e29b-41d4-a716-446655440003');
         $file = $this->createStub(FileInterface::class);

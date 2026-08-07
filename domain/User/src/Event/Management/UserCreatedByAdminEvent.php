@@ -4,18 +4,20 @@ declare(strict_types=1);
 
 namespace App\Domain\User\Event\Management;
 
-use App\Domain\SharedKernel\Event\DomainEventInterface;
-use App\Domain\User\ValueObject\Identity\EmailAddress;
+use App\Domain\SharedKernel\Event\DomainEventIdentityTrait;
+use App\Domain\User\Event\UserDomainEventInterface;
 use App\Domain\User\ValueObject\Identity\UserId;
 use DateTimeImmutable;
 
-final readonly class UserCreatedByAdminEvent implements DomainEventInterface
+final readonly class UserCreatedByAdminEvent implements UserDomainEventInterface
 {
+    use DomainEventIdentityTrait;
+
     public function __construct(
         private UserId $userId,
-        private EmailAddress $email,
         private DateTimeImmutable $occurredOn,
     ) {
+        $this->eventId = self::generateEventId();
     }
 
     public function getUserId(): UserId
@@ -23,9 +25,9 @@ final readonly class UserCreatedByAdminEvent implements DomainEventInterface
         return $this->userId;
     }
 
-    public function getEmail(): EmailAddress
+    public function aggregateId(): string
     {
-        return $this->email;
+        return $this->userId->toString();
     }
 
     public function occurredOn(): DateTimeImmutable

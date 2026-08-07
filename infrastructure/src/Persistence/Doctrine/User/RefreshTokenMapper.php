@@ -24,9 +24,9 @@ final class RefreshTokenMapper
         );
     }
 
-    public function toDoctrine(DomainRefreshToken $refreshToken, ?DoctrineRefreshToken $entity = null): DoctrineRefreshToken
+    public function toDoctrine(DomainRefreshToken $refreshToken): DoctrineRefreshToken
     {
-        $entity ??= new DoctrineRefreshToken();
+        $entity = new DoctrineRefreshToken();
         $entity->setId(Uuid::fromString($refreshToken->getId()->toString()));
         $entity->setUserId(Uuid::fromString($refreshToken->getUserId()->toString()));
         $entity->setTokenHash($refreshToken->getHash()->toString());

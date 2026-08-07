@@ -71,8 +71,23 @@ domain/
 ## Domain Events
 
 - Représentent des faits métier : `OrderPlaced`, `OrderCancelled`, `UserRegistered`, …
-- Vivent dans `domain/<Context>/src/Event/`, implémentent `DomainEventInterface` du SharedKernel, peuvent utiliser `DomainEventTrait` pour `occurredOn`.
-- L'Aggregate Root enregistre les events (`recordEvent()`) et les expose (`releaseEvents()`).
+- Vivent dans `domain/<Context>/src/Event/` et implémentent `DomainEventInterface` du SharedKernel :
+  `eventId()`, `aggregateId()`, `occurredOn()`, `eventName()`.
+- **Obligatoire** : utiliser `DomainEventIdentityTrait` et assigner `$this->eventId = self::generateEventId();`
+  dans le constructeur. Cet identifiant est la clé de déduplication côté consommateur — sans lui, une
+  redélivrance rejouerait la réaction.
+- `aggregateId()` retourne l'identifiant du sujet (`$this->userId->toString()`, `$this->orderId->toString()`) :
+  c'est ce qui rend les journaux corrélables. **Jamais** une donnée personnelle.
+- Les événements du contexte User implémentent `UserDomainEventInterface` (qui étend `DomainEventInterface`
+  et expose `getUserId()`) : un consommateur peut ainsi réagir à tout fait touchant un compte sans
+  énumérer les classes. Prévoir la même interface pour un futur contexte ayant le même besoin.
+- L'Aggregate Root enregistre les events (`recordEvent()` de `DomainEventTrait`) et les expose (`releaseEvents()`).
+- Un événement transporte des Value Objects, **jamais de secret** (token brut, mot de passe) : il est persisté
+  en clair dans l'outbox et dans le transport `failed`. Il peut porter une donnée personnelle **si une
+  réaction en a réellement besoin**, à condition qu'elle ne ressorte pas dans les logs. Critère : « quel
+  consommateur la lit ? » — sans consommateur, la retirer de l'événement.
+
+> Cycle de vie complet (publication transactionnelle, worker, idempotence) : [`docs/domain_events.md`](../docs/domain_events.md).
 
 ---
 

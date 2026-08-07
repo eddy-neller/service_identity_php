@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace App\Infrastructure\Messenger\CQRS\Middleware;
 
+use Exception;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Messenger\Envelope;
 use Symfony\Component\Messenger\Middleware\MiddlewareInterface;
 use Symfony\Component\Messenger\Middleware\StackInterface;
-use Throwable;
 
 final readonly class QueryLoggingMiddleware implements MiddlewareInterface
 {
@@ -35,7 +35,7 @@ final readonly class QueryLoggingMiddleware implements MiddlewareInterface
             ]);
 
             return $handledEnvelope;
-        } catch (Throwable $exception) {
+        } catch (Exception $exception) {
             $this->logger->error('Query failed', [
                 'query' => $queryClass,
                 'duration_ms' => round((microtime(true) - $startTime) * 1000, 2),

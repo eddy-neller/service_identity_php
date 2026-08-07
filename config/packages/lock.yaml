@@ -1,2 +1,10 @@
 framework:
     lock: '%env(LOCK_DSN)%'
+
+# En test, aucun service externe : le store Redis est remplacé par des verrous
+# fichiers. Sans cet override, le `DeduplicateMiddleware` de Messenger — présent
+# dans le middleware par défaut de tous les bus — instancie le store Redis au
+# premier dispatch, ce qui impose l'extension `redis` et un serveur Redis à la CI.
+when@test:
+    framework:
+        lock: 'flock'

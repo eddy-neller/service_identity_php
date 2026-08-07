@@ -29,7 +29,7 @@ final readonly class DisplayListUserQuery implements CacheableQueryInterface
 
         $encoded = serialize($payload);
 
-        return 'user:list:' . hash('sha256', $encoded);
+        return 'user-list-' . hash('sha256', $encoded);
     }
 
     public function cacheTtl(): int

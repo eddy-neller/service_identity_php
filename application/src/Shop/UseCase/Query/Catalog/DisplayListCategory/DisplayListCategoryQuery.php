@@ -29,7 +29,7 @@ final readonly class DisplayListCategoryQuery implements CacheableQueryInterface
 
         $encoded = serialize($payload);
 
-        return 'category:list:' . hash('sha256', $encoded);
+        return 'category-list-' . hash('sha256', $encoded);
     }
 
     public function cacheTtl(): int

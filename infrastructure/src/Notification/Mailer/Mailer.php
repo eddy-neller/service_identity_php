@@ -8,10 +8,13 @@ use Psr\Log\LoggerInterface;
 use RuntimeException;
 use Symfony\Bridge\Twig\Mime\TemplatedEmail;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
+use Symfony\Component\Mailer\Exception\TransportExceptionInterface;
 use Symfony\Component\Mailer\MailerInterface;
 use Symfony\Component\Mime\Address;
-use Throwable;
 use Twig\Environment;
+use Twig\Error\LoaderError;
+use Twig\Error\RuntimeError;
+use Twig\Error\SyntaxError;
 
 /**
  * @codeCoverageIgnore
@@ -38,7 +41,7 @@ readonly class Mailer
                 ->html($this->twig->render($template, $context));
 
             $this->mailer->send($email);
-        } catch (Throwable $e) {
+        } catch (TransportExceptionInterface|LoaderError|RuntimeError|SyntaxError $e) {
             $this->logger?->error('send-email', ['email' => $to, 'ex' => $e]);
 
             throw new RuntimeException('Failed to send email. Please try again later.');

@@ -75,10 +75,10 @@ Seules 4 Queries implémentent `CacheableQueryInterface` — **ce n'est pas limi
 
 | Query | Type | Clé | Tags | TTL |
 |---|---|---|---|---|
-| `DisplayListProductQuery` | liste | `product:list:<sha256(payload)>` | `products-collection` | 3600s |
-| `DisplayListCategoryQuery` | liste | `category:list:<sha256(payload)>` | `categories-collection` | 3600s |
-| `DisplayListUserQuery` | liste | `user:list:<sha256(payload)>` | `users-collection` | 3600s |
-| `DisplayUserQuery` | item (single) | `user:item:<userId>` | `users-collection`, `user-<userId>` | 3600s |
+| `DisplayListProductQuery` | liste | `product-list-<sha256(payload)>` | `products-collection` | 3600s |
+| `DisplayListCategoryQuery` | liste | `category-list-<sha256(payload)>` | `categories-collection` | 3600s |
+| `DisplayListUserQuery` | liste | `user-list-<sha256(payload)>` | `users-collection` | 3600s |
+| `DisplayUserQuery` | item (single) | `user-item-<userId>` | `users-collection`, `user-<userId>` | 3600s |
 
 Toutes les autres Queries (`DisplayListAddressQuery`, `DisplayListCustomerQuery`, etc.) implémentent
 seulement `QueryInterface` : elles passent le middleware sans jamais toucher Redis.

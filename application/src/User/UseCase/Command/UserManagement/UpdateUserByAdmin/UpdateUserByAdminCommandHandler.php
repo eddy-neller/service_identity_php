@@ -6,7 +6,7 @@ namespace App\Application\User\UseCase\Command\UserManagement\UpdateUserByAdmin;
 
 use App\Application\Shared\CQRS\Command\CommandHandlerInterface;
 use App\Application\Shared\Port\ClockInterface;
-use App\Application\Shared\Port\EventDispatcherInterface;
+use App\Application\Shared\Port\DomainEventBusInterface;
 use App\Application\Shared\Port\TransactionalInterface;
 use App\Application\User\Port\PasswordHasherInterface;
 use App\Application\User\Port\UserRepositoryInterface;
@@ -31,7 +31,7 @@ final readonly class UpdateUserByAdminCommandHandler implements CommandHandlerIn
         private ClockInterface $clock,
         private TransactionalInterface $transactional,
         private UserUniquenessCheckerInterface $uniquenessChecker,
-        private EventDispatcherInterface $eventDispatcher,
+        private DomainEventBusInterface $eventBus,
     ) {
     }
 
@@ -75,11 +75,10 @@ final readonly class UpdateUserByAdminCommandHandler implements CommandHandlerIn
             );
 
             $this->repository->save($user);
+            $this->eventBus->publishAll($user->releaseEvents());
 
             return $user;
         });
-
-        $this->eventDispatcher->dispatchAll($user->releaseEvents());
 
         return UserItem::fromUser($user);
     }

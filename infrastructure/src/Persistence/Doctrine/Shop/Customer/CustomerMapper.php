@@ -26,10 +26,12 @@ final readonly class CustomerMapper
 
     public function toDoctrine(DomainCustomer $customer, ?DoctrineCustomer $entity = null): DoctrineCustomer
     {
-        $entity ??= new DoctrineCustomer();
+        if (null === $entity) {
+            $entity = new DoctrineCustomer();
+            $entity->setId(Uuid::fromString($customer->getId()->toString()));
+            $entity->setUserAccountId(Uuid::fromString($customer->getUserAccountId()->toString()));
+        }
 
-        $entity->setId(Uuid::fromString($customer->getId()->toString()));
-        $entity->setUserAccountId(Uuid::fromString($customer->getUserAccountId()->toString()));
         $entity->setStatus($customer->getStatus()->toInt());
 
         return $entity;

@@ -63,7 +63,7 @@ final readonly class DoctrineCartRepository implements CartRepositoryInterface
         $entity = $this->em->find(DoctrineCart::class, $cart->getId()->toString());
         $entity ??= new DoctrineCart();
         $entity->setId(Uuid::fromString($cart->getId()->toString()));
-        $entity->setCustomer($this->em->getReference(DoctrineCustomer::class, $cart->getOwnerId()->toString()));
+        $entity->setCustomer($this->em->getReference(DoctrineCustomer::class, Uuid::fromString($cart->getOwnerId()->toString())));
         $entity->setCreatedAt($cart->getCreatedAt());
         $entity->setUpdatedAt($cart->getUpdatedAt());
 
@@ -86,7 +86,7 @@ final readonly class DoctrineCartRepository implements CartRepositoryInterface
         foreach ($domainLines as $id => $line) {
             $lineEntity = $existing[$id] ?? new DoctrineCartLine();
             $lineEntity->setId(Uuid::fromString($id));
-            $lineEntity->setProduct($this->em->getReference(DoctrineProduct::class, $line->getProductId()->toString()));
+            $lineEntity->setProduct($this->em->getReference(DoctrineProduct::class, Uuid::fromString($line->getProductId()->toString())));
             $lineEntity->setQuantity($line->getQuantity()->toInt());
             $entity->addLine($lineEntity);
         }

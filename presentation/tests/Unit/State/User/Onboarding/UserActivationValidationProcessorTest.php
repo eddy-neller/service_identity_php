@@ -12,10 +12,10 @@ use App\Presentation\User\Dto\Onboarding\UserActivationValidationInput;
 use App\Presentation\User\State\Onboarding\UserActivationValidationProcessor;
 use LogicException;
 use PHPUnit\Framework\MockObject\MockObject;
+use PHPUnit\Framework\TestCase;
 use stdClass;
-use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 
-final class UserActivationValidationProcessorTest extends KernelTestCase
+final class UserActivationValidationProcessorTest extends TestCase
 {
     private CommandBusInterface&MockObject $commandBus;
 

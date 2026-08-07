@@ -4,18 +4,22 @@ declare(strict_types=1);
 
 namespace App\Domain\User\Event\Security;
 
-use App\Domain\SharedKernel\Event\DomainEventInterface;
+use App\Domain\SharedKernel\Event\DomainEventIdentityTrait;
+use App\Domain\User\Event\UserDomainEventInterface;
 use App\Domain\User\ValueObject\Identity\EmailAddress;
 use App\Domain\User\ValueObject\Identity\UserId;
 use DateTimeImmutable;
 
-final readonly class PasswordResetRequestedEvent implements DomainEventInterface
+final readonly class PasswordResetRequestedEvent implements UserDomainEventInterface
 {
+    use DomainEventIdentityTrait;
+
     public function __construct(
         private UserId $userId,
         private EmailAddress $email,
         private DateTimeImmutable $occurredOn,
     ) {
+        $this->eventId = self::generateEventId();
     }
 
     public function getUserId(): UserId
@@ -26,6 +30,11 @@ final readonly class PasswordResetRequestedEvent implements DomainEventInterface
     public function getEmail(): EmailAddress
     {
         return $this->email;
+    }
+
+    public function aggregateId(): string
+    {
+        return $this->userId->toString();
     }
 
     public function occurredOn(): DateTimeImmutable

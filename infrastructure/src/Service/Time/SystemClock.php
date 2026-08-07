@@ -6,11 +6,16 @@ namespace App\Infrastructure\Service\Time;
 
 use App\Application\Shared\Port\ClockInterface;
 use DateTimeImmutable;
+use Symfony\Component\Clock\ClockInterface as SymfonyClockInterface;
 
-final class SystemClock implements ClockInterface
+final readonly class SystemClock implements ClockInterface
 {
+    public function __construct(private SymfonyClockInterface $clock)
+    {
+    }
+
     public function now(): DateTimeImmutable
     {
-        return new DateTimeImmutable();
+        return $this->clock->now();
     }
 }

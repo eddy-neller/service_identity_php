@@ -24,12 +24,12 @@ use App\Presentation\User\State\UserManagement\UserAvatarProcessor;
 use DateTimeImmutable;
 use LogicException;
 use PHPUnit\Framework\MockObject\MockObject;
+use PHPUnit\Framework\TestCase;
 use Ramsey\Uuid\Uuid;
 use stdClass;
-use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 
-final class UserAvatarProcessorTest extends KernelTestCase
+final class UserAvatarProcessorTest extends TestCase
 {
     private CommandBusInterface&MockObject $commandBus;
 

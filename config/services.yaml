@@ -52,3 +52,10 @@ services:
 
     App\Application\Shared\CQRS\Query\QueryBusInterface:
         alias: App\Infrastructure\Messenger\CQRS\MessengerQueryBus
+
+when@test:
+    services:
+        # Purger bouchon référencé par api_platform.http_cache.invalidation.purger.
+        # Déclaration explicite : le bloc App\Infrastructure\ ne scanne que
+        # infrastructure/src/, pas infrastructure/tests/.
+        App\Infrastructure\Tests\Double\HttpCache\NullPurger: ~

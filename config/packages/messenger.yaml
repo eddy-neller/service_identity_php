@@ -7,15 +7,21 @@ framework:
         middleware:
           - App\Infrastructure\Messenger\CQRS\Middleware\CommandLoggingMiddleware
           - App\Infrastructure\Messenger\CQRS\Middleware\UnwrapHandlerFailedExceptionMiddleware
+          - App\Infrastructure\Messenger\CQRS\Middleware\CacheInvalidationMiddleware
       query.bus:
         middleware:
           - App\Infrastructure\Messenger\CQRS\Middleware\QueryLoggingMiddleware
           - App\Infrastructure\Messenger\CQRS\Middleware\UnwrapHandlerFailedExceptionMiddleware
           - App\Infrastructure\Messenger\CQRS\Middleware\QueryCacheMiddleware
+      event.bus:
+        default_middleware:
+          allow_no_handlers: true
+        middleware:
+          - doctrine_ping_connection
+          - doctrine_close_connection
       async.bus: ~
 
-    # Uncomment this (and the failed transport below) to send failed messages to this transport for later handling.
-    failure_transport: failed
+    failure_transport: failed_legacy
 
     transports:
       # https://symfony.com/doc/current/messenger.html#transport-configuration
@@ -24,20 +30,55 @@ framework:
       # sync: 'sync://'
       async:
         dsn: "%env(MESSENGER_TRANSPORT_DSN)%"
+        failure_transport: failed_async
         retry_strategy:
-          max_retries: 3
-          delay: 1000
+          max_retries: 6
+          delay: 30000
           multiplier: 2
-      failed:
-        dsn: "doctrine://default?queue_name=failed"
+          max_delay: 900000
+          jitter: 0.1
+      # Outbox transactionnel : l'INSERT est émis sur la connexion Doctrine courante,
+      # donc dans la même transaction que la persistance de l'agrégat.
+      # LISTEN/NOTIFY activé (défaut) : le producteur émet de toute façon un
+      # `SELECT pg_notify(...)` à chaque insert — c'est inconditionnel sur Postgres dans
+      # Connection::executeInsert(). `use_notify: false` n'agit que sur le consommateur, en
+      # le privant du LISTEN : on payait le notify pour personne et les workers tombaient
+      # en polling. À true, le coût producteur est identique et le réveil est immédiat.
+      domain_events:
+        dsn: "doctrine://default?queue_name=domain_events&auto_setup=false"
+        failure_transport: failed_domain_events
+        retry_strategy:
+          max_retries: 6
+          delay: 10000
+          multiplier: 2
+          max_delay: 300000
+          jitter: 0.1
+      # Files d'échec : consommées manuellement (`messenger:failed:retry`), jamais par un
+      # worker en attente. Le LISTEN n'a rien à réveiller, on garde `use_notify: false`.
+      failed_async:
+        dsn: "doctrine://default?queue_name=failed_async&auto_setup=false"
+        options:
+          use_notify: false
+      failed_domain_events:
+        dsn: "doctrine://default?queue_name=failed_domain_events&auto_setup=false"
+        options:
+          use_notify: false
+      failed_legacy:
+        dsn: "doctrine://default?queue_name=failed&auto_setup=false"
+        options:
+          use_notify: false
 
     routing:
+      App\Domain\SharedKernel\Event\DomainEventInterface: domain_events
       App\Application\Shared\Messenger\Message\SendEmailMessage: async
 
-# when@test:
-#    framework:
-#        messenger:
-#            transports:
-#                # replace with your transport name here (e.g., my_transport: 'in-memory://')
-#                # For more Messenger testing tools, see https://github.com/zenstruck/messenger-test
-#                async: 'in-memory://'
+when@test:
+  framework:
+    messenger:
+      transports:
+        # replace with your transport name here (e.g., my_transport: 'in-memory://')
+        # For more Messenger testing tools, see https://github.com/zenstruck/messenger-test
+        # async: 'in-memory://'
+        # Les réactions s'exécutent en ligne : les tests API conservent le comportement
+        # synchrone d'avant l'outbox.
+        domain_events: "sync://"

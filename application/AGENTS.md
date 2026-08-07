@@ -21,7 +21,7 @@ Un Port représente une dépendance externe ou technique que l'Application doit 
 
 **Shared Ports** (`Application/Shared/Port/`) :
 - `ClockInterface` (temps `now()`), `ConfigInterface` (config), `TransactionalInterface` (exécution atomique),
-- `FileInterface` (fichier — pas d'`UploadedFile` Symfony), `EventDispatcherInterface` (events).
+- `FileInterface` (fichier — pas d'`UploadedFile` Symfony), `DomainEventBusInterface` (publication des Domain Events).
 
 **Ports métier** (ex. `Application/User/Port/`) :
 - `UserRepositoryInterface`, `PasswordHasherInterface`, `TokenProviderInterface`, `AvatarUploaderInterface`, etc.
@@ -76,9 +76,17 @@ Les commandes d'écriture utilisent `TransactionalInterface`, avec des transacti
 - **Dans la transaction** : toute lecture de repository qui conditionne une écriture, puis les mutations et persistance associées. Cela couvre les contrôles d'existence, d'appartenance, de stock, de parenté, d'unicité applicative et les relectures nécessaires au résultat de la commande.
 - **Hors transaction** : les lectures réellement indépendantes de l'écriture (par exemple un use case de lecture) et tout I/O externe ou potentiellement long (HTTP, stockage de fichier, queue). Ces effets doivent être coordonnés par un mécanisme adapté, pas maintenus sous verrou DB.
 
-Les Domain Events enregistrés par un agrégat sont publiés par le handler via `EventDispatcherInterface`,
-**uniquement après** le retour réussi de `TransactionalInterface::transactional()`. Le handler appelle alors
-`releaseEvents()` et transmet le résultat au dispatcher. Si la transaction échoue, aucun événement n'est publié.
+Les Domain Events enregistrés par un agrégat sont publiés par le handler via `DomainEventBusInterface`,
+**à l'intérieur** du callback `TransactionalInterface::transactional()`, juste après le `save()` (ou le
+`delete()`) de l'agrégat. Le handler appelle `releaseEvents()` et transmet le résultat au bus, qui écrit
+dans l'outbox sur la connexion transactionnelle courante : l'agrégat et ses événements sont donc commités
+ensemble, ou pas du tout. Publier après le commit rouvrirait la fenêtre où l'écriture métier est visible
+alors que ses réactions sont définitivement perdues.
+
+Corollaire : la publication ne doit **jamais** déclencher d'I/O externe (HTTP, e-mail, cache distant) — le
+bus se contente d'un INSERT local, les réactions sont exécutées plus tard par le worker `domain_events`.
+
+> Cycle de vie complet des événements (outbox, worker, idempotence) : [`docs/domain_events.md`](../docs/domain_events.md).
 
 Les tests de commande reflètent ce découpage : une erreur de validation pure attend que `transactional()` ne soit pas appelé ; un échec issu d'une lecture DB décisionnelle attend l'exécution du callback transactionnel.
 
@@ -166,7 +174,7 @@ $this->transactional->expects($this->once())
 - [ ] Presentation/Infra n'appellent jamais `handle()` directement — uniquement via les Buses.
 - [ ] Le handler dépend uniquement de Ports, Domain et services applicatifs purs internes injectés directement ; aucun Port/adaptateur artificiel n'est créé pour ces derniers.
 - [ ] Le temps est géré via `ClockInterface`.
-- [ ] Les Domain Events sont libérés et publiés par le handler après le retour réussi de la transaction.
+- [ ] Les Domain Events sont libérés et publiés par le handler **dans** le callback transactionnel, après la persistance de l'agrégat.
 - [ ] **Aucune logique métier** : calculs de montants/totaux, conversions d'unités, arithmétique prix/quantités et décisions métier délégués au Domain (VOs/agrégats).
 - [ ] Aucun attribut framework dans Application.
 - [ ] Les tests mockent les Ports et tournent sans kernel.

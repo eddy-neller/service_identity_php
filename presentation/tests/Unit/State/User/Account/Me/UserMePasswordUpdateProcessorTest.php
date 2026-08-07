@@ -13,12 +13,12 @@ use App\Presentation\User\Dto\Account\Me\UserMePasswordUpdateInput;
 use App\Presentation\User\State\Account\Me\UserMePasswordUpdateProcessor;
 use LogicException;
 use PHPUnit\Framework\MockObject\MockObject;
+use PHPUnit\Framework\TestCase;
 use Ramsey\Uuid\Uuid;
 use stdClass;
-use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 use Symfony\Bundle\SecurityBundle\Security;
 
-final class UserMePasswordUpdateProcessorTest extends KernelTestCase
+final class UserMePasswordUpdateProcessorTest extends TestCase
 {
     private Security&MockObject $security;
 

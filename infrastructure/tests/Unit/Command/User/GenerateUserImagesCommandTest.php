@@ -10,12 +10,11 @@ use App\Infrastructure\Persistence\Doctrine\User\UserRepository;
 use App\Infrastructure\Service\Media\CustomImageProvider;
 use Doctrine\ORM\EntityManagerInterface;
 use PHPUnit\Framework\MockObject\MockObject;
+use PHPUnit\Framework\TestCase;
 use Ramsey\Uuid\Uuid;
-use Symfony\Bundle\FrameworkBundle\Console\Application;
-use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 use Symfony\Component\Console\Tester\CommandTester;
 
-final class GenerateUserImagesCommandTest extends KernelTestCase
+final class GenerateUserImagesCommandTest extends TestCase
 {
     public function testNoUsersInDatabase(): void
     {
@@ -85,9 +84,6 @@ final class GenerateUserImagesCommandTest extends KernelTestCase
 
         $command = new GenerateUserImagesCommand($userRepo, $em, $customImageProvider);
 
-        $application = new Application(self::bootKernel());
-        $application->addCommand($command);
-
         return new CommandTester($command);
     }
 
@@ -143,9 +139,6 @@ final class GenerateUserImagesCommandTest extends KernelTestCase
 
         $command = new GenerateUserImagesCommand($userRepo, $em, $customImageProvider);
 
-        $application = new Application(self::bootKernel());
-        $application->addCommand($command);
-
         return new CommandTester($command);
     }
 
@@ -183,9 +176,6 @@ final class GenerateUserImagesCommandTest extends KernelTestCase
             ->willReturn('test_avatar.jpg');
 
         $command = new GenerateUserImagesCommand($userRepo, $em, $customImageProvider);
-
-        $application = new Application(self::bootKernel());
-        $application->addCommand($command);
 
         return new CommandTester($command);
     }

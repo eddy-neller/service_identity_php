@@ -15,10 +15,9 @@ interface UserRepositoryInterface
 
     public function nextIdentity(): UserId;
 
-    /**
-     * @return array{items: list<User>, totalItems: int, totalPages: int}
-     */
     public function list(array $filters, array $orderBy, int $page, int $itemsPerPage): array;
+
+    public function add(User $user): void;
 
     public function save(User $user): void;
 

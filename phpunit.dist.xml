@@ -43,11 +43,23 @@
         <testsuite name="infra.command">
             <directory>infrastructure/tests/Unit/Command</directory>
         </testsuite>
+        <testsuite name="infra.cqrs">
+            <directory>infrastructure/tests/Integration/CQRS</directory>
+        </testsuite>
+        <testsuite name="infra.messenger.event">
+            <directory>infrastructure/tests/Unit/Messenger/Event</directory>
+        </testsuite>
         <testsuite name="infra.notif">
             <directory>infrastructure/tests/Unit/Notification</directory>
         </testsuite>
+        <testsuite name="infra.outbox">
+            <directory>infrastructure/tests/Integration/Messenger</directory>
+        </testsuite>
         <testsuite name="infra.persist">
-            <directory>infrastructure/tests/Unit/Persistence</directory>
+            <directory>infrastructure/tests/Integration/Persistence</directory>
+        </testsuite>
+        <testsuite name="infra.service.hasher">
+            <directory>infrastructure/tests/Integration/Service</directory>
         </testsuite>
         <testsuite name="infra.service.encoder">
             <directory>infrastructure/tests/Unit/Service/Encoder</directory>

@@ -15,6 +15,7 @@ use Doctrine\DBAL\LockMode;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\QueryBuilder;
 use Doctrine\ORM\Tools\Pagination\Paginator;
+use Ramsey\Uuid\Uuid;
 
 /**
  * @codeCoverageIgnore
@@ -48,7 +49,9 @@ final readonly class DoctrineAddressRepository implements AddressRepositoryInter
         $offset = max(0, ($page - 1) * $itemsPerPage);
         $qb->setFirstResult($offset)->setMaxResults($itemsPerPage);
 
-        $paginator = new Paginator($qb);
+        $paginator = new Paginator($qb, false);
+        $paginator->setUseOutputWalkers(false);
+
         $totalItems = count($paginator);
         $totalPages = $itemsPerPage > 0 ? (int) ceil($totalItems / $itemsPerPage) : 1;
 
@@ -161,7 +164,7 @@ final readonly class DoctrineAddressRepository implements AddressRepositoryInter
 
     private function getCustomerReference(CustomerId $ownerId): DoctrineCustomer
     {
-        return $this->em->getReference(DoctrineCustomer::class, $ownerId->toString());
+        return $this->em->getReference(DoctrineCustomer::class, Uuid::fromString($ownerId->toString()));
     }
 
     private function createQueryBuilder(): QueryBuilder
@@ -213,5 +216,7 @@ final readonly class DoctrineAddressRepository implements AddressRepositoryInter
 
             $qb->addOrderBy($allowedFields[$field], $normalizedDirection);
         }
+
+        $qb->addOrderBy('a.id', 'ASC');
     }
 }
