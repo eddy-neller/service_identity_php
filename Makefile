@@ -292,8 +292,8 @@ unit:
 unit-filter:
 	@$(APP) sh -c "vendor/bin/phpunit --filter ${f} --display-warnings --display-deprecations --display-phpunit-deprecations --display-notices"
 
-## Execute a suite of tests, by setting testsuite name (Ex: make unit-suite n=api.gallery)
-.PHONY: unit-suite $(n)
+## Execute a suite of tests, by setting testsuite name (Ex: make unit-suite s=api.user)
+.PHONY: unit-suite $(s)
 unit-suite:
 	@$(APP) sh -c "vendor/bin/phpunit --testsuite ${s} --display-warnings --display-deprecations --display-phpunit-deprecations --display-notices"
 

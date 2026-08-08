@@ -139,10 +139,18 @@ Lancer la suite correspondante **avant chaque livraison** si le périmètre est 
 | `presentation/**/State/Shared` | `pres.state.shared` |
 | `presentation/**/State/User` | `pres.state.user` |
 | `presentation/**/State/Shop` | `pres.state.shop` |
-| `tests/Api/Shop` | `api.shop` |
+| `presentation/tests/Api/Shop/AddressTest.php` | `api.shop.address` |
+| `presentation/tests/Api/Shop/CartTest.php` | `api.shop.cart` |
+| `presentation/tests/Api/Shop/CategoryTest.php` | `api.shop.category` |
+| `presentation/tests/Api/Shop/CustomerTest.php` | `api.shop.customer` |
+| `presentation/tests/Api/Shop/ProductTest.php` | `api.shop.product` |
 | `presentation/tests/Api/User` | `api.user` |
 
-- Les suites API (`api.*`) ne sont **pas** exécutables dans l'environnement courant.
+- Les suites API (`api.*`) sont exécutables dès que la stack Docker tourne et que la DB de test
+  est initialisée (`make up` + `make install`) : elles émettent de vraies requêtes HTTP in-process
+  contre `shop_test`. Sans conteneurs ni DB de test, elles échouent en bloc — vérifier
+  `docker compose ps` avant d'en conclure quoi que ce soit. Il n'existe pas de suite `api.shop`
+  globale : le périmètre `presentation/tests/Api/Shop` se découpe en cinq suites `api.shop.*`.
 - **`tests/Unit/` vs `tests/Integration/`** : un test qui boote le kernel Symfony, touche la DB ou lit le
   conteneur DI est un test d'**intégration** → `tests/Integration/`. `tests/Unit/` n'accueille que des
   `PHPUnit\Framework\TestCase` sans kernel (doubles pour toutes les dépendances).

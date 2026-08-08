@@ -100,7 +100,7 @@ presentation/src/
 
 ## Tests Presentation
 
-Suites : `pres.state.sendmail`, `pres.state.shared`, `pres.state.user`, `pres.state.shop` ; API (non exécutables dans l'env courant) : `api.shop`, `api.user` (cf. `AGENTS.md` racine).
+Suites : `pres.state.sendmail`, `pres.state.shared`, `pres.state.user`, `pres.state.shop` ; API (exécutables si la stack Docker tourne, cf. `AGENTS.md` racine) : `api.shop.address`, `api.shop.cart`, `api.shop.category`, `api.shop.customer`, `api.shop.product`, `api.user`.
 
 - Ne jamais modifier `presentation/tests/Api/BaseTest.php` pour faire passer un test API spécifique. Ce helper est transverse. Le faire si demande explicite de refactor global de `BaseTest`.
 - Tests API : ne pas utiliser `ApiTestCase::findIriBy()` pour résoudre l'IRI d'une fixture quand les `ApiResource` Presentation sont séparées des entités Doctrine (`stateOptions: entityClass`). API Platform reçoit alors l'entité Doctrine, qui n'est pas une ressource exposée, et peut générer une IRI Skolem (`/.well-known/genid/...`). Résoudre l'entité avec `getInstance(...)`, asserter son type, puis construire l'IRI attendue depuis la route API réelle (`self::URL_API_OPE . '/' . $entity->getId()->toString()`). `findIriByHttp()` reste réservé aux cas où la valeur recherchée dépend réellement du rendu HTTP, notamment les champs traduits.
