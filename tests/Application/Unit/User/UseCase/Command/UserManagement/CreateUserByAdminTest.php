@@ -1,0 +1,196 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Tests\Application\Unit\User\UseCase\Command\UserManagement;
+
+use App\Application\Shared\Port\ClockInterface;
+use App\Application\Shared\Port\DomainEventBusInterface;
+use App\Application\Shared\Port\TransactionalInterface;
+use App\Application\User\Port\PasswordHasherInterface;
+use App\Application\User\Port\UserRepositoryInterface;
+use App\Application\User\Port\UserUniquenessCheckerInterface;
+use App\Application\User\UseCase\Command\UserManagement\CreateUserByAdmin\CreateUserByAdminCommand;
+use App\Application\User\UseCase\Command\UserManagement\CreateUserByAdmin\CreateUserByAdminCommandHandler;
+use App\Domain\User\Exception\Uniqueness\EmailAlreadyUsedException;
+use App\Domain\User\Exception\Uniqueness\UsernameAlreadyUsedException;
+use App\Domain\User\Model\User;
+use App\Domain\User\ValueObject\Identity\EmailAddress;
+use App\Domain\User\ValueObject\Identity\UserId;
+use App\Domain\User\ValueObject\Identity\Username;
+use App\Domain\User\ValueObject\Lifecycle\UserStatus;
+use DateTimeImmutable;
+use PHPUnit\Framework\MockObject\MockObject;
+use PHPUnit\Framework\TestCase;
+
+final class CreateUserByAdminTest extends TestCase
+{
+    private UserRepositoryInterface&MockObject $repository;
+
+    private PasswordHasherInterface&MockObject $passwordHasher;
+
+    private ClockInterface&MockObject $clock;
+
+    private TransactionalInterface&MockObject $transactional;
+
+    private UserUniquenessCheckerInterface&MockObject $uniquenessChecker;
+
+    private DomainEventBusInterface&MockObject $eventBus;
+
+    private CreateUserByAdminCommandHandler $handler;
+
+    protected function setUp(): void
+    {
+        $this->repository = $this->createMock(UserRepositoryInterface::class);
+        $this->passwordHasher = $this->createMock(PasswordHasherInterface::class);
+        $this->clock = $this->createMock(ClockInterface::class);
+        $this->transactional = $this->createMock(TransactionalInterface::class);
+        $this->uniquenessChecker = $this->createMock(UserUniquenessCheckerInterface::class);
+        $this->eventBus = $this->createMock(DomainEventBusInterface::class);
+        $this->handler = new CreateUserByAdminCommandHandler(
+            $this->repository,
+            $this->passwordHasher,
+            $this->clock,
+            $this->transactional,
+            $this->uniquenessChecker,
+            $this->eventBus,
+        );
+    }
+
+    public function testHandleCreatesUserWithAllFields(): void
+    {
+        $this->eventBus->expects($this->once())->method('publishAll');
+
+        $now = new DateTimeImmutable('2024-01-01 12:00:00');
+        $userId = UserId::fromString('550e8400-e29b-41d4-a716-446655440000');
+        $email = 'admin@example.com';
+        $username = 'adminuser';
+        $firstname = 'Admin';
+        $lastname = 'User';
+        $plainPassword = 'password123';
+        $hashedPassword = 'hashed-password';
+        $roles = ['ROLE_ADMIN', 'ROLE_USER'];
+        $statusInt = UserStatus::ACTIVE;
+        $status = UserStatus::fromInt($statusInt);
+
+        $command = new CreateUserByAdminCommand(
+            email: $email,
+            username: $username,
+            plainPassword: $plainPassword,
+            roles: $roles,
+            status: $statusInt,
+            firstname: $firstname,
+            lastname: $lastname,
+        );
+
+        $this->clock->expects($this->once())
+            ->method('now')
+            ->willReturn($now);
+
+        $this->repository->expects($this->once())
+            ->method('nextIdentity')
+            ->willReturn($userId);
+
+        $this->uniquenessChecker->expects($this->once())
+            ->method('ensureEmailAndUsernameAvailable')
+            ->with(EmailAddress::fromString($email), Username::fromString($username));
+
+        $this->passwordHasher->expects($this->once())
+            ->method('hash')
+            ->with($plainPassword)
+            ->willReturn($hashedPassword);
+
+        $this->repository->expects($this->once())
+            ->method('add')
+            ->with($this->callback(function (User $user) use ($userId, $username, $email, $firstname, $lastname, $hashedPassword, $status, $roles) {
+                return $user->getId()->equals($userId)
+                    && $user->getUsername()->toString() === $username
+                    && $user->getEmail()->equals(EmailAddress::fromString($email))
+                    && $user->getFirstname()?->toString() === $firstname
+                    && $user->getLastname()?->toString() === $lastname
+                    && $user->getPassword()->toString() === $hashedPassword
+                    && $user->getStatus()->toInt() === $status->toInt()
+                    && $user->getRoles()->all() === array_values(array_unique($roles));
+            }));
+
+        $this->transactional->expects($this->once())
+            ->method('transactional')
+            ->willReturnCallback(function (callable $callback) {
+                return $callback();
+            });
+
+        $output = $this->handler->handle($command);
+
+        $this->assertSame($userId->toString(), $output->id);
+        $this->assertSame($email, $output->email);
+        $this->assertSame($username, $output->username);
+        $this->assertSame($firstname, $output->firstname);
+        $this->assertSame($lastname, $output->lastname);
+        $this->assertSame($status->toInt(), $output->status);
+        $this->assertSame(array_values(array_unique($roles)), $output->roles);
+    }
+
+    public function testHandleThrowsWhenEmailAlreadyUsed(): void
+    {
+        $this->eventBus->expects($this->never())->method('publishAll');
+
+        $email = 'admin@example.com';
+        $username = 'adminuser';
+
+        $command = new CreateUserByAdminCommand(
+            email: $email,
+            username: $username,
+            plainPassword: 'password123',
+            roles: ['ROLE_ADMIN'],
+            status: UserStatus::ACTIVE,
+        );
+
+        $this->uniquenessChecker->expects($this->once())
+            ->method('ensureEmailAndUsernameAvailable')
+            ->with(EmailAddress::fromString($email), Username::fromString($username))
+            ->willThrowException(new EmailAlreadyUsedException());
+
+        // Le contrôle passe avant le hash : un conflit ne doit coûter aucun bcrypt,
+        // ni ouvrir de transaction.
+        $this->passwordHasher->expects($this->never())->method('hash');
+        $this->repository->expects($this->never())->method('nextIdentity');
+        $this->repository->expects($this->never())->method('add');
+        $this->clock->expects($this->never())->method('now');
+        $this->transactional->expects($this->never())->method('transactional');
+
+        $this->expectException(EmailAlreadyUsedException::class);
+
+        $this->handler->handle($command);
+    }
+
+    public function testHandleThrowsWhenUsernameAlreadyUsed(): void
+    {
+        $this->eventBus->expects($this->never())->method('publishAll');
+
+        $email = 'new@example.com';
+        $username = 'existing-admin';
+
+        $command = new CreateUserByAdminCommand(
+            email: $email,
+            username: $username,
+            plainPassword: 'password123',
+            roles: ['ROLE_ADMIN'],
+            status: UserStatus::ACTIVE,
+        );
+
+        $this->uniquenessChecker->expects($this->once())
+            ->method('ensureEmailAndUsernameAvailable')
+            ->with(EmailAddress::fromString($email), Username::fromString($username))
+            ->willThrowException(new UsernameAlreadyUsedException());
+
+        $this->passwordHasher->expects($this->never())->method('hash');
+        $this->repository->expects($this->never())->method('nextIdentity');
+        $this->repository->expects($this->never())->method('add');
+        $this->clock->expects($this->never())->method('now');
+        $this->transactional->expects($this->never())->method('transactional');
+
+        $this->expectException(UsernameAlreadyUsedException::class);
+
+        $this->handler->handle($command);
+    }
+}

@@ -1,6 +1,6 @@
 # RedisAuthVersionStore
 
-Fichier documenté : `infrastructure/src/Service/Token/RedisAuthVersionStore.php`.
+Fichier documenté : `src/Infrastructure/Service/Token/RedisAuthVersionStore.php`.
 
 ## Rôle
 

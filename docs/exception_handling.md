@@ -1,6 +1,6 @@
 # Gestion des exceptions → statuts HTTP
 
-> Référence technique. Les règles font foi dans les `AGENTS.md` (`domain/AGENTS.md` § « Exceptions métier »).
+> Référence technique. Les règles font foi dans les `AGENTS.md` (`src/Domain/AGENTS.md` § « Exceptions métier »).
 > Ce document explique **le mécanisme** : où vit le mapping, comment API Platform résout le statut, et
 > comment ajouter une exception sans alourdir la configuration.
 
@@ -23,8 +23,8 @@
 |---|---|
 | `config/routes/api_platform.yaml` | Déclare la route API Platform (`prefix: /api`). **Rien à voir avec les exceptions.** |
 | `config/packages/api_platform.yaml` → `exception_to_status` | Table exception/interface → code HTTP. |
-| `domain/SharedKernel/src/Exception/` | `DomainException` (base) + les 3 interfaces sémantiques. |
-| `domain/<Context>/src/**/Exception/` | Bases par BC (`UserDomainException`, …) + feuilles ciblées. |
+| `src/Domain/SharedKernel/Exception/` | `DomainException` (base) + les 3 interfaces sémantiques. |
+| `src/Domain/<Context>/**/Exception/` | Bases par BC (`UserDomainException`, …) + feuilles ciblées. |
 
 ---
 
@@ -89,7 +89,7 @@ Deux conséquences :
    cas particuliers d'abord, catégories ensuite, `DomainException: 400` **en dernier**.
 
 Si aucune ligne ne matche, API Platform retombe sur son comportement par défaut (500 pour une exception non
-mappée) — c'est voulu pour les erreurs techniques (voir `domain/AGENTS.md` § « Exception vs Error »).
+mappée) — c'est voulu pour les erreurs techniques (voir `src/Domain/AGENTS.md` § « Exception vs Error »).
 
 ---
 
@@ -182,5 +182,5 @@ Toute exception Domain non catégorisée, y compris les bases par BC (`ShopDomai
 
 ## Voir aussi
 
-- `domain/AGENTS.md` § « Exceptions métier » et § « `Exception` métier vs `Error` technique ».
+- `src/Domain/AGENTS.md` § « Exceptions métier » et § « `Exception` métier vs `Error` technique ».
 - `ApiPlatform\Symfony\EventListener\ErrorListener` (vendor) pour la résolution effective du statut.

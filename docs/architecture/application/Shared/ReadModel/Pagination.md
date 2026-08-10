@@ -1,6 +1,6 @@
 # Pagination applicative
 
-`Pagination` (`application/src/Shared/ReadModel/Pagination.php`) est une
+`Pagination` (`src/Application/Shared/ReadModel/Pagination.php`) est une
 valeur applicative immuable. Elle regroupe la normalisation de `page` et
 `itemsPerPage` pour les queries de collection.
 

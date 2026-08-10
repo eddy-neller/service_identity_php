@@ -10,7 +10,7 @@ on cache le **résultat du handler**, avant toute sérialisation HTTP.
 query.bus : logging → exception unwrapping → QueryCacheMiddleware → Messenger defaults → handler
 ```
 
-`QueryCacheMiddleware` (`infrastructure/src/Messenger/CQRS/Middleware/QueryCacheMiddleware.php`)
+`QueryCacheMiddleware` (`src/Infrastructure/Messenger/CQRS/Middleware/QueryCacheMiddleware.php`)
 intercepte chaque Query sur `query.bus`. Si la Query n'implémente pas `CacheableQueryInterface`, le
 middleware est un no-op et délègue directement à la suite de la chaîne. Voir
 [`CQRS_messenger.md`](CQRS_messenger.md) pour la place de ce middleware dans le pipeline complet.
@@ -18,20 +18,20 @@ middleware est un no-op et délègue directement à la suite de la chaîne. Voir
 ## 2) Contrats
 
 - **Application** — `App\Application\Shared\CQRS\Query\CacheableQueryInterface`
-  (`application/src/Shared/CQRS/Query/CacheableQueryInterface.php`) : étend `QueryInterface`, ajoute
+  (`src/Application/Shared/CQRS/Query/CacheableQueryInterface.php`) : étend `QueryInterface`, ajoute
   `cacheKey(): string`, `cacheTtl(): int`, `cacheTags(): array`. Une Query cacheable porte donc
   elle-même la logique de clé/TTL/tags — aucune configuration externe. C'est le **seul** contrat de
   cache connu de l'Application.
 - **Infrastructure** — `App\Infrastructure\Service\Cache\QueryCacheInterface`
-  (`infrastructure/src/Service/Cache/QueryCacheInterface.php`) : contrat interne
+  (`src/Infrastructure/Service/Cache/QueryCacheInterface.php`) : contrat interne
   `get(key, ttlSeconds, tags, callback)` / `invalidateTags(tags)`. Ce n'est **pas** un Port : aucun
   use case ne l'injecte, seuls le middleware et les listeners Infrastructure le consomment
-  (cf. `infrastructure/AGENTS.md`).
+  (cf. `src/Infrastructure/AGENTS.md`).
 
 ## 3) Implémentation (Infrastructure)
 
 - `App\Infrastructure\Service\Cache\SymfonyTagAwareQueryCache`
-  (`infrastructure/src/Service/Cache/SymfonyTagAwareQueryCache.php`) implémente `QueryCacheInterface`
+  (`src/Infrastructure/Service/Cache/SymfonyTagAwareQueryCache.php`) implémente `QueryCacheInterface`
   au-dessus du pool Symfony `cache.tag`.
 - `config/packages/cache.yaml` :
   - `framework.cache.app: cache.adapter.redis`, `default_redis_provider: '%env(REDIS_URL)%'`.
@@ -93,7 +93,7 @@ dans un ordre différent produisent la même clé de cache.
 Redis tag-aware. Seul le domaine **User** a un listener d'invalidation aujourd'hui :
 
 `App\Infrastructure\EventListener\UserCacheInvalidationListener`
-(`infrastructure/src/EventListener/UserCacheInvalidationListener.php`) écoute les événements
+(`src/Infrastructure/EventListener/UserCacheInvalidationListener.php`) écoute les événements
 `user.*` (création, mise à jour, suppression, activation, reset de mot de passe, avatar, tentatives de
 mot de passe erronées...) et invalide systématiquement `['users-collection', 'user-' . $userId]` — ce
 qui purge à la fois la liste utilisateurs et l'item de l'utilisateur concerné.

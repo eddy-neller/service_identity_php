@@ -19,88 +19,88 @@
 
     <testsuites>
         <testsuite name="appli.user">
-            <directory>application/tests/Unit/User/UseCase</directory>
-            <directory>application/tests/Unit/User/Service</directory>
+            <directory>tests/Application/Unit/User/UseCase</directory>
+            <directory>tests/Application/Unit/User/Service</directory>
         </testsuite>
         <testsuite name="appli.shop">
-            <directory>application/tests/Unit/Shop/UseCase</directory>
-            <directory>application/tests/Unit/Shop/Service</directory>
+            <directory>tests/Application/Unit/Shop/UseCase</directory>
+            <directory>tests/Application/Unit/Shop/Service</directory>
         </testsuite>
         <testsuite name="appli.shared">
-            <directory>application/tests/Unit/Shared</directory>
+            <directory>tests/Application/Unit/Shared</directory>
         </testsuite>
 
         <testsuite name="domain.shared">
-            <directory>domain/SharedKernel/tests/Unit</directory>
+            <directory>tests/Domain/SharedKernel/Unit</directory>
         </testsuite>
         <testsuite name="domain.shop">
-            <directory>domain/Shop/tests/Unit</directory>
+            <directory>tests/Domain/Shop/Unit</directory>
         </testsuite>
         <testsuite name="domain.user">
-            <directory>domain/User/tests/Unit</directory>
+            <directory>tests/Domain/User/Unit</directory>
         </testsuite>
 
         <testsuite name="infra.command">
-            <directory>infrastructure/tests/Unit/Command</directory>
+            <directory>tests/Infrastructure/Unit/Command</directory>
         </testsuite>
         <testsuite name="infra.cqrs">
-            <directory>infrastructure/tests/Integration/CQRS</directory>
+            <directory>tests/Infrastructure/Integration/CQRS</directory>
         </testsuite>
         <testsuite name="infra.messenger.event">
-            <directory>infrastructure/tests/Unit/Messenger/Event</directory>
+            <directory>tests/Infrastructure/Unit/Messenger/Event</directory>
         </testsuite>
         <testsuite name="infra.notif">
-            <directory>infrastructure/tests/Unit/Notification</directory>
+            <directory>tests/Infrastructure/Unit/Notification</directory>
         </testsuite>
         <testsuite name="infra.outbox">
-            <directory>infrastructure/tests/Integration/Messenger</directory>
+            <directory>tests/Infrastructure/Integration/Messenger</directory>
         </testsuite>
         <testsuite name="infra.persist">
-            <directory>infrastructure/tests/Integration/Persistence</directory>
+            <directory>tests/Infrastructure/Integration/Persistence</directory>
         </testsuite>
         <testsuite name="infra.service.hasher">
-            <directory>infrastructure/tests/Integration/Service</directory>
+            <directory>tests/Infrastructure/Integration/Service</directory>
         </testsuite>
         <testsuite name="infra.service.encoder">
-            <directory>infrastructure/tests/Unit/Service/Encoder</directory>
+            <directory>tests/Infrastructure/Unit/Service/Encoder</directory>
         </testsuite>
         <testsuite name="infra.service.token">
-            <directory>infrastructure/tests/Unit/Service/Token</directory>
+            <directory>tests/Infrastructure/Unit/Service/Token</directory>
         </testsuite>
         <testsuite name="infra.service.storage">
-            <directory>infrastructure/tests/Unit/Service/Storage</directory>
+            <directory>tests/Infrastructure/Unit/Service/Storage</directory>
         </testsuite>
 
         <testsuite name="pres.state.sendmail">
-            <directory>presentation/tests/Unit/State/SendMail</directory>
+            <directory>tests/Presentation/Unit/State/SendMail</directory>
         </testsuite>
         <testsuite name="pres.state.shared">
-            <directory>presentation/tests/Unit/State/Shared</directory>
+            <directory>tests/Presentation/Unit/State/Shared</directory>
         </testsuite>
         <testsuite name="pres.state.shop">
-            <directory>presentation/tests/Unit/State/Shop</directory>
+            <directory>tests/Presentation/Unit/State/Shop</directory>
         </testsuite>
         <testsuite name="pres.state.user">
-            <directory>presentation/tests/Unit/State/User</directory>
+            <directory>tests/Presentation/Unit/State/User</directory>
         </testsuite>
 
         <testsuite name="api.shop.address">
-            <file>presentation/tests/Api/Shop/AddressTest.php</file>
+            <file>tests/Presentation/Api/Shop/AddressTest.php</file>
         </testsuite>
         <testsuite name="api.shop.cart">
-            <file>presentation/tests/Api/Shop/CartTest.php</file>
+            <file>tests/Presentation/Api/Shop/CartTest.php</file>
         </testsuite>
         <testsuite name="api.shop.category">
-            <file>presentation/tests/Api/Shop/CategoryTest.php</file>
+            <file>tests/Presentation/Api/Shop/CategoryTest.php</file>
         </testsuite>
         <testsuite name="api.shop.customer">
-            <file>presentation/tests/Api/Shop/CustomerTest.php</file>
+            <file>tests/Presentation/Api/Shop/CustomerTest.php</file>
         </testsuite>
         <testsuite name="api.shop.product">
-            <file>presentation/tests/Api/Shop/ProductTest.php</file>
+            <file>tests/Presentation/Api/Shop/ProductTest.php</file>
         </testsuite>
         <testsuite name="api.user">
-            <directory>presentation/tests/Api/User</directory>
+            <directory>tests/Presentation/Api/User</directory>
         </testsuite>
     </testsuites>
 
@@ -110,26 +110,26 @@
             restrictWarnings="true"
     >
         <include>
-            <directory>application/src/Shop</directory>
-            <directory>application/src/User</directory>
-            <directory>domain/SharedKernel/src</directory>
-            <directory>domain/Shop/src</directory>
-            <directory>domain/User/src</directory>
-            <directory>infrastructure/src</directory>
-            <directory>presentation/src</directory>
+            <directory>src/Application/Shop</directory>
+            <directory>src/Application/User</directory>
+            <directory>src/Domain/SharedKernel</directory>
+            <directory>src/Domain/Shop</directory>
+            <directory>src/Domain/User</directory>
+            <directory>src/Infrastructure</directory>
+            <directory>src/Presentation</directory>
             <directory>src</directory>
         </include>
         <exclude>
-            <directory>application/src/Shared</directory>
-            <directory>infrastructure/src/DataFixtures</directory>
-            <directory>infrastructure/src/Entity</directory>
-            <directory>infrastructure/src/EventListener</directory>
-            <directory>infrastructure/src/EventSubscriber</directory>
-            <directory>infrastructure/src/OpenApi</directory>
-            <directory>infrastructure/src/Security/Voter</directory>
-            <directory>infrastructure/src/Service/Helper</directory>
-            <directory>presentation/src/Shared/Adapter</directory>
-            <directory>presentation/src/User/Security</directory>
+            <directory>src/Application/Shared</directory>
+            <directory>src/Infrastructure/DataFixtures</directory>
+            <directory>src/Infrastructure/Entity</directory>
+            <directory>src/Infrastructure/EventListener</directory>
+            <directory>src/Infrastructure/EventSubscriber</directory>
+            <directory>src/Infrastructure/OpenApi</directory>
+            <directory>src/Infrastructure/Security/Voter</directory>
+            <directory>src/Infrastructure/Service/Helper</directory>
+            <directory>src/Presentation/Shared/Adapter</directory>
+            <directory>src/Presentation/User/Security</directory>
             <directory>src/DataFixtures</directory>
             <directory>src/Entity</directory>
         </exclude>

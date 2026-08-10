@@ -74,7 +74,7 @@ et les réactions sont exécutées plus tard, avec retries.
 
 ## 1. Enregistrer un fait métier
 
-Les événements vivent dans `domain/<Context>/src/Event/`. Ils sont `final readonly`, ne
+Les événements vivent dans `src/Domain/<Context>/Event/`. Ils sont `final readonly`, ne
 dépendent d'aucun framework, et implémentent `DomainEventInterface` :
 
 ```php
@@ -318,7 +318,7 @@ le conteneur `app` recréé lorsque `docker/app/supervisor/conf.d/messenger-work
 fichier est copié dans l'image. Surveiller aussi
 `messenger:failed:show --transport=failed_domain_events`.
 
-Les handlers vivent dans `infrastructure/src/Messenger/Event/Handler/`, un par réaction, annotés
+Les handlers vivent dans `src/Infrastructure/Messenger/Event/Handler/`, un par réaction, annotés
 `#[AsMessageHandler(bus: 'event.bus')]`. Un handler peut couvrir plusieurs événements en portant
 l'attribut sur plusieurs méthodes (`ProvisionCustomerHandler`).
 
@@ -612,7 +612,7 @@ transaction avant le commit, elle disparaît au rollback, et le message stocké 
 
 ### Ajouter un nouvel événement
 
-1. Créer la classe dans `domain/<Context>/src/Event/<Catégorie>/`, `final readonly`, avec
+1. Créer la classe dans `src/Domain/<Context>/Event/<Catégorie>/`, `final readonly`, avec
    `DomainEventIdentityTrait` et `$this->eventId = self::generateEventId();` au constructeur.
    Implémenter `aggregateId()`, `occurredOn()` et `eventName()`. Pour le contexte User,
    implémenter `UserDomainEventInterface` plutôt que `DomainEventInterface` — sinon l'invalidation
@@ -627,14 +627,14 @@ transaction avant le commit, elle disparaît au rollback, et le message stocké 
 
 ### Ajouter une réaction
 
-1. Créer le handler dans `infrastructure/src/Messenger/Event/Handler/<Context>/`, `final readonly`,
+1. Créer le handler dans `src/Infrastructure/Messenger/Event/Handler/<Context>/`, `final readonly`,
    annoté `#[AsMessageHandler(bus: 'event.bus')]`.
 2. Choisir le régime d'idempotence (§5) et injecter `DomainEventLedgerInterface` en conséquence.
    Utiliser `self::class` comme clé de handler.
 3. Passer par le `CommandBusInterface` si la réaction est un cas d'usage métier.
 4. Réserver `UnrecoverableMessageHandlingException` à un message réellement invalide ; les états
    métier attendus sont des no-op journalisés et marqués comme traités.
-5. Écrire le test unitaire dans `infrastructure/tests/Unit/Messenger/Event/Handler/` : chemin
+5. Écrire le test unitaire dans `tests/Infrastructure/Unit/Messenger/Event/Handler/` : chemin
    nominal, événement déjà traité, et no-op métier.
 
 ## 10. Diagnostic

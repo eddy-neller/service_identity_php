@@ -5,7 +5,7 @@ api_platform:
     mapping:
         paths:
             - "%kernel.project_dir%/src/Entity"
-            - "%kernel.project_dir%/presentation/src"
+            - "%kernel.project_dir%/src/Presentation"
     formats:
         json: ["application/json"]
     docs_formats:
@@ -58,4 +58,4 @@ when@test:
                 # d'association provoqué par le listener est indétectable par la suite.
                 enabled: true
                 # Pas de clé `urls` : aucun ScopingHttpClient n'est créé.
-                purger: App\Infrastructure\Tests\Double\HttpCache\NullPurger
+                purger: App\Tests\Infrastructure\Double\HttpCache\NullPurger

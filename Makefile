@@ -228,15 +228,20 @@ crem:
 cr:
 	@$(APP) sh -c "composer recipes"
 
-## Execute composer symfony:recipes
-.PHONY: csr
-csr:
-	@$(APP) sh -c "composer symfony:recipes"
+## List outdated composer recipes
+.PHONY: cro
+cro:
+	@$(APP) sh -c "composer recipes --outdated"
 
-## Execute composer symfony:recipes:install
-.PHONY: csri $(p)
-csri:
-	@$(APP) sh -c "composer symfony:recipes:install -v ${p}"
+## Install a composer recipe (Ex: make cri p=stripe/stripe-php)
+.PHONY: cri
+cri:
+	@$(APP) sh -c "composer recipes:install ${p}"
+
+## Update a composer recipe (Ex: make cru p=stripe/stripe-php)
+.PHONY: cru
+cru:
+	@$(APP) sh -c "composer recipes:update ${p}"
 
 ## Execute composer version
 .PHONY: cv

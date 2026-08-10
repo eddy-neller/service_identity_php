@@ -50,10 +50,10 @@ Ces choix visent un environnement proche de la **production** (dev local facile,
 
 Le projet suit une organisation inspirée de l’architecture clean/hexagonale & DDD :
 
--   `domain/` : **modèle métier**, entités, value objects, interfaces de repository, invariants.
--   `application/` : **cas d’usage**, services applicatifs, orchestrations métier.
--   `infrastructure/` : implémentations techniques (Doctrine, adapters, persistence, etc.).
--   `presentation/` : exposition de l’API (API Platform, contrôleurs, DTO, sérialisation).
+-   `src/Domain/` : **modèle métier**, entités, value objects, interfaces de repository, invariants.
+-   `src/Application/` : **cas d’usage**, services applicatifs, orchestrations métier.
+-   `src/Infrastructure/` : implémentations techniques (Doctrine, adapters, persistence, etc.).
+-   `src/Presentation/` : exposition de l’API (API Platform, contrôleurs, DTO, sérialisation).
 
 **Décision technique (en clair)** :  
 Je sépare **métier**, **application** et **infrastructure** pour limiter le couplage et garder la possibilité de faire évoluer la persistance, le protocole ou le front sans casser tout le code métier.
@@ -139,9 +139,9 @@ Parce que pour un backend métier, c’est ce qui permet de garder un **code de 
 
 ## 🔍 Dossiers intéressants
 
--   `domain/` : voir comment le métier est modélisé (entités, valeurs, invariants).
--   `application/` : cas d’usage et orchestration métier.
--   `infrastructure/` : implémentations concrètes (Doctrine, adaptateurs).
+-   `src/Domain/` : voir comment le métier est modélisé (entités, valeurs, invariants).
+-   `src/Application/` : cas d’usage et orchestration métier.
+-   `src/Infrastructure/` : implémentations concrètes (Doctrine, adaptateurs).
 
 Ces emplacements reflètent ma façon de :
 

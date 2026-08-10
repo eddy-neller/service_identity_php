@@ -1,6 +1,6 @@
 # JwtAccessTokenUser
 
-Fichier documenté : `infrastructure/src/Service/Token/JwtAccessTokenUser.php`.
+Fichier documenté : `src/Infrastructure/Service/Token/JwtAccessTokenUser.php`.
 
 ## Rôle
 

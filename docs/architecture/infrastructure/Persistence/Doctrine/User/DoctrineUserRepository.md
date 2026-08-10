@@ -1,6 +1,6 @@
 # DoctrineUserRepository
 
-Fichier documenté : `infrastructure/src/Persistence/Doctrine/User/DoctrineUserRepository.php`.
+Fichier documenté : `src/Infrastructure/Persistence/Doctrine/User/DoctrineUserRepository.php`.
 
 ## Rôle
 

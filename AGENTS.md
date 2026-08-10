@@ -6,10 +6,10 @@
 > **Ne consigner ici que des règles transverses et des résumés.** Toute règle spécifique à une couche doit être écrite — en détail — dans le `AGENTS.md` de cette couche, jamais dans ce fichier.
 >
 > **Règles spécifiques à une couche** → fichier `AGENTS.md` du dossier correspondant (chargé à la demande) :
-> - [`domain/AGENTS.md`](domain/AGENTS.md) — DDD, agrégats, Value Objects, events, règles métier
-> - [`application/AGENTS.md`](application/AGENTS.md) — use cases, CQRS, Ports, handlers
-> - [`infrastructure/AGENTS.md`](infrastructure/AGENTS.md) — adapters, Doctrine, mappers, index
-> - [`presentation/AGENTS.md`](presentation/AGENTS.md) — API Platform, DTOs, State, sécurité
+> - [`src/Domain/AGENTS.md`](src/Domain/AGENTS.md) — DDD, agrégats, Value Objects, events, règles métier
+> - [`src/Application/AGENTS.md`](src/Application/AGENTS.md) — use cases, CQRS, Ports, handlers
+> - [`src/Infrastructure/AGENTS.md`](src/Infrastructure/AGENTS.md) — adapters, Doctrine, mappers, index
+> - [`src/Presentation/AGENTS.md`](src/Presentation/AGENTS.md) — API Platform, DTOs, State, sécurité
 
 ---
 
@@ -90,16 +90,17 @@ Presentation  →  Application  →  Domain
 
 - Tout cas d'usage passe par `CommandBusInterface` (écritures) / `QueryBusInterface` (lectures).
 - **« Toujours via le Bus, jamais via le Handler »** : aucun code hors Application n'appelle `handle()`.
-- Découverte automatique par Messenger, avec convention obligatoire : `FooCommand` → `FooCommandHandler`, `BarQuery` → `BarQueryHandler`. Détails : [`application/AGENTS.md`](application/AGENTS.md).
+- Découverte automatique par Messenger, avec convention obligatoire : `FooCommand` → `FooCommandHandler`, `BarQuery` → `BarQueryHandler`. Détails : [`src/Application/AGENTS.md`](src/Application/AGENTS.md).
 
 ### Structure des dossiers
 
 ```text
-domain/         Cœur métier pur, par bounded context (Model/, ValueObject/, Event/, Exception/)
-application/    Cas d'usage & orchestration (UseCase/Command|Query, Port/, Shared/CQRS)
-infrastructure/ Adapters & implémentations (Persistence/, Service/, Notification/, Command/)
-presentation/   Interface HTTP/API (ApiResource/, Dto/, State/, Presenter/, Security/, Validator/)
-config/         Configuration Symfony · migrations/ · docker/ · src/ + tests/ : legacy (ne pas étendre)
+src/Domain/         Cœur métier pur, par bounded context (Model/, ValueObject/, Event/, Exception/)
+src/Application/    Cas d'usage & orchestration (UseCase/Command|Query, Port/, Shared/CQRS)
+src/Infrastructure/ Adapters & implémentations (Persistence/, Service/, Notification/, Command/)
+src/Presentation/   Interface HTTP/API (ApiResource/, Dto/, State/, Presenter/, Security/, Validator/)
+tests/              Tests des couches, organisés de la même façon que le code source
+src/{Controller,Entity,Repository,Service}/ : legacy (ne pas étendre)
 ```
 
 ---
@@ -120,37 +121,37 @@ Lancer la suite correspondante **avant chaque livraison** si le périmètre est 
 
 | Périmètre modifié | Suite |
 |---|---|
-| `domain/Shop` | `domain.shop` |
-| `domain/User` | `domain.user` |
-| `domain/SharedKernel` | `domain.shared` |
-| `application/**/User/UseCase` | `appli.user` |
-| `application/**/Shop/UseCase` + `Shared` | `appli.shop` |
-| `infrastructure/**/Persistence` (Doctrine réel) | `infra.persist` |
-| `infrastructure/**/Messenger/Event` | `infra.messenger.event` |
+| `src/Domain/Shop` | `domain.shop` |
+| `src/Domain/User` | `domain.user` |
+| `src/Domain/SharedKernel` | `domain.shared` |
+| `src/Application/**/User/UseCase` | `appli.user` |
+| `src/Application/**/Shop/UseCase` + `Shared` | `appli.shop` |
+| `src/Infrastructure/**/Persistence` (Doctrine réel) | `infra.persist` |
+| `src/Infrastructure/**/Messenger/Event` | `infra.messenger.event` |
 | outbox / atomicité (Doctrine réel) | `infra.outbox` |
 | câblage Messenger / bus CQRS (conteneur réel) | `infra.cqrs` |
-| `infrastructure/**/Command` | `infra.command` |
-| `infrastructure/**/Notification` | `infra.notif` |
-| `infrastructure/**/Service/Encoder` | `infra.service.encoder` |
-| `infrastructure/**/Service/Hasher` + `security.password_hashers` | `infra.service.hasher` |
-| `infrastructure/**/Service/Storage` | `infra.service.storage` |
-| `infrastructure/**/Service/Token` | `infra.service.token` |
-| `presentation/**/State/SendMail` | `pres.state.sendmail` |
-| `presentation/**/State/Shared` | `pres.state.shared` |
-| `presentation/**/State/User` | `pres.state.user` |
-| `presentation/**/State/Shop` | `pres.state.shop` |
-| `presentation/tests/Api/Shop/AddressTest.php` | `api.shop.address` |
-| `presentation/tests/Api/Shop/CartTest.php` | `api.shop.cart` |
-| `presentation/tests/Api/Shop/CategoryTest.php` | `api.shop.category` |
-| `presentation/tests/Api/Shop/CustomerTest.php` | `api.shop.customer` |
-| `presentation/tests/Api/Shop/ProductTest.php` | `api.shop.product` |
-| `presentation/tests/Api/User` | `api.user` |
+| `src/Infrastructure/**/Command` | `infra.command` |
+| `src/Infrastructure/**/Notification` | `infra.notif` |
+| `src/Infrastructure/**/Service/Encoder` | `infra.service.encoder` |
+| `src/Infrastructure/**/Service/Hasher` + `security.password_hashers` | `infra.service.hasher` |
+| `src/Infrastructure/**/Service/Storage` | `infra.service.storage` |
+| `src/Infrastructure/**/Service/Token` | `infra.service.token` |
+| `src/Presentation/**/State/SendMail` | `pres.state.sendmail` |
+| `src/Presentation/**/State/Shared` | `pres.state.shared` |
+| `src/Presentation/**/State/User` | `pres.state.user` |
+| `src/Presentation/**/State/Shop` | `pres.state.shop` |
+| `tests/Presentation/Api/Shop/AddressTest.php` | `api.shop.address` |
+| `tests/Presentation/Api/Shop/CartTest.php` | `api.shop.cart` |
+| `tests/Presentation/Api/Shop/CategoryTest.php` | `api.shop.category` |
+| `tests/Presentation/Api/Shop/CustomerTest.php` | `api.shop.customer` |
+| `tests/Presentation/Api/Shop/ProductTest.php` | `api.shop.product` |
+| `tests/Presentation/Api/User` | `api.user` |
 
 - Les suites API (`api.*`) sont exécutables dès que la stack Docker tourne et que la DB de test
   est initialisée (`make up` + `make install`) : elles émettent de vraies requêtes HTTP in-process
   contre `shop_test`. Sans conteneurs ni DB de test, elles échouent en bloc — vérifier
   `docker compose ps` avant d'en conclure quoi que ce soit. Il n'existe pas de suite `api.shop`
-  globale : le périmètre `presentation/tests/Api/Shop` se découpe en cinq suites `api.shop.*`.
+  globale : le périmètre `tests/Presentation/Api/Shop` se découpe en cinq suites `api.shop.*`.
 - **`tests/Unit/` vs `tests/Integration/`** : un test qui boote le kernel Symfony, touche la DB ou lit le
   conteneur DI est un test d'**intégration** → `tests/Integration/`. `tests/Unit/` n'accueille que des
   `PHPUnit\Framework\TestCase` sans kernel (doubles pour toutes les dépendances).

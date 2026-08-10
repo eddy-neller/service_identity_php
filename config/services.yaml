@@ -34,18 +34,18 @@ services:
             - "../src/Entity"
 
     App\Application\:
-        resource: "../application/src/"
+        resource: "../src/Application/"
 
     App\Infrastructure\:
-        resource: "../infrastructure/src/"
+        resource: "../src/Infrastructure/"
         exclude:
-            - "../infrastructure/src/Entity"
+            - "../src/Infrastructure/Entity"
 
     App\Presentation\:
-        resource: "../presentation/src/"
+        resource: "../src/Presentation/"
         exclude:
-            - "../presentation/src/**/ApiResource/"
-            - "../presentation/src/**/Dto/"
+            - "../src/Presentation/**/ApiResource/"
+            - "../src/Presentation/**/Dto/"
 
     App\Application\Shared\CQRS\Command\CommandBusInterface:
         alias: App\Infrastructure\Messenger\CQRS\MessengerCommandBus
@@ -57,5 +57,5 @@ when@test:
     services:
         # Purger bouchon référencé par api_platform.http_cache.invalidation.purger.
         # Déclaration explicite : le bloc App\Infrastructure\ ne scanne que
-        # infrastructure/src/, pas infrastructure/tests/.
-        App\Infrastructure\Tests\Double\HttpCache\NullPurger: ~
+        # src/Infrastructure/, pas tests/Infrastructure/.
+        App\Tests\Infrastructure\Double\HttpCache\NullPurger: ~

@@ -26,11 +26,7 @@ use Rector\TypeDeclaration\Rector\StmtsAwareInterface\SafeDeclareStrictTypesRect
 
 return static function (RectorConfig $rectorConfig): void {
     $rectorConfig->paths([
-        __DIR__ . '/application',
-        __DIR__ . '/domain',
-        __DIR__ . '/infrastructure',
         __DIR__ . '/migrations',
-        __DIR__ . '/presentation',
         __DIR__ . '/src',
         __DIR__ . '/tests',
     ]);

@@ -37,8 +37,8 @@ Key rules:
 ## 3) API Platform cache headers
 
 Files:
-- `presentation/src/Shop/ApiResource/Catalog/ProductResource.php`
-- `presentation/src/Shop/ApiResource/Catalog/CategoryResource.php`
+- `src/Presentation/Shop/ApiResource/Catalog/ProductResource.php`
+- `src/Presentation/Shop/ApiResource/Catalog/CategoryResource.php`
 
 What it does:
 - Adds `Cache-Control` to catalog GET endpoints with long TTLs:
@@ -66,7 +66,7 @@ What it does:
 
 Files:
 - `config/packages/api_platform.yaml` (ETag default enabled)
-- `infrastructure/src/EventListener/LastModifiedListener.php`
+- `src/Infrastructure/EventListener/LastModifiedListener.php`
 
 What it does:
 - ETag is enabled by API Platform (hash of response content).

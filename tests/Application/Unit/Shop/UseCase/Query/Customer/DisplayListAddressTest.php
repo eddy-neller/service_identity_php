@@ -1,0 +1,83 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Tests\Application\Unit\Shop\UseCase\Query\Customer;
+
+use App\Application\Shop\Port\AddressRepositoryInterface;
+use App\Application\Shop\ReadModel\Customer\AddressItem;
+use App\Application\Shop\UseCase\Query\Customer\DisplayListAddress\DisplayListAddressQuery;
+use App\Application\Shop\UseCase\Query\Customer\DisplayListAddress\DisplayListAddressQueryHandler;
+use App\Domain\Shop\Customer\Model\Address;
+use App\Domain\Shop\Customer\ValueObject\AddressId;
+use App\Domain\Shop\Customer\ValueObject\CustomerId;
+use DateTimeImmutable;
+use PHPUnit\Framework\MockObject\MockObject;
+use PHPUnit\Framework\TestCase;
+
+final class DisplayListAddressTest extends TestCase
+{
+    private const string ADDRESS_ID = '550e8400-e29b-41d4-a716-446655440090';
+
+    private const string CUSTOMER_ID = '550e8400-e29b-41d4-a716-446655440091';
+
+    private AddressRepositoryInterface&MockObject $repository;
+
+    private DisplayListAddressQueryHandler $handler;
+
+    protected function setUp(): void
+    {
+        $this->repository = $this->createMock(AddressRepositoryInterface::class);
+        $this->handler = new DisplayListAddressQueryHandler($this->repository);
+    }
+
+    public function testHandleReturnsList(): void
+    {
+        $createdAt = new DateTimeImmutable('2025-01-01 10:00:00');
+        $addressId = AddressId::fromString(self::ADDRESS_ID);
+        $customerId = CustomerId::fromString(self::CUSTOMER_ID);
+        $orderBy = ['createdAt' => 'DESC'];
+        $filters = ['city' => 'Paris'];
+
+        $address = Address::create(
+            id: $addressId,
+            ownerId: $customerId,
+            label: 'Home',
+            firstname: 'John',
+            lastname: 'Doe',
+            street: '12 Main St',
+            zipCode: '12345',
+            city: 'Paris',
+            country: 'France',
+            phone: '+33 1 23 45 67 89',
+            now: $createdAt,
+        );
+
+        $query = new DisplayListAddressQuery(
+            ownerId: $customerId->toString(),
+            page: '1',
+            itemsPerPage: '10',
+            orderBy: $orderBy,
+            filters: $filters,
+        );
+
+        $addressItem = AddressItem::fromAddress($address);
+
+        $this->repository->expects($this->once())
+            ->method('listByOwner')
+            ->with(
+                $customerId,
+                1,
+                10,
+                $orderBy,
+                $filters,
+            )
+            ->willReturn(['items' => [$address], 'totalItems' => 1, 'totalPages' => 1]);
+
+        $output = $this->handler->handle($query);
+
+        $this->assertEquals([$addressItem], $output->items);
+        $this->assertSame(1, $output->totalItems);
+        $this->assertSame(1, $output->totalPages);
+    }
+}

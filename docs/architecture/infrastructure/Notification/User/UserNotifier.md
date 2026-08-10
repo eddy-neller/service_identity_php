@@ -1,7 +1,7 @@
 # UserNotifier
 
 Fichier documenté :
-`infrastructure/src/Notification/User/UserNotifier.php`.
+`src/Infrastructure/Notification/User/UserNotifier.php`.
 
 ## Rôle
 
@@ -108,7 +108,7 @@ d'événements (ledger), sans la remplacer.
 ## Vérification
 
 Les tests unitaires de
-`infrastructure/tests/Unit/Notification/User/UserNotifierTest.php` vérifient :
+`tests/Infrastructure/Unit/Notification/User/UserNotifierTest.php` vérifient :
 
 - le contenu de chaque e-mail remis à `Mailer` ;
 - la résolution de langue et son fallback ;

@@ -109,6 +109,6 @@ l'état présent.
 
 - `config/packages/security.yaml` : firewall et provider `lexik_jwt`.
 - `config/packages/lexik_jwt_authentication.yaml` : clés, TTL et claim `sub`.
-- `infrastructure/src/Service/Token/LexikJwtAccessTokenProvider.php` : émission.
-- `infrastructure/src/EventSubscriber/JwtAuthVersionSubscriber.php` : validation Redis.
-- `infrastructure/src/EventSubscriber/User/UserEventSubscriber.php` : révocation.
+- `src/Infrastructure/Service/Token/LexikJwtAccessTokenProvider.php` : émission.
+- `src/Infrastructure/EventSubscriber/JwtAuthVersionSubscriber.php` : validation Redis.
+- `src/Infrastructure/EventSubscriber/User/UserEventSubscriber.php` : révocation.
