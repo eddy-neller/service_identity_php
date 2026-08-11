@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Application\Shop\Service;
 
-use App\Application\Shop\Port\ProductImageUrlResolverInterface;
 use App\Application\Shop\Port\ProductRepositoryInterface;
 use App\Application\Shop\ReadModel\Ordering\CartItem;
 use App\Application\Shop\ReadModel\Ordering\CartLineItem;
@@ -16,7 +15,6 @@ final readonly class CartItemFactory
 {
     public function __construct(
         private ProductRepositoryInterface $productRepository,
-        private ProductImageUrlResolverInterface $imageUrlResolver,
     ) {
     }
 
@@ -58,7 +56,7 @@ final readonly class CartItemFactory
                 productId: $product->getId()->toString(),
                 productTitle: $product->getTitle()->toString(),
                 productSlug: $product->getSlug()->toString(),
-                imageUrl: $this->imageUrlResolver->resolve($product->getImageName()),
+                image: $product->getImageName(),
                 unitPrice: $unitPrice->toEuros(),
                 quantity: $quantity,
                 lineTotal: $lineTotal->toEuros(),

@@ -16,7 +16,7 @@ use ApiPlatform\Metadata\Patch;
 use ApiPlatform\Metadata\Post;
 use ApiPlatform\OpenApi\Model;
 use App\Domain\User\ValueObject\Access\RoleSet;
-use App\Infrastructure\Entity\Shop\Category;
+use App\Infrastructure\Persistence\Doctrine\Shop\Catalog\CategoryEntity as Category;
 use App\Presentation\RouteRequirements;
 use App\Presentation\Shop\Dto\Catalog\Category\CategoryPatchInput;
 use App\Presentation\Shop\Dto\Catalog\Category\CategoryPostInput;

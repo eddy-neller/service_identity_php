@@ -213,7 +213,7 @@ final class UserTest extends TestCase
     public function testRequestPasswordResetThrowsWhenUserIsLocked(): void
     {
         $user = $this->createUser();
-        $this->setStatus($user, UserStatus::fromInt(UserStatus::BLOCKED));
+        $this->setUserStatus($user, UserStatus::fromInt(UserStatus::BLOCKED));
 
         $this->expectException(UserLockedException::class);
 
@@ -435,7 +435,7 @@ final class UserTest extends TestCase
     public function testIsLockedReturnsTrueWhenUserBlocked(): void
     {
         $user = $this->createUser();
-        $this->setStatus($user, UserStatus::blocked());
+        $this->setUserStatus($user, UserStatus::blocked());
 
         $this->assertTrue($user->isLocked());
     }
@@ -605,7 +605,7 @@ final class UserTest extends TestCase
         $this->setProperty($user, 'activeEmail', $activeEmail);
     }
 
-    private function setStatus(User $user, UserStatus $status): void
+    private function setUserStatus(User $user, UserStatus $status): void
     {
         $this->setProperty($user, 'status', $status);
     }

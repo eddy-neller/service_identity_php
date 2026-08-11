@@ -18,7 +18,7 @@ use ApiPlatform\Metadata\Post;
 use ApiPlatform\OpenApi\Model;
 use ApiPlatform\OpenApi\Model\RequestBody;
 use App\Domain\User\ValueObject\Access\RoleSet;
-use App\Infrastructure\Entity\Shop\Product;
+use App\Infrastructure\Persistence\Doctrine\Shop\Catalog\ProductEntity as Product;
 use App\Presentation\RouteRequirements;
 use App\Presentation\Shop\Dto\Catalog\Product\ProductImageInput;
 use App\Presentation\Shop\Dto\Catalog\Product\ProductPatchInput;

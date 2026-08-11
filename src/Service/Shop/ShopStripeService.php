@@ -3,8 +3,8 @@
 namespace App\Service\Shop;
 
 use App\Entity\Shop\Order;
-use App\Infrastructure\Entity\Shop\Product;
-use App\Infrastructure\Entity\User\User;
+use App\Infrastructure\Persistence\Doctrine\Shop\Catalog\ProductEntity as Product;
+use App\Infrastructure\Persistence\Doctrine\User\UserEntity as User;
 use Doctrine\ORM\EntityManagerInterface;
 use RuntimeException;
 use Stripe\Exception\ApiErrorException;

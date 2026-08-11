@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Tests\Infrastructure\Unit\Command\CQRS;
 
-use App\Infrastructure\Messenger\CQRS\HandledResultExtractor;
+use App\Infrastructure\Symfony\Messenger\CQRS\HandledResultExtractor;
 use LogicException;
 use PHPUnit\Framework\TestCase;
 use stdClass;

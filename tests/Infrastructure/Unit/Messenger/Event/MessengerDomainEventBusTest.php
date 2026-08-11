@@ -6,8 +6,8 @@ namespace App\Tests\Infrastructure\Unit\Messenger\Event;
 
 use App\Domain\User\Event\Lifecycle\UserRegisteredEvent;
 use App\Domain\User\ValueObject\Identity\UserId;
-use App\Infrastructure\Messenger\Event\MessengerDomainEventBus;
-use App\Infrastructure\Messenger\Event\PublishedDomainEventCollector;
+use App\Infrastructure\Symfony\Messenger\Event\MessengerDomainEventBus;
+use App\Infrastructure\Symfony\Messenger\Event\PublishedDomainEventCollector;
 use DateTimeImmutable;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;

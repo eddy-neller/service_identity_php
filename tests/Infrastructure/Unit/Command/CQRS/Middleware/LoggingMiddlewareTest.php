@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Tests\Infrastructure\Unit\Command\CQRS\Middleware;
 
-use App\Infrastructure\Messenger\CQRS\Middleware\CommandLoggingMiddleware;
-use App\Infrastructure\Messenger\CQRS\Middleware\QueryLoggingMiddleware;
+use App\Infrastructure\Symfony\Messenger\CQRS\Middleware\CommandLoggingMiddleware;
+use App\Infrastructure\Symfony\Messenger\CQRS\Middleware\QueryLoggingMiddleware;
 use PHPUnit\Framework\TestCase;
 use RuntimeException;
 use stdClass;

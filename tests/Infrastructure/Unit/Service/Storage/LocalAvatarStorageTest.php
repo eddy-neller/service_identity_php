@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Tests\Infrastructure\Unit\Service\Storage;
 
 use App\Application\Shared\Port\FileInterface;
-use App\Infrastructure\Service\Storage\LocalAvatarStorage;
+use App\Infrastructure\Adapter\Storage\LocalAvatarStorage;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\NullLogger;
 use RuntimeException;

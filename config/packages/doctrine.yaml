@@ -27,8 +27,8 @@ doctrine:
             Infrastructure:
                 type: attribute
                 is_bundle: false
-                dir: '%kernel.project_dir%/src/Infrastructure/Entity'
-                prefix: 'App\Infrastructure\Entity'
+                dir: '%kernel.project_dir%/src/Infrastructure/Persistence/Doctrine'
+                prefix: 'App\Infrastructure\Persistence\Doctrine'
                 alias: Infrastructure
         dql:
             string_functions:

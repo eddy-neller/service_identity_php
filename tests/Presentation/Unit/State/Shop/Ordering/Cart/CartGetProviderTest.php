@@ -6,6 +6,7 @@ namespace App\Tests\Presentation\Unit\State\Shop\Ordering\Cart;
 
 use ApiPlatform\Metadata\Get;
 use App\Application\Shared\CQRS\Query\QueryBusInterface;
+use App\Application\Shop\Port\ProductImageUrlResolverInterface;
 use App\Application\Shop\ReadModel\Customer\CurrentCustomerItem;
 use App\Application\Shop\ReadModel\Ordering\CartItem;
 use App\Application\Shop\ReadModel\Ordering\CartLineItem;
@@ -37,6 +38,11 @@ final class CartGetProviderTest extends TestCase
         $customerId = CustomerId::fromString('550e8400-e29b-41d4-a716-446655440701');
         $customerOutput = new CurrentCustomerItem($customerId->toString());
         $cartOutput = $this->createCart();
+        $imageUrlResolver = $this->createMock(ProductImageUrlResolverInterface::class);
+        $imageUrlResolver->expects($this->once())
+            ->method('resolve')
+            ->with('mug.png')
+            ->willReturn('/uploads/images/shop/product/mug.png');
 
         $queryBus->expects($this->exactly(2))
             ->method('dispatch')
@@ -56,7 +62,11 @@ final class CartGetProviderTest extends TestCase
                 $this->fail('Unexpected query dispatched.');
             });
 
-        $provider = new CartGetProvider($queryBus, new CurrentCustomerResolver($queryBus, $security), new CartResourcePresenter());
+        $provider = new CartGetProvider(
+            $queryBus,
+            new CurrentCustomerResolver($queryBus, $security),
+            new CartResourcePresenter($imageUrlResolver),
+        );
 
         $result = $provider->provide(new Get(name: 'shop-cart-get'));
 
@@ -67,6 +77,7 @@ final class CartGetProviderTest extends TestCase
         $this->assertSame('EUR', $result->currency);
         $this->assertCount(1, $result->items);
         $this->assertSame('Mug', $result->items[0]->productTitle);
+        $this->assertSame('/uploads/images/shop/product/mug.png', $result->items[0]->imageUrl);
         $this->assertSame(3, $result->items[0]->quantity);
     }
 
@@ -80,7 +91,7 @@ final class CartGetProviderTest extends TestCase
                     productId: '550e8400-e29b-41d4-a716-446655440712',
                     productTitle: 'Mug',
                     productSlug: 'mug',
-                    imageUrl: 'https://example.com/mug.png',
+                    image: 'mug.png',
                     unitPrice: 19.99,
                     quantity: 3,
                     lineTotal: 59.97,

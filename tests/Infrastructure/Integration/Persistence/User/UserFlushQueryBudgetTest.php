@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Tests\Infrastructure\Integration\Persistence\User;
 
 use App\Domain\User\ValueObject\Lifecycle\UserStatus;
-use App\Infrastructure\Entity\User\User;
+use App\Infrastructure\Persistence\Doctrine\User\UserEntity as User;
 use Doctrine\ORM\EntityManagerInterface;
 use Ramsey\Uuid\Uuid;
 use Symfony\Bridge\Doctrine\Middleware\Debug\DebugDataHolder;

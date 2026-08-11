@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Tests\Infrastructure\Unit\Service\Token;
 
-use App\Infrastructure\EventSubscriber\JwtAuthVersionSubscriber;
-use App\Infrastructure\Service\Token\AuthVersionStoreInterface;
+use App\Infrastructure\Adapter\Token\AuthVersionStoreInterface;
+use App\Infrastructure\Symfony\EventSubscriber\JwtAuthVersionSubscriber;
 use Lexik\Bundle\JWTAuthenticationBundle\Event\JWTDecodedEvent;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;

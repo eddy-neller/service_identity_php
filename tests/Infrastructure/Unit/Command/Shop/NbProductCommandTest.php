@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Tests\Infrastructure\Unit\Command\Shop;
 
-use App\Infrastructure\Command\Shop\NbProductCommand;
-use App\Infrastructure\Entity\Shop\Category;
-use App\Infrastructure\Entity\Shop\Product;
+use App\Infrastructure\Persistence\Doctrine\Shop\Catalog\CategoryEntity as Category;
+use App\Infrastructure\Persistence\Doctrine\Shop\Catalog\ProductEntity as Product;
 use App\Infrastructure\Persistence\Doctrine\Shop\ProductRepository;
+use App\Infrastructure\Symfony\Command\Shop\NbProductCommand;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\EntityRepository;
 use Doctrine\ORM\Mapping\ClassMetadata;

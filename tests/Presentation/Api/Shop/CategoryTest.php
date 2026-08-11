@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Tests\Presentation\Api\Shop;
 
-use App\Infrastructure\Entity\Shop\Category;
+use App\Infrastructure\Persistence\Doctrine\Shop\Catalog\CategoryEntity as Category;
 use App\Tests\Presentation\Api\BaseTest;
 use Faker\Factory;
 use Generator;

@@ -15,7 +15,7 @@ use App\Domain\User\ValueObject\Identity\UserId;
 use App\Domain\User\ValueObject\Identity\Username;
 use App\Domain\User\ValueObject\Profile\Preferences;
 use App\Domain\User\ValueObject\Security\HashedPassword;
-use App\Infrastructure\Entity\User\User;
+use App\Infrastructure\Persistence\Doctrine\User\UserEntity as User;
 use App\Presentation\User\ApiResource\UserResource;
 use App\Presentation\User\Presenter\UserResourcePresenter;
 use App\Presentation\User\State\Account\Me\UserMeProvider;

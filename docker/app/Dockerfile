@@ -25,7 +25,7 @@ RUN docker-php-ext-enable apcu xdebug amqp redis xml zip sockets opcache intl pd
 # Ajouter le php.ini modifié
 COPY docker/app/php-fpm/php.ini /usr/local/etc/php/php.ini
 COPY docker/app/cron/crontab /etc/crontab
-COPY --from=composer:2.9.2 /usr/bin/composer /usr/bin/composer
+COPY --from=composer:2.10.2 /usr/bin/composer /usr/bin/composer
 RUN composer --version
 
 # |--------------------------------------------------------------------------

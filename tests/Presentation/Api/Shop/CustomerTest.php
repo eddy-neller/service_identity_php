@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Tests\Presentation\Api\Shop;
 
 use App\Domain\Shop\Customer\ValueObject\CustomerStatus;
-use App\Infrastructure\Entity\Shop\Customer;
-use App\Infrastructure\Entity\User\User;
+use App\Infrastructure\Persistence\Doctrine\Shop\Customer\CustomerEntity as Customer;
+use App\Infrastructure\Persistence\Doctrine\User\UserEntity as User;
 use App\Tests\Presentation\Api\BaseTest;
 use Generator;
 use PHPUnit\Framework\Attributes\DataProvider;

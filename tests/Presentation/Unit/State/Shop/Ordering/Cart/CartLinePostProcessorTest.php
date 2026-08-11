@@ -7,6 +7,7 @@ namespace App\Tests\Presentation\Unit\State\Shop\Ordering\Cart;
 use ApiPlatform\Metadata\Operation;
 use App\Application\Shared\CQRS\Command\CommandBusInterface;
 use App\Application\Shared\CQRS\Query\QueryBusInterface;
+use App\Application\Shop\Port\ProductImageUrlResolverInterface;
 use App\Application\Shop\ReadModel\Customer\CurrentCustomerItem;
 use App\Application\Shop\ReadModel\Ordering\CartItem;
 use App\Application\Shop\UseCase\Command\Ordering\AddToCart\AddToCartCommand;
@@ -53,7 +54,7 @@ final class CartLinePostProcessorTest extends TestCase
         $processor = new CartLinePostProcessor(
             $this->commandBus,
             new CurrentCustomerResolver($this->queryBus, $security),
-            new CartResourcePresenter(),
+            $this->createCartResourcePresenter(),
         );
 
         $input = new CartLinePostInput();
@@ -98,7 +99,7 @@ final class CartLinePostProcessorTest extends TestCase
         $processor = new CartLinePostProcessor(
             $this->commandBus,
             new CurrentCustomerResolver($this->queryBus, $security),
-            new CartResourcePresenter(),
+            $this->createCartResourcePresenter(),
         );
 
         $this->commandBus->expects($this->never())->method('dispatch');
@@ -121,5 +122,10 @@ final class CartLinePostProcessorTest extends TestCase
             createdAt: null,
             updatedAt: null,
         );
+    }
+
+    private function createCartResourcePresenter(): CartResourcePresenter
+    {
+        return new CartResourcePresenter($this->createStub(ProductImageUrlResolverInterface::class));
     }
 }

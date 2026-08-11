@@ -9,7 +9,7 @@ use App\Domain\Shop\Catalog\Model\Category as DomainCategory;
 use App\Domain\Shop\Catalog\ValueObject\CategoryDescription;
 use App\Domain\Shop\Catalog\ValueObject\CategoryId;
 use App\Domain\Shop\Catalog\ValueObject\CategoryTitle;
-use App\Infrastructure\Entity\Shop\Category as DoctrineCategory;
+use App\Infrastructure\Persistence\Doctrine\Shop\Catalog\CategoryEntity as DoctrineCategory;
 use Ramsey\Uuid\Uuid;
 
 final readonly class CategoryMapper

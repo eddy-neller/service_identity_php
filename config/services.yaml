@@ -10,52 +10,66 @@ parameters:
 
 # config/services.yaml
 imports:
-    - { resource: 'services/*.yaml' }
+  - { resource: 'services/*.yaml' }
 
 services:
-    # default configuration for services in *this* file
+  # default configuration for services in *this* file
+  _defaults:
+    autowire: true      # Automatically injects dependencies in your services.
+    autoconfigure: true # Automatically registers your services as commands, event subscribers, etc.
+
+  _instanceof:
+    App\Application\Shared\CQRS\Command\CommandHandlerInterface:
+      tags:
+        - { name: "messenger.message_handler", bus: "command.bus", method: "handle" }
+    App\Application\Shared\CQRS\Query\QueryHandlerInterface:
+      tags:
+        - { name: "messenger.message_handler", bus: "query.bus", method: "handle" }
+
+  # makes classes in src/ available to be used as services
+  # this creates a service per class whose id is the fully-qualified class name
+  App\:
+    resource: "../src/"
+    exclude:
+      - '../src/Kernel.php'
+      - '../src/Infrastructure/Persistence/Doctrine/**/*Entity.php'
+      - '../src/Domain/'
+      - '../src/Application/User/ReadModel/'
+      - '../src/Application/User/UseCase/*/*/*/*Command.php'
+      - '../src/Application/User/UseCase/*/*/*/*Query.php'
+      - '../src/Presentation/User/ApiResource/'
+      - '../src/Presentation/User/Dto/'
+      - '../src/Infrastructure/Symfony/DataFixtures/'
+
+  App\Application\Shared\CQRS\Command\CommandBusInterface:
+    alias: App\Infrastructure\Symfony\Messenger\CQRS\MessengerCommandBus
+
+  App\Application\Shared\CQRS\Query\QueryBusInterface:
+    alias: App\Infrastructure\Symfony\Messenger\CQRS\MessengerQueryBus
+
+when@dev:
+  services:
     _defaults:
-        autowire: true      # Automatically injects dependencies in your services.
-        autoconfigure: true # Automatically registers your services as commands, event subscribers, etc.
+      autowire: true
+      autoconfigure: true
 
-    _instanceof:
-        App\Application\Shared\CQRS\Command\CommandHandlerInterface:
-            tags:
-                - { name: "messenger.message_handler", bus: "command.bus", method: "handle" }
-        App\Application\Shared\CQRS\Query\QueryHandlerInterface:
-            tags:
-                - { name: "messenger.message_handler", bus: "query.bus", method: "handle" }
-
-    # makes classes in src/ available to be used as services
-    # this creates a service per class whose id is the fully-qualified class name
-    App\:
-        resource: "../src/"
-        exclude:
-            - "../src/Entity"
-
-    App\Application\:
-        resource: "../src/Application/"
-
-    App\Infrastructure\:
-        resource: "../src/Infrastructure/"
-        exclude:
-            - "../src/Infrastructure/Entity"
-
-    App\Presentation\:
-        resource: "../src/Presentation/"
-        exclude:
-            - "../src/Presentation/**/ApiResource/"
-            - "../src/Presentation/**/Dto/"
-
-    App\Application\Shared\CQRS\Command\CommandBusInterface:
-        alias: App\Infrastructure\Messenger\CQRS\MessengerCommandBus
-
-    App\Application\Shared\CQRS\Query\QueryBusInterface:
-        alias: App\Infrastructure\Messenger\CQRS\MessengerQueryBus
+    # Enregistrees uniquement en dev : elles n'existent que pour peupler une base
+    # locale, et le groupe `dev` de `make fixtures` s'appuie sur ce meme decoupage.
+    App\Infrastructure\Symfony\DataFixtures\dev\:
+      resource: '../src/Infrastructure/Symfony/DataFixtures/dev/'
 
 when@test:
-    services:
-        # Purger bouchon référencé par api_platform.http_cache.invalidation.purger.
-        # Déclaration explicite : le bloc App\Infrastructure\ ne scanne que
-        # src/Infrastructure/, pas tests/Infrastructure/.
-        App\Tests\Infrastructure\Double\HttpCache\NullPurger: ~
+  services:
+    _defaults:
+      autowire: true
+      autoconfigure: true
+
+    # Enregistrees uniquement en test : le groupe `test` de `make fixtures`
+    # charge ces fixtures deterministes dans la base de donnees dediee.
+    App\Infrastructure\Symfony\DataFixtures\test\:
+      resource: '../src/Infrastructure/Symfony/DataFixtures/test/'
+
+    # Purger bouchon référencé par api_platform.http_cache.invalidation.purger.
+    # Déclaration explicite : le bloc App\Infrastructure\ ne scanne que
+    # src/Infrastructure/, pas tests/Infrastructure/.
+    App\Tests\Infrastructure\Double\HttpCache\NullPurger: ~

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Tests\Infrastructure\Unit\Service\Token;
 
-use App\Infrastructure\Security\JwtAuthenticatedUser;
+use App\Infrastructure\Symfony\Security\JwtAuthenticatedUser;
 use InvalidArgumentException;
 use PHPUnit\Framework\TestCase;
 

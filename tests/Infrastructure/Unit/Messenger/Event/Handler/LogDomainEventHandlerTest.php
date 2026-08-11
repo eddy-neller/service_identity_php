@@ -8,7 +8,7 @@ use App\Domain\User\Event\Lifecycle\ActivationEmailRequestedEvent;
 use App\Domain\User\Event\Lifecycle\UserRegisteredEvent;
 use App\Domain\User\ValueObject\Identity\EmailAddress;
 use App\Domain\User\ValueObject\Identity\UserId;
-use App\Infrastructure\Messenger\Event\Handler\LogDomainEventHandler;
+use App\Infrastructure\Symfony\Messenger\Event\Handler\LogDomainEventHandler;
 use DateTimeImmutable;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LoggerInterface;

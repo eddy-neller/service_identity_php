@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Tests\Infrastructure\Integration\Persistence\Shop;
 
-use App\Infrastructure\Entity\Shop\Category;
+use App\Infrastructure\Persistence\Doctrine\Shop\Catalog\CategoryEntity as Category;
 use App\Infrastructure\Persistence\Doctrine\Shop\ProductRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;

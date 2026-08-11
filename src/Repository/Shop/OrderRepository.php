@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Repository\Shop;
 
 use App\Entity\Shop\Order;
-use App\Infrastructure\Entity\User\User;
+use App\Infrastructure\Persistence\Doctrine\User\UserEntity as User;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Common\Collections\Criteria;
 use Doctrine\Persistence\ManagerRegistry;

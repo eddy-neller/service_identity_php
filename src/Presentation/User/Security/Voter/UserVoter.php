@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Presentation\User\Security\Voter;
 
 use App\Domain\User\ValueObject\Access\RoleSet;
-use App\Infrastructure\Entity\User\User;
+use App\Infrastructure\Persistence\Doctrine\User\UserEntity as User;
 use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
 use Symfony\Component\Security\Core\Authorization\Voter\Vote;

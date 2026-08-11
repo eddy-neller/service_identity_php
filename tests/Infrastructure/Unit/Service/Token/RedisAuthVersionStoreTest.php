@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Tests\Infrastructure\Unit\Service\Token;
 
-use App\Infrastructure\Service\Token\RedisAuthVersionStore;
+use App\Infrastructure\Adapter\Token\RedisAuthVersionStore;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Cache\Adapter\ArrayAdapter;
 

@@ -14,7 +14,7 @@ use ApiPlatform\Metadata\Post;
 use ApiPlatform\OpenApi\Model;
 use ApiPlatform\OpenApi\Model\RequestBody;
 use App\Domain\User\ValueObject\Access\RoleSet;
-use App\Infrastructure\Entity\User\User;
+use App\Infrastructure\Persistence\Doctrine\User\UserEntity as User;
 use App\Presentation\RouteRequirements;
 use App\Presentation\User\ApiResource\UserResource;
 use App\Presentation\User\Dto\UserManagement\UserAvatarInput;

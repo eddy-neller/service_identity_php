@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Tests\Infrastructure\Unit\Service\Encoder;
 
-use App\Infrastructure\Service\Encoder\MultipartDecoder;
+use App\Infrastructure\ApiPlatform\Encoder\MultipartDecoder;
 use PHPUnit\Framework\MockObject\Stub;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\HttpFoundation\Request;

@@ -43,6 +43,9 @@
         <testsuite name="infra.command">
             <directory>tests/Infrastructure/Unit/Command</directory>
         </testsuite>
+        <testsuite name="infra.api_platform">
+            <directory>tests/Infrastructure/Unit/ApiPlatform</directory>
+        </testsuite>
         <testsuite name="infra.cqrs">
             <directory>tests/Infrastructure/Integration/CQRS</directory>
         </testsuite>
@@ -122,7 +125,7 @@
         <exclude>
             <directory>src/Application/Shared</directory>
             <directory>src/Infrastructure/DataFixtures</directory>
-            <directory>src/Infrastructure/Entity</directory>
+            <directory suffix="Entity.php">src/Infrastructure/Persistence/Doctrine</directory>
             <directory>src/Infrastructure/EventListener</directory>
             <directory>src/Infrastructure/EventSubscriber</directory>
             <directory>src/Infrastructure/OpenApi</directory>

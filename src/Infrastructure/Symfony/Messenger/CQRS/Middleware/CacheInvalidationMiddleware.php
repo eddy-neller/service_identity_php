@@ -1,0 +1,61 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Infrastructure\Symfony\Messenger\CQRS\Middleware;
+
+use App\Domain\SharedKernel\Event\DomainEventInterface;
+use App\Infrastructure\Adapter\Cache\DomainEventCacheTags;
+use App\Infrastructure\Adapter\Cache\QueryCacheInterface;
+use App\Infrastructure\Symfony\Messenger\Event\PublishedDomainEventCollector;
+use Symfony\Component\Messenger\Envelope;
+use Symfony\Component\Messenger\Middleware\MiddlewareInterface;
+use Symfony\Component\Messenger\Middleware\StackInterface;
+
+/**
+ * Purge le cache des queries touchées par une commande, dès son retour.
+ *
+ * Placé autour du handler, il s'exécute donc **après** le `transactional()` de celui-ci :
+ * le commit est acquis quand les tags sont invalidés. Une invalidation avant commit serait
+ * pire que tardive — un lecteur concurrent recacherait l'état d'avant l'écriture.
+ */
+final readonly class CacheInvalidationMiddleware implements MiddlewareInterface
+{
+    public function __construct(
+        private PublishedDomainEventCollector $collector,
+        private DomainEventCacheTags $cacheTags,
+        private QueryCacheInterface $cache,
+    ) {
+    }
+
+    public function handle(Envelope $envelope, StackInterface $stack): Envelope
+    {
+        try {
+            return $stack->next()->handle($envelope, $stack);
+        } finally {
+            // Sur échec, la commande a pu committer une partie de son travail avant de lever :
+            // on purge quand même, et on vide le collecteur dans tous les cas.
+            $this->invalidate($this->collector->release());
+        }
+    }
+
+    /**
+     * @param list<DomainEventInterface> $events
+     */
+    private function invalidate(array $events): void
+    {
+        $tags = [];
+
+        foreach ($events as $event) {
+            foreach ($this->cacheTags->forEvent($event) as $tag) {
+                $tags[$tag] = true;
+            }
+        }
+
+        if ([] === $tags) {
+            return;
+        }
+
+        $this->cache->invalidateTags(array_keys($tags));
+    }
+}

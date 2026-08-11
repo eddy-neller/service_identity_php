@@ -5,14 +5,14 @@ framework:
     buses:
       command.bus:
         middleware:
-          - App\Infrastructure\Messenger\CQRS\Middleware\CommandLoggingMiddleware
-          - App\Infrastructure\Messenger\CQRS\Middleware\UnwrapHandlerFailedExceptionMiddleware
-          - App\Infrastructure\Messenger\CQRS\Middleware\CacheInvalidationMiddleware
+          - App\Infrastructure\Symfony\Messenger\CQRS\Middleware\CommandLoggingMiddleware
+          - App\Infrastructure\Symfony\Messenger\CQRS\Middleware\UnwrapHandlerFailedExceptionMiddleware
+          - App\Infrastructure\Symfony\Messenger\CQRS\Middleware\CacheInvalidationMiddleware
       query.bus:
         middleware:
-          - App\Infrastructure\Messenger\CQRS\Middleware\QueryLoggingMiddleware
-          - App\Infrastructure\Messenger\CQRS\Middleware\UnwrapHandlerFailedExceptionMiddleware
-          - App\Infrastructure\Messenger\CQRS\Middleware\QueryCacheMiddleware
+          - App\Infrastructure\Symfony\Messenger\CQRS\Middleware\QueryLoggingMiddleware
+          - App\Infrastructure\Symfony\Messenger\CQRS\Middleware\UnwrapHandlerFailedExceptionMiddleware
+          - App\Infrastructure\Symfony\Messenger\CQRS\Middleware\QueryCacheMiddleware
       event.bus:
         default_middleware:
           allow_no_handlers: true

@@ -7,7 +7,7 @@ namespace App\Tests\Presentation\Unit\State\User\Account\Me;
 use ApiPlatform\Metadata\Operation;
 use App\Application\Shared\CQRS\Command\CommandBusInterface;
 use App\Application\User\UseCase\Command\Account\UpdatePassword\UpdatePasswordCommand;
-use App\Infrastructure\Entity\User\User;
+use App\Infrastructure\Persistence\Doctrine\User\UserEntity as User;
 use App\Presentation\Shared\State\PresentationErrorCode;
 use App\Presentation\User\Dto\Account\Me\UserMePasswordUpdateInput;
 use App\Presentation\User\State\Account\Me\UserMePasswordUpdateProcessor;

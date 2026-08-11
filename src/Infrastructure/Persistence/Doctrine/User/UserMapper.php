@@ -14,7 +14,7 @@ use App\Domain\User\ValueObject\Profile\Firstname;
 use App\Domain\User\ValueObject\Profile\Lastname;
 use App\Domain\User\ValueObject\Profile\Preferences;
 use App\Domain\User\ValueObject\Security\HashedPassword;
-use App\Infrastructure\Entity\User\User as DoctrineUser;
+use App\Infrastructure\Persistence\Doctrine\User\UserEntity as DoctrineUser;
 use Ramsey\Uuid\Uuid;
 
 final class UserMapper

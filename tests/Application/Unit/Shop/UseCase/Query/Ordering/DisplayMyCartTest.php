@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Tests\Application\Unit\Shop\UseCase\Query\Ordering;
 
 use App\Application\Shop\Port\CartRepositoryInterface;
-use App\Application\Shop\Port\ProductImageUrlResolverInterface;
 use App\Application\Shop\Port\ProductRepositoryInterface;
 use App\Application\Shop\ReadModel\Ordering\CartItem;
 use App\Application\Shop\Service\CartItemFactory;
@@ -34,13 +33,9 @@ final class DisplayMyCartTest extends TestCase
     {
         $this->repository = $this->createMock(CartRepositoryInterface::class);
         $this->productRepository = $this->createMock(ProductRepositoryInterface::class);
-        $imageResolver = $this->createMock(ProductImageUrlResolverInterface::class);
-
-        $imageResolver->expects($this->never())->method('resolve');
-
         $this->handler = new DisplayMyCartQueryHandler(
             $this->repository,
-            new CartItemFactory($this->productRepository, $imageResolver),
+            new CartItemFactory($this->productRepository),
         );
     }
 

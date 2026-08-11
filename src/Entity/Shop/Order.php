@@ -12,7 +12,7 @@ use ApiPlatform\Metadata\GetCollection;
 use ApiPlatform\Metadata\Patch;
 use ApiPlatform\OpenApi\Model;
 use App\Domain\User\ValueObject\Access\RoleSet;
-use App\Infrastructure\Entity\User\User;
+use App\Infrastructure\Persistence\Doctrine\User\UserEntity as User;
 use App\Presentation\RouteRequirements;
 use App\Presentation\Shared\State\PaginatedCollectionProvider;
 use App\Repository\Shop\OrderRepository;

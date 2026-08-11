@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Tests\Presentation\Api\Shop;
 
-use App\Infrastructure\Entity\Shop\Address;
-use App\Infrastructure\Entity\Shop\Customer;
-use App\Infrastructure\Entity\User\User;
+use App\Infrastructure\Persistence\Doctrine\Shop\Customer\AddressEntity as Address;
+use App\Infrastructure\Persistence\Doctrine\Shop\Customer\CustomerEntity as Customer;
+use App\Infrastructure\Persistence\Doctrine\User\UserEntity as User;
 use App\Tests\Presentation\Api\BaseTest;
 use DateTimeImmutable;
 use Faker\Factory;

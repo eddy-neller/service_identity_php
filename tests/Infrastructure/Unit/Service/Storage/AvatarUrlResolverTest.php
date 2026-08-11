@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Tests\Infrastructure\Unit\Service\Storage;
 
-use App\Infrastructure\Service\Storage\AvatarUrlResolver;
+use App\Infrastructure\Adapter\Storage\AvatarUrlResolver;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBag;
 

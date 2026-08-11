@@ -6,9 +6,9 @@ namespace App\Tests\Presentation\Api\User;
 
 use App\Domain\User\ValueObject\Access\RoleSet;
 use App\Domain\User\ValueObject\Lifecycle\UserStatus;
-use App\Infrastructure\DataFixtures\test\User\UserFixtures;
-use App\Infrastructure\Entity\User\User;
-use App\Infrastructure\Service\Token\TokenProvider;
+use App\Infrastructure\Adapter\Token\TokenProvider;
+use App\Infrastructure\Persistence\Doctrine\User\UserEntity as User;
+use App\Infrastructure\Symfony\DataFixtures\test\User\UserFixtures;
 use App\Tests\Presentation\Api\BaseTest;
 use Faker\Factory;
 use Generator;

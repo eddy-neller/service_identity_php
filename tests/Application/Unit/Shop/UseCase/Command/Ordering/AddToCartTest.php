@@ -7,7 +7,6 @@ namespace App\Tests\Application\Unit\Shop\UseCase\Command\Ordering;
 use App\Application\Shared\Port\ClockInterface;
 use App\Application\Shared\Port\TransactionalInterface;
 use App\Application\Shop\Port\CartRepositoryInterface;
-use App\Application\Shop\Port\ProductImageUrlResolverInterface;
 use App\Application\Shop\Port\ProductRepositoryInterface;
 use App\Application\Shop\ReadModel\Ordering\CartItem;
 use App\Application\Shop\Service\CartItemFactory;
@@ -57,16 +56,13 @@ final class AddToCartTest extends TestCase
     {
         $this->cartRepository = $this->createMock(CartRepositoryInterface::class);
         $this->productRepository = $this->createMock(ProductRepositoryInterface::class);
-        $imageResolver = $this->createMock(ProductImageUrlResolverInterface::class);
         $this->clock = $this->createMock(ClockInterface::class);
         $this->transactional = $this->createMock(TransactionalInterface::class);
-
-        $imageResolver->expects($this->never())->method('resolve');
 
         $this->handler = new AddToCartCommandHandler(
             $this->cartRepository,
             $this->productRepository,
-            new CartItemFactory($this->productRepository, $imageResolver),
+            new CartItemFactory($this->productRepository),
             $this->clock,
             $this->transactional,
         );

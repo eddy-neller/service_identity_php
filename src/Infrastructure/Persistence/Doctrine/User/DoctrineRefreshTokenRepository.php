@@ -9,8 +9,8 @@ use App\Domain\User\Model\RefreshToken;
 use App\Domain\User\ValueObject\Identity\UserId;
 use App\Domain\User\ValueObject\Security\RefreshTokenHash;
 use App\Domain\User\ValueObject\Security\RefreshTokenId;
-use App\Infrastructure\Entity\User\RefreshToken as DoctrineRefreshToken;
-use App\Infrastructure\Service\Uuid\UuidGeneratorInterface;
+use App\Infrastructure\Adapter\Uuid\UuidGeneratorInterface;
+use App\Infrastructure\Persistence\Doctrine\User\RefreshTokenEntity as DoctrineRefreshToken;
 use Doctrine\DBAL\LockMode;
 use Doctrine\ORM\EntityManagerInterface;
 

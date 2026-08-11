@@ -47,7 +47,7 @@ reste dans `src/Infrastructure/`, à côté de son implémentation.
 | `Service\Cache\QueryCacheInterface` | `SymfonyTagAwareQueryCache` | `QueryCacheMiddleware`, `UserCacheInvalidationListener` |
 | `Service\Uuid\UuidGeneratorInterface` | `RamseyUuidGenerator` | repositories Doctrine |
 | `Service\Token\AuthVersionStoreInterface` | `RedisAuthVersionStore` | `JwtAuthVersionSubscriber`, `LexikJwtAccessTokenProvider` |
-| `Notification\User\UserNotifierInterface` | `UserNotifier` | handlers `Messenger\Event\Handler\User` |
+| `Symfony\Service\Notification\User\UserNotifierInterface` | `UserNotifier` | handlers `Symfony\Messenger\Event\Handler\User` |
 | `Messenger\Event\DomainEventLedgerInterface` | `DoctrineDomainEventLedger` | handlers `Messenger\Event\Handler` |
 
 > Avant de créer une interface dans `src/Application/…/Port`, vérifier qu'elle est bien injectée par un
@@ -94,6 +94,14 @@ pas à cette coordination entre workers ou conteneurs.
 ## Mapping Domain ↔ Persistence
 
 - Entités Doctrine **≠** entités Domain.
+- Les entités Doctrine vivent dans `src/Infrastructure/Persistence/Doctrine/<Contexte>/...`, à côté de
+  leurs repositories et mappers, et leur nom se termine obligatoirement par `Entity`
+  (`UserEntity`, `ProductEntity`, etc.).
+- Elles sont exclues de l'autowiring et de l'autoconfiguration par le glob
+  `src/Infrastructure/Persistence/Doctrine/**/*Entity.php` dans `config/services.yaml` : ne pas les
+  enregistrer comme services.
+- Le mapping Doctrine couvre `src/Infrastructure/Persistence/Doctrine` avec le préfixe
+  `App\Infrastructure\Persistence\Doctrine` ; il ne retient que les classes portant des attributs ORM.
 - Mappers dédiés :
   - `UserMapper::toDomain(DoctrineUser $entity): DomainUser`,
   - `UserMapper::toDoctrine(DomainUser $user, ?DoctrineUser $entity): DoctrineUser`.

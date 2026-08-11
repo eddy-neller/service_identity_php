@@ -15,7 +15,7 @@ use ApiPlatform\Metadata\GetCollection;
 use ApiPlatform\Metadata\Patch;
 use ApiPlatform\Metadata\Post;
 use ApiPlatform\OpenApi\Model;
-use App\Infrastructure\Entity\Shop\Address;
+use App\Infrastructure\Persistence\Doctrine\Shop\Customer\AddressEntity as Address;
 use App\Presentation\RouteRequirements;
 use App\Presentation\Shop\Dto\Customer\Address\AddressPatchInput;
 use App\Presentation\Shop\Dto\Customer\Address\AddressPostInput;

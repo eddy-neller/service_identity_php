@@ -1,31 +1,31 @@
 {
-    "name": "en-shop/api",
+    "name": "en-shop/service-identity",
+    "description": "E.N Shop Service Identity",
     "type": "project",
     "license": "proprietary",
-    "description": "E.N Shop API",
     "minimum-stability": "stable",
     "prefer-stable": true,
     "require": {
-        "php": ">=8.2",
+        "php": ">=8.4",
         "ext-ctype": "*",
         "ext-iconv": "*",
         "api-platform/doctrine-orm": "^4.3.17",
         "api-platform/symfony": "^4.3.17",
         "doctrine/dbal": "^4.4.4",
-        "doctrine/doctrine-bundle": ">=3.3.1",
+        "doctrine/doctrine-bundle": "^3.3.1",
         "doctrine/doctrine-migrations-bundle": "^4",
         "doctrine/orm": "^3.6.7",
-        "lexik/jwt-authentication-bundle": ">=3.2.0",
-        "nelmio/cors-bundle": ">=2.6.1",
+        "lexik/jwt-authentication-bundle": "^3.2.0",
+        "nelmio/cors-bundle": "^2.6.1",
         "paragonie/halite": "^5.1.4",
-        "ramsey/uuid": ">=4.9.3",
-        "ramsey/uuid-doctrine": ">=2.1",
+        "ramsey/uuid": "^4.9.3",
+        "ramsey/uuid-doctrine": "^2.1",
         "scienta/doctrine-json-functions": "^6.5",
-        "stof/doctrine-extensions-bundle": ">=1.15.3",
-        "stripe/stripe-php": ">=19",
+        "stof/doctrine-extensions-bundle": "^1.15.3",
+        "stripe/stripe-php": "^21.2",
         "symfony/amqp-messenger": "7.4.*",
         "symfony/asset": "7.4.*",
-        "symfony/browser-kit": "7.4.*",
+        "symfony/clock": "7.4.*",
         "symfony/console": "7.4.*",
         "symfony/doctrine-messenger": "7.4.*",
         "symfony/dotenv": "7.4.*",
@@ -36,7 +36,8 @@
         "symfony/lock": "7.4.*",
         "symfony/mailer": "7.4.*",
         "symfony/messenger": "7.4.*",
-        "symfony/monolog-bundle": ">=4.0.2",
+        "symfony/monolog-bundle": "^4.0.2",
+        "symfony/mime": "7.4.*",
         "symfony/property-access": "7.4.*",
         "symfony/property-info": "7.4.*",
         "symfony/rate-limiter": "7.4.*",
@@ -49,7 +50,7 @@
         "symfony/yaml": "7.4.*",
         "twig/cssinliner-extra": "^3.26",
         "twig/extra-bundle": "^3.24.0",
-        "vich/uploader-bundle": ">=2.9.4"
+        "vich/uploader-bundle": "^2.9.4"
     },
     "require-dev": {
         "dama/doctrine-test-bundle": ">=8.6.0",
@@ -66,14 +67,12 @@
         "rector/rector": "^2.6.0",
         "roave/security-advisories": "dev-latest",
         "squizlabs/php_codesniffer": "^4.0.1",
+        "symfony/browser-kit": "7.4.*",
         "symfony/debug-bundle": "7.4.*",
         "symfony/maker-bundle": "^1.67.0",
         "symfony/web-profiler-bundle": "7.4.*"
     },
     "config": {
-        "preferred-install": {
-            "*": "dist"
-        },
         "allow-plugins": {
             "php-http/discovery": true,
             "symfony/flex": true,
@@ -81,7 +80,6 @@
             "phpstan/extension-installer": true,
             "phpro/grumphp": true
         },
-        "bump-after-update": true,
         "sort-packages": true
     },
     "autoload": {
@@ -93,16 +91,6 @@
         "psr-4": {
             "App\\Tests\\": "tests/"
         }
-    },
-    "replace": {
-        "symfony/polyfill-ctype": "*",
-        "symfony/polyfill-iconv": "*",
-        "symfony/polyfill-php72": "*",
-        "symfony/polyfill-php73": "*",
-        "symfony/polyfill-php74": "*",
-        "symfony/polyfill-php80": "*",
-        "symfony/polyfill-php81": "*",
-        "symfony/polyfill-php82": "*"
     },
     "scripts": {
         "auto-scripts": {

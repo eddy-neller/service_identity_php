@@ -13,7 +13,7 @@ use App\Domain\Shop\Catalog\ValueObject\ProductImage;
 use App\Domain\Shop\Catalog\ValueObject\ProductSubtitle;
 use App\Domain\Shop\Catalog\ValueObject\ProductTitle;
 use App\Domain\Shop\Shared\ValueObject\Money;
-use App\Infrastructure\Entity\Shop\Product as DoctrineProduct;
+use App\Infrastructure\Persistence\Doctrine\Shop\Catalog\ProductEntity as DoctrineProduct;
 use Ramsey\Uuid\Uuid;
 
 final readonly class ProductMapper

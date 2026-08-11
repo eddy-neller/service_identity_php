@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Tests\Infrastructure\Unit\Command\User;
 
-use App\Infrastructure\Command\User\GenerateUserImagesCommand;
-use App\Infrastructure\Entity\User\User;
+use App\Infrastructure\Persistence\Doctrine\User\UserEntity as User;
 use App\Infrastructure\Persistence\Doctrine\User\UserRepository;
-use App\Infrastructure\Service\Media\CustomImageProvider;
+use App\Infrastructure\Symfony\Command\User\GenerateUserImagesCommand;
+use App\Infrastructure\Symfony\Service\Media\CustomImageProvider;
 use Doctrine\ORM\EntityManagerInterface;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;

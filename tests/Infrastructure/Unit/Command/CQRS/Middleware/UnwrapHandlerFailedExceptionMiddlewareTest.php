@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Tests\Infrastructure\Unit\Command\CQRS\Middleware;
 
-use App\Infrastructure\Messenger\CQRS\Middleware\UnwrapHandlerFailedExceptionMiddleware;
+use App\Infrastructure\Symfony\Messenger\CQRS\Middleware\UnwrapHandlerFailedExceptionMiddleware;
 use PHPUnit\Framework\TestCase;
 use RuntimeException;
 use stdClass;

@@ -8,7 +8,7 @@ use App\Domain\Shop\Customer\Model\Customer as DomainCustomer;
 use App\Domain\Shop\Customer\ValueObject\CustomerId;
 use App\Domain\Shop\Customer\ValueObject\CustomerStatus;
 use App\Domain\Shop\Customer\ValueObject\UserAccountId;
-use App\Infrastructure\Entity\Shop\Customer as DoctrineCustomer;
+use App\Infrastructure\Persistence\Doctrine\Shop\Customer\CustomerEntity as DoctrineCustomer;
 use Ramsey\Uuid\Uuid;
 
 final readonly class CustomerMapper

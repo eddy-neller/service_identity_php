@@ -7,7 +7,7 @@ namespace App\Tests\Presentation\Unit\State\User\Auth;
 use ApiPlatform\Metadata\Operation;
 use App\Application\Shared\CQRS\Command\CommandBusInterface;
 use App\Application\User\UseCase\Command\Auth\Logout\LogoutCommand;
-use App\Infrastructure\Entity\User\User;
+use App\Infrastructure\Persistence\Doctrine\User\UserEntity as User;
 use App\Presentation\User\Dto\Auth\LogoutInput;
 use App\Presentation\User\State\Auth\LogoutProcessor;
 use PHPUnit\Framework\TestCase;

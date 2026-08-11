@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Tests\Infrastructure\Unit\Service\Token;
 
 use App\Domain\User\ValueObject\Identity\EmailAddress;
-use App\Infrastructure\Service\Token\TokenProvider;
+use App\Infrastructure\Adapter\Token\TokenProvider;
 use PHPUnit\Framework\TestCase;
 
 final class TokenProviderTest extends TestCase

@@ -11,7 +11,7 @@ use App\Domain\Shop\Ordering\Model\CartLine as DomainCartLine;
 use App\Domain\Shop\Ordering\ValueObject\CartId;
 use App\Domain\Shop\Ordering\ValueObject\CartLineId;
 use App\Domain\Shop\Ordering\ValueObject\CartLineQuantity;
-use App\Infrastructure\Entity\Shop\Cart as DoctrineCart;
+use App\Infrastructure\Persistence\Doctrine\Shop\Ordering\CartEntity as DoctrineCart;
 
 final readonly class CartMapper
 {

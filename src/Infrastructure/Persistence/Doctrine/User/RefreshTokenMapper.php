@@ -8,7 +8,7 @@ use App\Domain\User\Model\RefreshToken as DomainRefreshToken;
 use App\Domain\User\ValueObject\Identity\UserId;
 use App\Domain\User\ValueObject\Security\RefreshTokenHash;
 use App\Domain\User\ValueObject\Security\RefreshTokenId;
-use App\Infrastructure\Entity\User\RefreshToken as DoctrineRefreshToken;
+use App\Infrastructure\Persistence\Doctrine\User\RefreshTokenEntity as DoctrineRefreshToken;
 use Ramsey\Uuid\Uuid;
 
 final class RefreshTokenMapper

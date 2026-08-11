@@ -1,4 +1,4 @@
-image: registry.gitlab.com/en-shop/api:php8.4
+image: registry.gitlab.com/en-shop/back-php/serv-identity:php8.4
 
 stages:
   - test

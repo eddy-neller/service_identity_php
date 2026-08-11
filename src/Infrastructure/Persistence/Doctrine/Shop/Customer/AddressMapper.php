@@ -7,7 +7,7 @@ namespace App\Infrastructure\Persistence\Doctrine\Shop\Customer;
 use App\Domain\Shop\Customer\Model\Address as DomainAddress;
 use App\Domain\Shop\Customer\ValueObject\AddressId;
 use App\Domain\Shop\Customer\ValueObject\CustomerId;
-use App\Infrastructure\Entity\Shop\Address as DoctrineAddress;
+use App\Infrastructure\Persistence\Doctrine\Shop\Customer\AddressEntity as DoctrineAddress;
 use Ramsey\Uuid\Uuid;
 
 final readonly class AddressMapper

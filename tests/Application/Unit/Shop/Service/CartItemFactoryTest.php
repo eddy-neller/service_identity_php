@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Tests\Application\Unit\Shop\Service;
 
-use App\Application\Shop\Port\ProductImageUrlResolverInterface;
 use App\Application\Shop\Port\ProductRepositoryInterface;
 use App\Application\Shop\ReadModel\Ordering\CartItem;
 use App\Application\Shop\Service\CartItemFactory;
@@ -45,23 +44,18 @@ final class CartItemFactoryTest extends TestCase
 
     private ProductRepositoryInterface&MockObject $productRepository;
 
-    private ProductImageUrlResolverInterface&MockObject $imageResolver;
-
     private CartItemFactory $factory;
 
     protected function setUp(): void
     {
         $this->productRepository = $this->createMock(ProductRepositoryInterface::class);
-        $this->imageResolver = $this->createMock(ProductImageUrlResolverInterface::class);
 
-        $this->factory = new CartItemFactory($this->productRepository, $this->imageResolver);
+        $this->factory = new CartItemFactory($this->productRepository);
     }
 
     public function testCreateReturnsEmptyCartItemWhenCartIsNull(): void
     {
         $this->productRepository->expects($this->never())->method('findByIds');
-        $this->imageResolver->expects($this->never())->method('resolve');
-
         $cartItem = $this->factory->create(null);
 
         $this->assertNull($cartItem->id);
@@ -96,13 +90,6 @@ final class CartItemFactoryTest extends TestCase
             ->method('findByIds')
             ->willReturn([$productA, $productB]);
 
-        $this->imageResolver->expects($this->exactly(2))
-            ->method('resolve')
-            ->willReturnMap([
-                ['mug.jpg', 'https://cdn.test/mug.jpg'],
-                [null, null],
-            ]);
-
         $cartItem = $this->factory->create($cart);
 
         $this->assertInstanceOf(CartItem::class, $cartItem);
@@ -121,14 +108,14 @@ final class CartItemFactoryTest extends TestCase
         $this->assertSame(self::PRODUCT_ID_A, $first->productId);
         $this->assertSame('Coffee Mug', $first->productTitle);
         $this->assertSame('mug', $first->productSlug);
-        $this->assertSame('https://cdn.test/mug.jpg', $first->imageUrl);
+        $this->assertSame('mug.jpg', $first->image);
         $this->assertEqualsWithDelta(12.50, $first->unitPrice, PHP_FLOAT_EPSILON);
         $this->assertSame(2, $first->quantity);
         $this->assertEqualsWithDelta(25.0, $first->lineTotal, PHP_FLOAT_EPSILON);
 
         $second = $cartItem->items[1];
         $this->assertSame(self::PRODUCT_ID_B, $second->productId);
-        $this->assertNull($second->imageUrl);
+        $this->assertNull($second->image);
         $this->assertEqualsWithDelta(60.0, $second->lineTotal, PHP_FLOAT_EPSILON);
     }
 
@@ -152,11 +139,6 @@ final class CartItemFactoryTest extends TestCase
             ->method('findByIds')
             ->willReturn([$productA]);
 
-        $this->imageResolver->expects($this->once())
-            ->method('resolve')
-            ->with('mug.jpg')
-            ->willReturn('https://cdn.test/mug.jpg');
-
         $cartItem = $this->factory->create($cart);
 
         $this->assertCount(1, $cartItem->items);
@@ -179,8 +161,6 @@ final class CartItemFactoryTest extends TestCase
             ->method('findByIds')
             ->with([])
             ->willReturn([]);
-
-        $this->imageResolver->expects($this->never())->method('resolve');
 
         $cartItem = $this->factory->create($cart);
 

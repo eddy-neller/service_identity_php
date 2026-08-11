@@ -6,9 +6,9 @@ namespace App\Tests\Infrastructure\Unit\Command\CQRS;
 
 use App\Application\Shared\CQRS\Command\CommandInterface;
 use App\Application\Shared\CQRS\Query\QueryInterface;
-use App\Infrastructure\Messenger\CQRS\HandledResultExtractor;
-use App\Infrastructure\Messenger\CQRS\MessengerCommandBus;
-use App\Infrastructure\Messenger\CQRS\MessengerQueryBus;
+use App\Infrastructure\Symfony\Messenger\CQRS\HandledResultExtractor;
+use App\Infrastructure\Symfony\Messenger\CQRS\MessengerCommandBus;
+use App\Infrastructure\Symfony\Messenger\CQRS\MessengerQueryBus;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Messenger\Envelope;
 use Symfony\Component\Messenger\MessageBusInterface;

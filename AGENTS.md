@@ -127,6 +127,7 @@ Lancer la suite correspondante **avant chaque livraison** si le périmètre est 
 | `src/Application/**/User/UseCase` | `appli.user` |
 | `src/Application/**/Shop/UseCase` + `Shared` | `appli.shop` |
 | `src/Infrastructure/**/Persistence` (Doctrine réel) | `infra.persist` |
+| `src/Infrastructure/ApiPlatform` | `infra.api_platform` |
 | `src/Infrastructure/**/Messenger/Event` | `infra.messenger.event` |
 | outbox / atomicité (Doctrine réel) | `infra.outbox` |
 | câblage Messenger / bus CQRS (conteneur réel) | `infra.cqrs` |
@@ -163,6 +164,8 @@ Lancer la suite correspondante **avant chaque livraison** si le périmètre est 
 ## Git & PR workflow
 
 - Branches : `main` (stable), `feat/*`, `fix/*`, `chore/*`.
+- La branche `main` est protégée : avant tout commit local, créer et utiliser une branche
+  dédiée (`feat/*`, `fix/*` ou `chore/*`) adaptée au périmètre.
 - Commits : sujet impératif ≤ 70 chars (« Add … », « Fix … », « Refactor … »). Body pour contexte, breaking changes, décisions d'architecture.
 - Ne jamais committer de secrets (`.env`, `makefile.conf`, secrets CI). `.env.test` = valeurs par défaut test uniquement.
 - `.env` est l’unique configuration locale, ignorée par Git ; `.env.dist` est son modèle complet et versionné.

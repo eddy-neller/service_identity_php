@@ -11,7 +11,7 @@ final readonly class CartLineItem
         public string $productId,
         public string $productTitle,
         public string $productSlug,
-        public ?string $imageUrl,
+        public ?string $image,
         public float $unitPrice,
         public int $quantity,
         public float $lineTotal,

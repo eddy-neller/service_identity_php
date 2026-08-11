@@ -2,7 +2,6 @@ FROM nginx:1-alpine
 
 WORKDIR /var/www
 
-# Copy the whole repository (build context must be the repo root)
 COPY . /var/www
 
 # Copy global nginx configuration and virtual hosts

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Infrastructure\Persistence\Doctrine\Shop;
 
-use App\Infrastructure\Entity\Shop\Product;
+use App\Infrastructure\Persistence\Doctrine\Shop\Catalog\ProductEntity as Product;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 

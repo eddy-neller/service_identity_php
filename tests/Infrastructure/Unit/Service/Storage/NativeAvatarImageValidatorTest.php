@@ -6,7 +6,7 @@ namespace App\Tests\Infrastructure\Unit\Service\Storage;
 
 use App\Application\Shared\Port\FileInterface;
 use App\Domain\User\Exception\Profile\InvalidAvatarException;
-use App\Infrastructure\Service\Storage\NativeAvatarImageValidator;
+use App\Infrastructure\Adapter\Storage\NativeAvatarImageValidator;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBag;
 

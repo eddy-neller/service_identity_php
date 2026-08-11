@@ -7,6 +7,7 @@ namespace App\Tests\Presentation\Unit\State\Shop\Ordering\Cart;
 use ApiPlatform\Metadata\Operation;
 use App\Application\Shared\CQRS\Command\CommandBusInterface;
 use App\Application\Shared\CQRS\Query\QueryBusInterface;
+use App\Application\Shop\Port\ProductImageUrlResolverInterface;
 use App\Application\Shop\ReadModel\Customer\CurrentCustomerItem;
 use App\Application\Shop\ReadModel\Ordering\CartItem;
 use App\Application\Shop\UseCase\Command\Ordering\UpdateCartLine\UpdateCartLineCommand;
@@ -53,7 +54,7 @@ final class CartLinePatchProcessorTest extends TestCase
         $processor = new CartLinePatchProcessor(
             $this->commandBus,
             new CurrentCustomerResolver($this->queryBus, $security),
-            new CartResourcePresenter(),
+            $this->createCartResourcePresenter(),
         );
 
         $input = new CartLinePatchInput();
@@ -101,7 +102,7 @@ final class CartLinePatchProcessorTest extends TestCase
         $processor = new CartLinePatchProcessor(
             $this->commandBus,
             new CurrentCustomerResolver($this->queryBus, $security),
-            new CartResourcePresenter(),
+            $this->createCartResourcePresenter(),
         );
 
         $this->commandBus->expects($this->never())->method('dispatch');
@@ -121,7 +122,7 @@ final class CartLinePatchProcessorTest extends TestCase
         $processor = new CartLinePatchProcessor(
             $this->commandBus,
             new CurrentCustomerResolver($this->queryBus, $security),
-            new CartResourcePresenter(),
+            $this->createCartResourcePresenter(),
         );
 
         $input = new CartLinePatchInput();
@@ -144,7 +145,7 @@ final class CartLinePatchProcessorTest extends TestCase
         $processor = new CartLinePatchProcessor(
             $this->commandBus,
             new CurrentCustomerResolver($this->queryBus, $security),
-            new CartResourcePresenter(),
+            $this->createCartResourcePresenter(),
         );
 
         $input = new CartLinePatchInput();
@@ -170,5 +171,10 @@ final class CartLinePatchProcessorTest extends TestCase
             createdAt: null,
             updatedAt: null,
         );
+    }
+
+    private function createCartResourcePresenter(): CartResourcePresenter
+    {
+        return new CartResourcePresenter($this->createStub(ProductImageUrlResolverInterface::class));
     }
 }

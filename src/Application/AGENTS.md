@@ -44,7 +44,7 @@ Un Port représente une dépendance externe ou technique que l'Application doit 
 - La conversion primitive → Value Object (`UserId::fromString($command->userId)`) se fait à l'entrée du use case, dans le handler. C'est le seul point où une entrée devient un concept métier valide.
 - Ne pas construire de Value Object dans la Presentation pour l'injecter dans un message : cela déplacerait la validation Domain hors du use case et dégraderait la sérialisabilité du message.
 - Cette règle est cohérente avec les DTO d'entrée Symfony/Messenger : ils portent des scalaires, puis le handler hydrate les Value Objects nécessaires au Domain.
-- Une valeur applicative immuable telle que `Pagination` peut regrouper une normalisation pure utile aux queries. Ce n'est pas un Value Object du Domain : elle ne porte aucun invariant métier, n'est jamais transportée dans une Command/Query ni construite en Presentation. Le handler la construit à partir des primitives, puis transmet les scalaires normalisés au Port. Voir `docs/architecture/application/Shared/ReadModel/Pagination.md`.
+- Une valeur applicative immuable telle que `Pagination` peut regrouper une normalisation pure utile aux queries. Ce n'est pas un Value Object du Domain : elle ne porte aucun invariant métier, n'est jamais transportée dans une Command/Query ni construite en Presentation. Le handler la construit à partir des primitives, puis transmet les scalaires normalisés au Port. Voir `../../docs/src/Application/Shared/ReadModel/Pagination.md`.
 
 ### Buses — règle absolue
 

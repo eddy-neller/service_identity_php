@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Tests\Infrastructure\Integration\Messenger;
 
 use App\Application\Shared\Port\ClockInterface;
-use App\Infrastructure\Messenger\Event\DoctrineDomainEventLedger;
 use App\Infrastructure\Persistence\Doctrine\DoctrineTransactional;
+use App\Infrastructure\Symfony\Messenger\Event\DoctrineDomainEventLedger;
 use DateTimeImmutable;
 use Doctrine\ORM\EntityManagerInterface;
 use RuntimeException;
