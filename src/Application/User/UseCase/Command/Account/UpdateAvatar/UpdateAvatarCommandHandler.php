@@ -60,10 +60,7 @@ final readonly class UpdateAvatarCommandHandler implements CommandHandlerInterfa
             throw $exception;
         }
 
-        if (
-            null !== $update['previousAvatarName']
-            && $update['previousAvatarName'] !== $avatar
-        ) {
+        if (null !== $update['previousAvatarName']) {
             $this->avatarStorage->delete($update['previousAvatarName']);
         }
 

@@ -8,6 +8,7 @@ use App\Application\Shared\CQRS\Command\CommandHandlerInterface;
 use App\Application\Shared\Port\ClockInterface;
 use App\Application\Shared\Port\DomainEventBusInterface;
 use App\Application\Shared\Port\TransactionalInterface;
+use App\Application\User\Port\AvatarStorageInterface;
 use App\Application\User\Port\UserRepositoryInterface;
 use App\Domain\User\Exception\UserNotFoundException;
 use App\Domain\User\ValueObject\Identity\UserId;
@@ -19,6 +20,7 @@ final readonly class DeleteUserByAdminCommandHandler implements CommandHandlerIn
         private ClockInterface $clock,
         private TransactionalInterface $transactional,
         private DomainEventBusInterface $eventBus,
+        private AvatarStorageInterface $avatarStorage,
     ) {
     }
 
@@ -26,7 +28,7 @@ final readonly class DeleteUserByAdminCommandHandler implements CommandHandlerIn
     {
         $userId = UserId::fromString($command->userId);
 
-        $this->transactional->transactional(function () use ($userId): void {
+        $avatarName = $this->transactional->transactional(function () use ($userId): ?string {
             $user = $this->repository->findById($userId);
 
             if (null === $user) {
@@ -37,6 +39,12 @@ final readonly class DeleteUserByAdminCommandHandler implements CommandHandlerIn
 
             $this->repository->delete($user);
             $this->eventBus->publishAll($user->releaseEvents());
+
+            return $user->getAvatarName();
         });
+
+        if (null !== $avatarName) {
+            $this->avatarStorage->delete($avatarName);
+        }
     }
 }

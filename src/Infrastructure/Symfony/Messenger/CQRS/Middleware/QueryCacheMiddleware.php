@@ -12,6 +12,12 @@ use Symfony\Component\Messenger\Middleware\MiddlewareInterface;
 use Symfony\Component\Messenger\Middleware\StackInterface;
 use Symfony\Component\Messenger\Stamp\HandledStamp;
 
+/**
+ * Sert les queries cachables depuis `cache.tag`, sans atteindre le handler.
+ *
+ * Sur un hit, aucun handler ne s'execute : il n'y a donc pas de `HandledStamp` a lire, et
+ * le middleware en pose un lui-meme pour que `MessengerQueryBus` retrouve son resultat.
+ */
 final readonly class QueryCacheMiddleware implements MiddlewareInterface
 {
     private const string CACHE_HANDLER_NAME = 'query_cache';

@@ -23,6 +23,8 @@ final readonly class LocalAvatarStorage implements AvatarStorageInterface
      */
     private const int FILE_MODE = 0644;
 
+    private const string FILE_NAME_PATTERN = '/^[a-z0-9]{32}(?:\.(?:jpg|jpeg|png|webp))?$/D';
+
     public function __construct(
         private ParameterBagInterface $parameterBag,
         private Filesystem $filesystem,
@@ -47,7 +49,7 @@ final readonly class LocalAvatarStorage implements AvatarStorageInterface
 
     public function delete(string $fileName): void
     {
-        if (1 !== preg_match('/^[a-z0-9]{32}\.[a-z0-9]{1,10}$/D', $fileName)) {
+        if (1 !== preg_match(self::FILE_NAME_PATTERN, $fileName)) {
             $this->logger->warning('Unable to delete avatar with an invalid file name.', [
                 'avatar' => $fileName,
             ]);
@@ -68,10 +70,10 @@ final readonly class LocalAvatarStorage implements AvatarStorageInterface
     private function generateFileName(FileInterface $file): string
     {
         $extension = match ($file->getMimeType()) {
-            'image/jpeg' => 'jpg',
+            'image/jpeg', 'image/pjpeg' => 'jpg',
             'image/png' => 'png',
             'image/webp' => 'webp',
-            default => 'bin',
+            default => throw new RuntimeException(sprintf('Unsupported product image MIME type "%s".', $file->getMimeType())),
         };
 
         return bin2hex(random_bytes(16)) . '.' . $extension;
@@ -79,7 +81,7 @@ final readonly class LocalAvatarStorage implements AvatarStorageInterface
 
     private function pathFor(string $fileName): string
     {
-        if (1 !== preg_match('/^[a-z0-9]{32}\.[a-z0-9]{1,10}$/D', $fileName)) {
+        if (1 !== preg_match(self::FILE_NAME_PATTERN, $fileName)) {
             throw new RuntimeException('Invalid avatar file name.');
         }
 

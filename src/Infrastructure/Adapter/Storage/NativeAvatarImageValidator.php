@@ -11,10 +11,11 @@ use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 
 final readonly class NativeAvatarImageValidator implements AvatarImageValidatorInterface
 {
-    private const array ALLOWED_MIME_TYPES = [
-        'image/jpeg',
-        'image/png',
-        'image/webp',
+    private const array MIME_TYPE_ALIASES = [
+        'image/jpeg' => 'image/jpeg',
+        'image/pjpeg' => 'image/jpeg',
+        'image/png' => 'image/png',
+        'image/webp' => 'image/webp',
     ];
 
     public function __construct(
@@ -31,9 +32,10 @@ final readonly class NativeAvatarImageValidator implements AvatarImageValidatorI
             throw InvalidAvatarException::missing();
         }
 
-        $mimeType = $file->getMimeType();
-        if (!in_array($mimeType, self::ALLOWED_MIME_TYPES, true)) {
-            throw InvalidAvatarException::invalidMimeType($mimeType);
+        $declaredMimeType = $file->getMimeType();
+        $declaredMimeAlias = self::MIME_TYPE_ALIASES[$declaredMimeType] ?? null;
+        if (null === $declaredMimeAlias) {
+            throw InvalidAvatarException::invalidMimeType($declaredMimeType);
         }
 
         if ($file->getSize() > $maxSize) {
@@ -45,8 +47,10 @@ final readonly class NativeAvatarImageValidator implements AvatarImageValidatorI
             throw InvalidAvatarException::invalidDimensions($maxDimension);
         }
 
-        if ($dimensions['mime'] !== $mimeType) {
-            throw InvalidAvatarException::invalidMimeType($mimeType);
+        $contentMimeType = $dimensions['mime'];
+        $contentMimeAlias = self::MIME_TYPE_ALIASES[$contentMimeType] ?? null;
+        if (null === $contentMimeAlias || $contentMimeAlias !== $declaredMimeAlias) {
+            throw InvalidAvatarException::invalidMimeType($declaredMimeType);
         }
 
         if ($dimensions[0] > $maxDimension || $dimensions[1] > $maxDimension) {

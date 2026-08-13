@@ -333,11 +333,14 @@ Deux périmètres, jamais mélangés :
 
 - **`tests/Infrastructure/Unit/`** — `PHPUnit\Framework\TestCase` **uniquement**. Aucun `bootKernel()`,
   aucun accès conteneur, aucune DB : l'adapter est instancié à la main avec des doubles (`ArrayAdapter`,
-  stubs de `EntityManagerInterface`, etc.). Suites : `infra.command`, `infra.messenger.event`,
-  `infra.notif`, `infra.service.encoder`, `infra.service.token`, `infra.service.storage`.
+  stubs de `EntityManagerInterface`, etc.). Suites : `infra.api_platform`, `infra.adapter.storage`,
+  `infra.adapter.token`, `infra.symfony.command`, `infra.symfony.event_subscriber`,
+  `infra.symfony.messenger.cqrs`, `infra.symfony.messenger.event`, `infra.symfony.security`,
+  `infra.symfony.service.notification`.
 - **`tests/Infrastructure/Integration/`** — `KernelTestCase` : ce qu'on ne peut vérifier qu'avec le vrai
   Doctrine ou le vrai conteneur (requêtes DQL, mappers, outbox/ledger, câblage Messenger et bindings de
-  Ports). Suites : `infra.persist`, `infra.outbox`, `infra.cqrs`.
+  Ports). Suites : `infra.adapter.hasher`, `infra.persist`, `infra.symfony.messenger.cqrs`,
+  `infra.symfony.messenger.event`.
 
 > Règle : si un test a besoin du kernel, il n'a rien à faire dans `Unit/`. Inversement, un test qui boote
 > le kernel sans jamais s'en servir doit passer en `TestCase`.

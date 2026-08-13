@@ -108,7 +108,7 @@ d'événements (ledger), sans la remplacer.
 ## Vérification
 
 Les tests unitaires de
-`tests/Infrastructure/Unit/Notification/User/UserNotifierTest.php` vérifient :
+`tests/Infrastructure/Unit/Symfony/Service/Notification/User/UserNotifierTest.php` vérifient :
 
 - le contenu de chaque e-mail remis à `Mailer` ;
 - la résolution de langue et son fallback ;

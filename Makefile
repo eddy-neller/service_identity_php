@@ -92,7 +92,7 @@ reload-fixtures:
 	@echo "$(GREEN)** Fixtures reloaded!!! **$(RESET)"
 
 ## Execute bin/console dans le container app (Ex: make console c="debug:router")
-.PHONY: console $(c)
+.PHONY: console
 console:
 	@$(APP) sh -c "bin/console ${c}"
 
@@ -293,22 +293,22 @@ grumphp-cm:
 ## Run phpunit tests
 .PHONY: unit
 unit:
-	@$(APP) sh -c "vendor/bin/phpunit --display-warnings --display-deprecations --display-phpunit-deprecations --display-notices"
+	@$(APP) sh -c "vendor/bin/phpunit --configuration phpunit.dist.xml --display-warnings --display-deprecations --display-phpunit-deprecations --display-notices"
 
 ## Run tests for a method or class (Ex: make unit-filter f=AuthenticationFailureListenerTest)
-.PHONY: unit-filter $(f)
+.PHONY: unit-filter
 unit-filter:
-	@$(APP) sh -c "vendor/bin/phpunit --filter ${f} --display-warnings --display-deprecations --display-phpunit-deprecations --display-notices"
+	@$(APP) sh -c "vendor/bin/phpunit --configuration phpunit.dist.xml --filter ${f} --display-warnings --display-deprecations --display-phpunit-deprecations --display-notices"
 
 ## Execute a suite of tests, by setting testsuite name (Ex: make unit-suite s=api.user)
 .PHONY: unit-suite $(s)
 unit-suite:
-	@$(APP) sh -c "vendor/bin/phpunit --testsuite ${s} --display-warnings --display-deprecations --display-phpunit-deprecations --display-notices"
+	@$(APP) sh -c "vendor/bin/phpunit --configuration phpunit.dist.xml --testsuite ${s} --display-warnings --display-deprecations --display-phpunit-deprecations --display-notices"
 
 ## Run PHPUnit with code coverage (generates HTML report in coverage/)
 .PHONY: unit-coverage
 unit-coverage:
-	@$(APP) sh -c "XDEBUG_MODE=coverage vendor/bin/phpunit --coverage-html coverage/"
+	@$(APP) sh -c "XDEBUG_MODE=coverage vendor/bin/phpunit --configuration phpunit.dist.xml --coverage-html coverage/"
 
 ## Run phpstan tests
 .PHONY: stan
@@ -348,7 +348,7 @@ phpcsfixer_fix:
 ## Run phpmd tests
 .PHONY: phpmd
 phpmd:
-	@$(APP) sh -c "vendor/bin/phpmd application,domain,infrastructure,presentation,src text ruleset.xml"
+	@$(APP) sh -c "php -d 'error_reporting=E_ALL & ~E_DEPRECATED' vendor/bin/phpmd src text ruleset.xml"
 
 ## Run rector
 .PHONY: rector

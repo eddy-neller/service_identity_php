@@ -18,6 +18,10 @@ use Symfony\Component\Messenger\Middleware\StackInterface;
  * Placé autour du handler, il s'exécute donc **après** le `transactional()` de celui-ci :
  * le commit est acquis quand les tags sont invalidés. Une invalidation avant commit serait
  * pire que tardive — un lecteur concurrent recacherait l'état d'avant l'écriture.
+ *
+ *  C'est aussi pourquoi l'invalidation ne passe pas par une reaction du worker : celui-ci se
+ *  reveille quelques dizaines de millisecondes apres la reponse HTTP, et le client qui relit
+ *  juste apres son ecriture verrait sa propre modification manquante.
  */
 final readonly class CacheInvalidationMiddleware implements MiddlewareInterface
 {

@@ -634,7 +634,7 @@ transaction avant le commit, elle disparaît au rollback, et le message stocké 
 3. Passer par le `CommandBusInterface` si la réaction est un cas d'usage métier.
 4. Réserver `UnrecoverableMessageHandlingException` à un message réellement invalide ; les états
    métier attendus sont des no-op journalisés et marqués comme traités.
-5. Écrire le test unitaire dans `tests/Infrastructure/Unit/Messenger/Event/Handler/` : chemin
+5. Écrire le test unitaire dans `tests/Infrastructure/Unit/Symfony/Messenger/Event/Handler/` : chemin
    nominal, événement déjà traité, et no-op métier.
 
 ## 10. Diagnostic

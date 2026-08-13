@@ -157,6 +157,9 @@ Ces emplacements reflètent ma façon de :
 -   Gestion des **comptes clients** et de l’authentification (JWT / OAuth2 / Keycloak, etc.).
 -   Intégration avec un **front Next.js** (projet `en_shop_react`) pour un parcours utilisateur de bout en bout.
 -   Mise en place d’une **CI GitLab** qui exécute tests, PHPStan, CS-Fixer à chaque push.
+-   Rendre l’exécution applicative **répliquable** : séparer PHP-FPM, workers Messenger et cron ;
+    permettre plusieurs replicas PHP-FPM en Docker Compose et préparer un déploiement conteneurisé
+    compatible avec un orchestrateur.
 
 L’idée est de montrer que l’API a été pensée pour **grandir proprement**.
 

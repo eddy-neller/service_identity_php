@@ -40,38 +40,40 @@
             <directory>tests/Domain/User/Unit</directory>
         </testsuite>
 
-        <testsuite name="infra.command">
-            <directory>tests/Infrastructure/Unit/Command</directory>
-        </testsuite>
         <testsuite name="infra.api_platform">
             <directory>tests/Infrastructure/Unit/ApiPlatform</directory>
         </testsuite>
-        <testsuite name="infra.cqrs">
-            <directory>tests/Infrastructure/Integration/CQRS</directory>
+        <testsuite name="infra.adapter.hasher">
+            <directory>tests/Infrastructure/Integration/Adapter/Hasher</directory>
         </testsuite>
-        <testsuite name="infra.messenger.event">
-            <directory>tests/Infrastructure/Unit/Messenger/Event</directory>
+        <testsuite name="infra.adapter.storage">
+            <directory>tests/Infrastructure/Unit/Adapter/Storage</directory>
         </testsuite>
-        <testsuite name="infra.notif">
-            <directory>tests/Infrastructure/Unit/Notification</directory>
-        </testsuite>
-        <testsuite name="infra.outbox">
-            <directory>tests/Infrastructure/Integration/Messenger</directory>
+        <testsuite name="infra.adapter.token">
+            <directory>tests/Infrastructure/Unit/Adapter/Token</directory>
         </testsuite>
         <testsuite name="infra.persist">
             <directory>tests/Infrastructure/Integration/Persistence</directory>
         </testsuite>
-        <testsuite name="infra.service.hasher">
-            <directory>tests/Infrastructure/Integration/Service</directory>
+        <testsuite name="infra.symfony.command">
+            <directory>tests/Infrastructure/Unit/Symfony/Command</directory>
         </testsuite>
-        <testsuite name="infra.service.encoder">
-            <directory>tests/Infrastructure/Unit/Service/Encoder</directory>
+        <testsuite name="infra.symfony.event_subscriber">
+            <directory>tests/Infrastructure/Unit/Symfony/EventSubscriber</directory>
         </testsuite>
-        <testsuite name="infra.service.token">
-            <directory>tests/Infrastructure/Unit/Service/Token</directory>
+        <testsuite name="infra.symfony.messenger.cqrs">
+            <directory>tests/Infrastructure/Unit/Symfony/Messenger/CQRS</directory>
+            <directory>tests/Infrastructure/Integration/Symfony/Messenger/CQRS</directory>
         </testsuite>
-        <testsuite name="infra.service.storage">
-            <directory>tests/Infrastructure/Unit/Service/Storage</directory>
+        <testsuite name="infra.symfony.messenger.event">
+            <directory>tests/Infrastructure/Unit/Symfony/Messenger/Event</directory>
+            <directory>tests/Infrastructure/Integration/Symfony/Messenger/Event</directory>
+        </testsuite>
+        <testsuite name="infra.symfony.security">
+            <directory>tests/Infrastructure/Unit/Symfony/Security</directory>
+        </testsuite>
+        <testsuite name="infra.symfony.service.notification">
+            <directory>tests/Infrastructure/Unit/Symfony/Service/Notification</directory>
         </testsuite>
 
         <testsuite name="pres.state.sendmail">

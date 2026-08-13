@@ -7,9 +7,6 @@ parameters:
     app_title: "%env(resolve:APP_TITLE)%"
     register_token_ttl: "%env(resolve:REGISTER_TOKEN_TTL)%"
     reset_password_token_ttl: "%env(resolve:RESET_PASSWORD_TOKEN_TTL)%"
-    mailerFrontLinkRegisterValidation: "%env(resolve:MAILER_URI_FRONT_REGISTER_VALIDATION)%"
-    mailerFrontLinkResetPassword: "%env(resolve:MAILER_URI_FRONT_RESET_PASSWORD)%"
-    mailer_to: "%env(resolve:MAILER_TO)%"
     app.security.max_login_attempts: "%env(resolve:APP_MAX_LOGIN_ATTEMPTS)%"
     jwt_ttl: "%env(int:JWT_TTL)%"
     jwt_refresh_ttl: "%env(resolve:JWT_REFRESH_TTL)%"
@@ -24,4 +21,7 @@ parameters:
     mailer_password: "%env(resolve:MAILER_PASSWORD)%"
     mailer_reply: "%env(resolve:MAILER_REPLY)%"
     mailer_port: "%env(resolve:MAILER_PORT)%"
+    mailer_to: "%env(resolve:MAILER_TO)%"
+    mailerFrontLinkRegisterValidation: "%env(resolve:MAILER_URI_FRONT_REGISTER_VALIDATION)%"
+    mailerFrontLinkResetPassword: "%env(resolve:MAILER_URI_FRONT_RESET_PASSWORD)%"
     ###< symfony/mailer ###

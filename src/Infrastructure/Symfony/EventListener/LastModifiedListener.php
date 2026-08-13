@@ -68,42 +68,38 @@ final readonly class LastModifiedListener
         }
 
         if (is_array($item)) {
-            if (isset($item['updatedAt']) && $item['updatedAt'] instanceof DateTimeImmutable) {
-                return $item['updatedAt'];
-            }
-
-            if (isset($item['createdAt']) && $item['createdAt'] instanceof DateTimeImmutable) {
-                return $item['createdAt'];
-            }
-
-            return null;
+            return $this->firstDate($item['updatedAt'] ?? null, $item['createdAt'] ?? null);
         }
 
-        if (!is_object($item)) {
-            return null;
+        if (is_object($item)) {
+            return $this->extractObjectDate($item);
         }
 
-        if (method_exists($item, 'getUpdatedAt')) {
-            $updatedAt = $item->getUpdatedAt();
-            if ($updatedAt instanceof DateTimeImmutable) {
-                return $updatedAt;
-            }
-        }
+        return null;
+    }
 
-        if (method_exists($item, 'getCreatedAt')) {
-            $createdAt = $item->getCreatedAt();
-            if ($createdAt instanceof DateTimeImmutable) {
-                return $createdAt;
+    private function extractObjectDate(object $item): ?DateTimeImmutable
+    {
+        foreach (['getUpdatedAt', 'getCreatedAt'] as $method) {
+            if (method_exists($item, $method)) {
+                $date = $item->{$method}();
+                if ($date instanceof DateTimeImmutable) {
+                    return $date;
+                }
             }
         }
 
         $publicVars = get_object_vars($item);
-        if (isset($publicVars['updatedAt']) && $publicVars['updatedAt'] instanceof DateTimeImmutable) {
-            return $publicVars['updatedAt'];
-        }
 
-        if (isset($publicVars['createdAt']) && $publicVars['createdAt'] instanceof DateTimeImmutable) {
-            return $publicVars['createdAt'];
+        return $this->firstDate($publicVars['updatedAt'] ?? null, $publicVars['createdAt'] ?? null);
+    }
+
+    private function firstDate(mixed ...$values): ?DateTimeImmutable
+    {
+        foreach ($values as $value) {
+            if ($value instanceof DateTimeImmutable) {
+                return $value;
+            }
         }
 
         return null;

@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Infrastructure\Symfony\EventSubscriber;
 
-use App\Infrastructure\Adapter\InfoCodes;
 use Lexik\Bundle\JWTAuthenticationBundle\Event\JWTExpiredEvent;
 use Lexik\Bundle\JWTAuthenticationBundle\Event\JWTInvalidEvent;
 use Lexik\Bundle\JWTAuthenticationBundle\Event\JWTNotFoundEvent;
@@ -25,21 +24,21 @@ final readonly class JwtSubscriber implements EventSubscriberInterface
 
     public function onJWTInvalid(JWTInvalidEvent $event): void
     {
-        $response = new JWTAuthenticationFailureResponse(InfoCodes::JWT['INVALID_TOKEN']);
+        $response = new JWTAuthenticationFailureResponse('Invalid JWT Token');
 
         $event->setResponse($response);
     }
 
     public function onJWTNotFound(JWTNotFoundEvent $event): void
     {
-        $response = new JWTAuthenticationFailureResponse(InfoCodes::JWT['MISSING_TOKEN']);
+        $response = new JWTAuthenticationFailureResponse('JWT Token not found');
 
         $event->setResponse($response);
     }
 
     public function onJWTExpired(JWTExpiredEvent $event): void
     {
-        $response = new JWTAuthenticationFailureResponse(InfoCodes::JWT['EXPIRED_TOKEN']);
+        $response = new JWTAuthenticationFailureResponse('JWT Token expired');
 
         $event->setResponse($response);
     }

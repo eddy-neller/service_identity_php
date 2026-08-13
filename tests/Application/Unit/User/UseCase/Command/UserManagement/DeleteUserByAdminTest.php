@@ -7,6 +7,7 @@ namespace App\Tests\Application\Unit\User\UseCase\Command\UserManagement;
 use App\Application\Shared\Port\ClockInterface;
 use App\Application\Shared\Port\DomainEventBusInterface;
 use App\Application\Shared\Port\TransactionalInterface;
+use App\Application\User\Port\AvatarStorageInterface;
 use App\Application\User\Port\UserRepositoryInterface;
 use App\Application\User\UseCase\Command\UserManagement\DeleteUserByAdmin\DeleteUserByAdminCommand;
 use App\Application\User\UseCase\Command\UserManagement\DeleteUserByAdmin\DeleteUserByAdminCommandHandler;
@@ -31,6 +32,8 @@ final class DeleteUserByAdminTest extends TestCase
 
     private DomainEventBusInterface&MockObject $eventBus;
 
+    private AvatarStorageInterface&MockObject $avatarStorage;
+
     private DeleteUserByAdminCommandHandler $handler;
 
     protected function setUp(): void
@@ -39,17 +42,20 @@ final class DeleteUserByAdminTest extends TestCase
         $this->clock = $this->createMock(ClockInterface::class);
         $this->transactional = $this->createMock(TransactionalInterface::class);
         $this->eventBus = $this->createMock(DomainEventBusInterface::class);
+        $this->avatarStorage = $this->createMock(AvatarStorageInterface::class);
         $this->handler = new DeleteUserByAdminCommandHandler(
             $this->repository,
             $this->clock,
             $this->transactional,
             $this->eventBus,
+            $this->avatarStorage,
         );
     }
 
     public function testHandleDeletesUserWhenFound(): void
     {
         $this->eventBus->expects($this->once())->method('publishAll');
+        $this->avatarStorage->expects($this->never())->method('delete');
 
         $userId = UserId::fromString('550e8400-e29b-41d4-a716-446655440000');
         $user = $this->createUser($userId);
@@ -80,9 +86,44 @@ final class DeleteUserByAdminTest extends TestCase
         $this->handler->handle($command);
     }
 
+    public function testHandleDeletesAvatarAfterDeletingUser(): void
+    {
+        $this->eventBus->expects($this->once())->method('publishAll');
+
+        $userId = UserId::fromString('550e8400-e29b-41d4-a716-446655440002');
+        $user = $this->createUser($userId);
+        $avatarName = '0123456789abcdef0123456789abcdef.jpg';
+        $user->updateAvatar($avatarName, new DateTimeImmutable('2025-01-01 10:00:00'));
+        $command = new DeleteUserByAdminCommand(userId: $userId->toString());
+
+        $this->repository->expects($this->once())
+            ->method('findById')
+            ->with($userId)
+            ->willReturn($user);
+
+        $this->clock->expects($this->once())
+            ->method('now')
+            ->willReturn(new DateTimeImmutable('2025-01-02 10:00:00'));
+
+        $this->repository->expects($this->once())
+            ->method('delete')
+            ->with($user);
+
+        $this->transactional->expects($this->once())
+            ->method('transactional')
+            ->willReturnCallback(static fn (callable $callback) => $callback());
+
+        $this->avatarStorage->expects($this->once())
+            ->method('delete')
+            ->with($avatarName);
+
+        $this->handler->handle($command);
+    }
+
     public function testHandleThrowsExceptionWhenUserNotFound(): void
     {
         $this->eventBus->expects($this->never())->method('publishAll');
+        $this->avatarStorage->expects($this->never())->method('delete');
 
         $userId = UserId::fromString('550e8400-e29b-41d4-a716-446655440001');
         $command = new DeleteUserByAdminCommand(

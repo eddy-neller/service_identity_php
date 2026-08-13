@@ -126,17 +126,17 @@ Lancer la suite correspondante **avant chaque livraison** si le périmètre est 
 | `src/Domain/SharedKernel` | `domain.shared` |
 | `src/Application/**/User/UseCase` | `appli.user` |
 | `src/Application/**/Shop/UseCase` + `Shared` | `appli.shop` |
-| `src/Infrastructure/**/Persistence` (Doctrine réel) | `infra.persist` |
+| `src/Infrastructure/Adapter/Hasher` + `security.password_hashers` | `infra.adapter.hasher` |
+| `src/Infrastructure/Adapter/Storage` | `infra.adapter.storage` |
+| `src/Infrastructure/Adapter/Token` | `infra.adapter.token` |
 | `src/Infrastructure/ApiPlatform` | `infra.api_platform` |
-| `src/Infrastructure/**/Messenger/Event` | `infra.messenger.event` |
-| outbox / atomicité (Doctrine réel) | `infra.outbox` |
-| câblage Messenger / bus CQRS (conteneur réel) | `infra.cqrs` |
-| `src/Infrastructure/**/Command` | `infra.command` |
-| `src/Infrastructure/**/Notification` | `infra.notif` |
-| `src/Infrastructure/**/Service/Encoder` | `infra.service.encoder` |
-| `src/Infrastructure/**/Service/Hasher` + `security.password_hashers` | `infra.service.hasher` |
-| `src/Infrastructure/**/Service/Storage` | `infra.service.storage` |
-| `src/Infrastructure/**/Service/Token` | `infra.service.token` |
+| `src/Infrastructure/Persistence` (Doctrine réel) | `infra.persist` |
+| `src/Infrastructure/Symfony/Command` | `infra.symfony.command` |
+| `src/Infrastructure/Symfony/EventSubscriber` | `infra.symfony.event_subscriber` |
+| `src/Infrastructure/Symfony/Messenger/CQRS` | `infra.symfony.messenger.cqrs` |
+| `src/Infrastructure/Symfony/Messenger/Event` | `infra.symfony.messenger.event` |
+| `src/Infrastructure/Symfony/Security` | `infra.symfony.security` |
+| `src/Infrastructure/Symfony/Service/Notification` | `infra.symfony.service.notification` |
 | `src/Presentation/**/State/SendMail` | `pres.state.sendmail` |
 | `src/Presentation/**/State/Shared` | `pres.state.shared` |
 | `src/Presentation/**/State/User` | `pres.state.user` |
