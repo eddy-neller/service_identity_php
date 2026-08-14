@@ -98,8 +98,9 @@ final class MessengerHandlerRegistrationTest extends KernelTestCase
 
     public static function busProvider(): iterable
     {
-        yield 'commands' => ['command.bus', 'CommandHandler.php', 32];
-        yield 'queries' => ['query.bus', 'QueryHandler.php', 13];
+        // Le retrait de Customer et Ordering a emporte 10 commandes et 6 queries.
+        yield 'commands' => ['command.bus', 'CommandHandler.php', 22];
+        yield 'queries' => ['query.bus', 'QueryHandler.php', 7];
     }
 
     public static function signedHandlerProvider(): iterable

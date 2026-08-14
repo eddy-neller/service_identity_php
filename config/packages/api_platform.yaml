@@ -4,7 +4,6 @@ api_platform:
     show_webby: false
     mapping:
         paths:
-            - "%kernel.project_dir%/src/Entity"
             - "%kernel.project_dir%/src/Presentation"
     formats:
         json: ["application/json"]

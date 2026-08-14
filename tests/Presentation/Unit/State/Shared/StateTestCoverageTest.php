@@ -16,22 +16,13 @@ use RegexIterator;
  * L'arborescence des tests **reflète** celle de `src/`, en remontant le segment `State` :
  *   src   : src/Presentation/<Context>/State/<rest...>/<Name>.php
  *   test  : tests/Presentation/Unit/State/<Context>/<rest...>/<Name>Test.php
+ *
+ * **Pas de liste d'exclusion.** Elle n'avait que les cinq States du panier pour usagers, partis
+ * avec le contexte `Shop`. Une trappe pré-percée finit toujours par servir : en rajouter une doit
+ * rester un geste visible en diff, pas remplir un trou déjà prêt.
  */
 final class StateTestCoverageTest extends TestCase
 {
-    /**
-     * FQCN de States volontairement exclus du garde-fou.
-     * À ne renseigner que pour du code non encore branché ; retirer dès qu'il l'est.
-     */
-    private const array EXCLUDED = [
-        // feature/cart en cours : States du sous-domaine Ordering pas encore testés.
-        \App\Presentation\Shop\State\Ordering\Cart\CartDeleteProcessor::class,
-        \App\Presentation\Shop\State\Ordering\Cart\CartGetProvider::class,
-        \App\Presentation\Shop\State\Ordering\Cart\CartLineDeleteProcessor::class,
-        \App\Presentation\Shop\State\Ordering\Cart\CartLinePatchProcessor::class,
-        \App\Presentation\Shop\State\Ordering\Cart\CartLinePostProcessor::class,
-    ];
-
     public function testEveryStateHasATest(): void
     {
         $srcDir = dirname(__DIR__, 5) . '/src/Presentation';
@@ -41,11 +32,6 @@ final class StateTestCoverageTest extends TestCase
 
         foreach ($this->findFiles($srcDir, '#/State/.*(Provider|Processor)\.php$#') as $file) {
             $fqcn = $this->classFromFile($file, $srcDir, 'App\\Presentation\\');
-
-            if (in_array($fqcn, self::EXCLUDED, true)) {
-                continue;
-            }
-
             $expectedTestFile = $this->expectedTestFile($file, $srcDir, $stateTestsDir);
 
             if (!is_file($expectedTestFile)) {

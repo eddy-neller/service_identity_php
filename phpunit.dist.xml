@@ -24,7 +24,6 @@
         </testsuite>
         <testsuite name="appli.shop">
             <directory>tests/Application/Unit/Shop/UseCase</directory>
-            <directory>tests/Application/Unit/Shop/Service</directory>
         </testsuite>
         <testsuite name="appli.shared">
             <directory>tests/Application/Unit/Shared</directory>
@@ -92,17 +91,8 @@
             <directory>tests/Presentation/Unit/State/User</directory>
         </testsuite>
 
-        <testsuite name="api.shop.address">
-            <file>tests/Presentation/Api/Shop/AddressTest.php</file>
-        </testsuite>
-        <testsuite name="api.shop.cart">
-            <file>tests/Presentation/Api/Shop/CartTest.php</file>
-        </testsuite>
         <testsuite name="api.shop.category">
             <file>tests/Presentation/Api/Shop/CategoryTest.php</file>
-        </testsuite>
-        <testsuite name="api.shop.customer">
-            <file>tests/Presentation/Api/Shop/CustomerTest.php</file>
         </testsuite>
         <testsuite name="api.shop.product">
             <file>tests/Presentation/Api/Shop/ProductTest.php</file>
@@ -138,8 +128,6 @@
             <directory>src/Infrastructure/Service/Helper</directory>
             <directory>src/Presentation/Shared/Adapter</directory>
             <directory>src/Presentation/User/Security</directory>
-            <directory>src/DataFixtures</directory>
-            <directory>src/Entity</directory>
         </exclude>
 
         <deprecationTrigger>

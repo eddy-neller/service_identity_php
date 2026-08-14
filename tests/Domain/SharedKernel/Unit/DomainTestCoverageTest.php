@@ -18,20 +18,13 @@ use RegexIterator;
  * Le mapping inverse catégorie et sous-contexte par rapport à `src/` :
  *   src   : src/Domain/<Ctx>/<SubContext?>/<Category>/<Name>.php
  *   test  : tests/Domain/<Ctx>/Unit/<Category>/<SubContext?>/<Name>Test.php
+ *
+ * **Pas de liste d'exclusion.** Elle n'avait qu'un usager, `Order` / `OrderLine`, du code mort
+ * parti avec le contexte `Shop`. Une trappe pré-percée finit toujours par servir : en rajouter
+ * une doit rester un geste visible en diff, pas remplir un trou déjà prêt.
  */
 final class DomainTestCoverageTest extends TestCase
 {
-    /**
-     * FQCN de classes Domain volontairement exclues du garde-fou.
-     * À ne renseigner que pour du code non encore branché ; retirer dès qu'il l'est.
-     */
-    private const array EXCLUDED = [
-        // Sous-domaine Ordering pas encore implémenté côté écriture (l'entité "live"
-        // reste le legacy Doctrine src/Entity/Shop/Order.php).
-        \App\Domain\Shop\Ordering\Model\Order::class,
-        \App\Domain\Shop\Ordering\Model\OrderLine::class,
-    ];
-
     public function testEveryEntityHasATest(): void
     {
         $this->assertModelIsFullyTested('Model');
@@ -51,11 +44,6 @@ final class DomainTestCoverageTest extends TestCase
 
             foreach ($sourceFiles as $file) {
                 $fqcn = $this->classFromFile($file, $paths['src'], 'App\\Domain\\' . $context . '\\');
-
-                if (in_array($fqcn, self::EXCLUDED, true)) {
-                    continue;
-                }
-
                 $expectedTestFile = $this->expectedTestFile($file, $paths['src'], $paths['tests']);
 
                 if (!is_file($expectedTestFile)) {

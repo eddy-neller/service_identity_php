@@ -100,7 +100,6 @@ src/Application/    Cas d'usage & orchestration (UseCase/Command|Query, Port/, S
 src/Infrastructure/ Adapters & implémentations (Persistence/, Service/, Notification/, Command/)
 src/Presentation/   Interface HTTP/API (ApiResource/, Dto/, State/, Presenter/, Security/, Validator/)
 tests/              Tests des couches, organisés de la même façon que le code source
-src/{Controller,Entity,Repository,Service}/ : legacy (ne pas étendre)
 ```
 
 ---
@@ -142,10 +141,7 @@ Lancer la suite correspondante **avant chaque livraison** si le périmètre est 
 | `src/Presentation/**/State/Shared` | `pres.state.shared` |
 | `src/Presentation/**/State/User` | `pres.state.user` |
 | `src/Presentation/**/State/Shop` | `pres.state.shop` |
-| `tests/Presentation/Api/Shop/AddressTest.php` | `api.shop.address` |
-| `tests/Presentation/Api/Shop/CartTest.php` | `api.shop.cart` |
 | `tests/Presentation/Api/Shop/CategoryTest.php` | `api.shop.category` |
-| `tests/Presentation/Api/Shop/CustomerTest.php` | `api.shop.customer` |
 | `tests/Presentation/Api/Shop/ProductTest.php` | `api.shop.product` |
 | `tests/Presentation/Api/User` | `api.user` |
 
@@ -153,7 +149,7 @@ Lancer la suite correspondante **avant chaque livraison** si le périmètre est 
   est initialisée (`make up` + `make install`) : elles émettent de vraies requêtes HTTP in-process
   contre `shop_test`. Sans conteneurs ni DB de test, elles échouent en bloc — vérifier
   `docker compose ps` avant d'en conclure quoi que ce soit. Il n'existe pas de suite `api.shop`
-  globale : le périmètre `tests/Presentation/Api/Shop` se découpe en cinq suites `api.shop.*`.
+  globale : le périmètre `tests/Presentation/Api/Shop` se découpe en suites `api.shop.*`.
 - **`tests/Unit/` vs `tests/Integration/`** : un test qui boote le kernel Symfony, touche la DB ou lit le
   conteneur DI est un test d'**intégration** → `tests/Integration/`. `tests/Unit/` n'accueille que des
   `PHPUnit\Framework\TestCase` sans kernel (doubles pour toutes les dépendances).
