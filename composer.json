@@ -49,8 +49,7 @@
         "symfony/validator": "7.4.*",
         "symfony/yaml": "7.4.*",
         "twig/cssinliner-extra": "^3.26",
-        "twig/extra-bundle": "^3.24.0",
-        "vich/uploader-bundle": "^2.9.4"
+        "twig/extra-bundle": "^3.24.0"
     },
     "require-dev": {
         "dama/doctrine-test-bundle": ">=8.6.0",

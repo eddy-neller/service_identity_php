@@ -48,8 +48,8 @@ final class StateTestCoverageTest extends TestCase
 
     /**
      * Mirrors a State source file onto its test, hoisting the `State` segment to the test root:
-     * src  src/Presentation/Shop/State/Catalog/Category/CategoryGetProvider.php
-     * test tests/Presentation/Unit/State/Shop/Catalog/Category/CategoryGetProviderTest.php.
+     * src  src/Presentation/User/State/UserManagement/UserGetProvider.php
+     * test tests/Presentation/Unit/State/User/UserManagement/UserGetProviderTest.php.
      */
     private function expectedTestFile(string $file, string $srcDir, string $stateTestsDir): string
     {

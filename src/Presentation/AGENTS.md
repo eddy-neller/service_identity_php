@@ -93,7 +93,7 @@ src/Presentation/
 
 - Déclarer `inputFormats: ['multipart' => ['multipart/form-data']]` et documenter le `RequestBody` OpenAPI (`format: binary`).
 - Désérialisation via `MultipartDecoder` + `UploadedFileDenormalizer`.
-- URLs fichiers : s'appuyer sur la couche de normalisation / upload Vich, sans calcul d'URL à la main dans les ressources.
+- URLs fichiers : passer par `AvatarUrlResolverInterface`, sans calcul d'URL à la main dans les ressources.
 - Adapter `File|UploadedFile` → `FileInterface` via `SymfonyFileAdapter` **avant** d'appeler Application — ne jamais faire transiter `UploadedFile` dans Application/Domain.
 
 ---

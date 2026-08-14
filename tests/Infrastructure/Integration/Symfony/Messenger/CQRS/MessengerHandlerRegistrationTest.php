@@ -98,9 +98,10 @@ final class MessengerHandlerRegistrationTest extends KernelTestCase
 
     public static function busProvider(): iterable
     {
-        // Le retrait de Customer et Ordering a emporte 10 commandes et 6 queries.
-        yield 'commands' => ['command.bus', 'CommandHandler.php', 22];
-        yield 'queries' => ['query.bus', 'QueryHandler.php', 7];
+        // Compteurs volontairement en dur : ils cassent des qu'un handler apparait ou disparait,
+        // ce qui force a constater le changement au lieu de le subir. A mettre a jour a la main.
+        yield 'commands' => ['command.bus', 'CommandHandler.php', 15];
+        yield 'queries' => ['query.bus', 'QueryHandler.php', 3];
     }
 
     public static function signedHandlerProvider(): iterable

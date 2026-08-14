@@ -13,6 +13,29 @@
 
 ---
 
+## Périmètre : ce service ne fait plus que l'identité
+
+Le bounded context `Shop` — `Catalog`, `Customer`, `Ordering` — a été retiré au jalon 3. Il vit
+désormais dans [`../service_shop`](../service_shop), sur MongoDB. Ne pas le réintroduire ici, même
+partiellement : c'est ce service qui émet les JWT, et l'autre qui les valide.
+
+### Le provisionnement des clients est débranché
+
+`ProvisionCustomerHandler` et `DisableCustomerHandler` réagissent toujours aux événements `User`,
+mais leur effet passe par `ShopCustomerClientInterface`, dont le seul adaptateur
+(`LoggingShopCustomerClient`) **journalise sans rien faire**. Le protocole inter-services n'est pas
+encore choisi.
+
+Conséquence pratique, à connaître avant de conclure à un bug : **un compte créé aujourd'hui n'a pas
+de client dans `service_shop`.** Il faut l'y créer à la main (`POST /api/shop/customers`). Chaque
+ligne `warning` « Shop customer provisioning is not wired to any transport yet » désigne un compte
+concerné.
+
+Le correctif n'est pas de rebrancher un command bus local vers un contexte qui n'existe plus, mais
+d'écrire un second adaptateur du port.
+
+---
+
 ## Stack & versions
 
 - **PHP** 8.4 (`declare(strict_types=1);` obligatoire dans tout fichier PHP)
@@ -120,11 +143,10 @@ Lancer la suite correspondante **avant chaque livraison** si le périmètre est 
 
 | Périmètre modifié | Suite |
 |---|---|
-| `src/Domain/Shop` | `domain.shop` |
 | `src/Domain/User` | `domain.user` |
 | `src/Domain/SharedKernel` | `domain.shared` |
 | `src/Application/**/User/UseCase` | `appli.user` |
-| `src/Application/**/Shop/UseCase` + `Shared` | `appli.shop` |
+| `src/Application/**/Shared` | `appli.shared` |
 | `src/Infrastructure/Adapter/Hasher` + `security.password_hashers` | `infra.adapter.hasher` |
 | `src/Infrastructure/Adapter/Storage` | `infra.adapter.storage` |
 | `src/Infrastructure/Adapter/Token` | `infra.adapter.token` |
@@ -140,16 +162,12 @@ Lancer la suite correspondante **avant chaque livraison** si le périmètre est 
 | `src/Presentation/**/State/SendMail` | `pres.state.sendmail` |
 | `src/Presentation/**/State/Shared` | `pres.state.shared` |
 | `src/Presentation/**/State/User` | `pres.state.user` |
-| `src/Presentation/**/State/Shop` | `pres.state.shop` |
-| `tests/Presentation/Api/Shop/CategoryTest.php` | `api.shop.category` |
-| `tests/Presentation/Api/Shop/ProductTest.php` | `api.shop.product` |
 | `tests/Presentation/Api/User` | `api.user` |
 
 - Les suites API (`api.*`) sont exécutables dès que la stack Docker tourne et que la DB de test
   est initialisée (`make up` + `make install`) : elles émettent de vraies requêtes HTTP in-process
   contre `shop_test`. Sans conteneurs ni DB de test, elles échouent en bloc — vérifier
-  `docker compose ps` avant d'en conclure quoi que ce soit. Il n'existe pas de suite `api.shop`
-  globale : le périmètre `tests/Presentation/Api/Shop` se découpe en suites `api.shop.*`.
+  `docker compose ps` avant d'en conclure quoi que ce soit.
 - **`tests/Unit/` vs `tests/Integration/`** : un test qui boote le kernel Symfony, touche la DB ou lit le
   conteneur DI est un test d'**intégration** → `tests/Integration/`. `tests/Unit/` n'accueille que des
   `PHPUnit\Framework\TestCase` sans kernel (doubles pour toutes les dépendances).

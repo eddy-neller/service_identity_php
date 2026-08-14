@@ -36,14 +36,25 @@ Key rules:
 
 ## 3) API Platform cache headers
 
-Files:
-- `src/Presentation/Shop/ApiResource/Catalog/ProductResource.php`
-- `src/Presentation/Shop/ApiResource/Catalog/CategoryResource.php`
+**No resource declares a long TTL anymore.** The catalog endpoints that did — `ProductResource`
+and `CategoryResource`, with `max-age=21600` / `s-maxage=86400` — left with the `Shop` bounded
+context, which now lives in `service_shop`.
 
-What it does:
-- Adds `Cache-Control` to catalog GET endpoints with long TTLs:
-  - `max-age=21600` (6h for clients)
-  - `s-maxage=86400` (24h for shared cache: Varnish/CDN)
+What is left is the global default in `config/packages/api_platform.yaml`:
+
+```yaml
+defaults:
+    cache_headers:
+        max_age: 0
+        shared_max_age: 0
+        vary: ["Content-Type", "Authorization", "Origin"]
+        etag: true
+```
+
+Every operation this service still exposes requires authentication, so the VCL rule
+`if (req.http.Authorization || req.http.Cookie) { return (pass); }` makes Varnish forward all of
+them untouched. **Varnish currently caches nothing.** Keeping the container is a bet on a future
+public endpoint, not a live optimisation — worth re-deciding rather than inheriting.
 
 ## 4) Cache invalidation (BAN by tags)
 
@@ -73,9 +84,11 @@ What it does:
 - `LastModifiedListener` sets `Last-Modified` based on `updatedAt` or `createdAt` in the response data.
 - Enables 304 responses when the resource has not changed.
 
-## 6) Suggested future improvements
+## 6) Open question
 
-1) Scoped invalidation:
-   - Decorate the purge service to only BAN `/shop/*` resources.
-2) Monitoring:
-   - Track Varnish hit/miss ratio to validate cache strategy.
+With no cacheable resource left, the Varnish container is dead weight until this service exposes a
+public endpoint. Two honest options: drop it from `docker-compose` and re-add it when there is
+something to cache, or keep it and accept that the hit ratio is structurally zero.
+
+The invalidation wiring (`http_cache.invalidation`) is harmless either way: with nothing cached,
+its BAN requests have nothing to purge.

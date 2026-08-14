@@ -11,8 +11,12 @@ use App\Domain\User\Event\UserDomainEventInterface;
  * Source unique des tags de cache à purger pour un fait métier donné.
  *
  * Extraite du `CacheInvalidationMiddleware`, qui l'utilise seul : celui-ci orchestre (quand
- * purger), cette classe décide (quoi purger). C'est ici qu'un contexte supplémentaire —
- * Shop, dont les queries sont cachées sans être invalidées — viendrait se brancher.
+ * purger), cette classe décide (quoi purger). C'est ici qu'un contexte supplémentaire viendrait
+ * se brancher — et il devrait le faire **en même temps** qu'il rend une query cachable, jamais
+ * après.
+ *
+ * Le typage porte sur le marqueur de contexte (`UserDomainEventInterface`), jamais sur les
+ * événements un à un : sans lui, l'oubli d'un événement ne se verrait qu'à la lecture périmée.
  */
 final readonly class DomainEventCacheTags
 {

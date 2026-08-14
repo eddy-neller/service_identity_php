@@ -4,7 +4,12 @@ stof_doctrine_extensions:
     default_locale: en_US
     orm:
         default:
-            tree: true
+            # `tree` et `sluggable` n'avaient que le catalogue pour usager : l'arbre imbriqué des
+            # catégories et les slugs de catégorie/produit sont partis avec lui. Ne restent que
+            # `timestampable`, dont dépend `UserEntity`, et `translatable`, dont dépend
+            # `LocaleListener` — celui-là même qui tient le repli de locale sans lequel
+            # `GET /health` répond 500.
+            tree: false
             timestampable: true
-            sluggable: true
+            sluggable: false
             translatable: true

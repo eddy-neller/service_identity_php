@@ -336,7 +336,7 @@ $this->logger->info('Domain event handled', [
 
 Un handler de réaction n'a donc **pas** à re-journaliser le fait : ce serait une ligne en double,
 et sémantiquement fausse à cet endroit. Il journalise sa propre réaction quand elle mérite une
-trace — `ProvisionCustomerHandler` logue par exemple le cas « Customer déjà provisionné », qui
+trace — `LoggingShopCustomerClient` signale par exemple qu'aucun transport n'est branché, ce qui
 n'est pas déductible de l'événement seul.
 
 L'invalidation du cache de queries, elle, ne passe **pas** par un handler de réaction : elle vit
@@ -345,9 +345,10 @@ même principe de typage large, sur `UserDomainEventInterface` : tout fait touch
 purge `users-collection` et `user-<id>`. C'est la raison d'être de cette interface — sans elle, il
 faudrait réénumérer les 13 événements User à chaque ajout.
 
-Les handlers restent de l'**adaptation** : quand une réaction est un vrai cas d'usage métier, ils
-passent par le `CommandBusInterface` (`ProvisionCustomerHandler` dispatche
-`CreateCustomerCommand`) plutôt que de manipuler les agrégats eux-mêmes.
+Les handlers restent de l'**adaptation** : quand une réaction est un vrai cas d'usage métier local,
+ils passent par le `CommandBusInterface` plutôt que de manipuler les agrégats eux-mêmes ; quand
+elle sort du service, ils passent par un port (`ProvisionCustomerHandler` appelle
+`ShopCustomerClientInterface`). Dans les deux cas, jamais l'agrégat en direct.
 
 ## 5. Idempotence
 
@@ -369,13 +370,21 @@ Trois régimes, selon la nature de l'effet :
 
 | Régime | Handlers | Mécanique | Garantie |
 |---|---|---|---|
-| **Effet en base** | `ProvisionCustomerHandler`, `DisableCustomerHandler` | `hasProcessed()` puis effet puis `markProcessed()`, le tout dans **une même transaction** | exactement-une-fois réel : si l'effet est annulé, la trace l'est aussi |
-| **Effet externe** | `SendActivationEmailHandler`, `SendResetPasswordEmailHandler`, `RevokeSessionsHandler` | `hasProcessed()` en garde d'entrée, `markProcessed()` **après** succès | au-moins-une-fois, dédupliqué sur le chemin nominal |
+| **Effet en base** | *aucun aujourd'hui* | `hasProcessed()` puis effet puis `markProcessed()`, le tout dans **une même transaction** | exactement-une-fois réel : si l'effet est annulé, la trace l'est aussi |
+| **Effet externe** | `ProvisionCustomerHandler`, `DisableCustomerHandler`, `SendActivationEmailHandler`, `SendResetPasswordEmailHandler`, `RevokeSessionsHandler` | `hasProcessed()` en garde d'entrée, `markProcessed()` **après** succès | au-moins-une-fois, dédupliqué sur le chemin nominal |
 | **Journalisation** | `LogDomainEventHandler` | aucun ledger | idempotent par nature |
 
-**Limite assumée** : un crash entre l'envoi d'un e-mail et son marquage produit un doublon. Le
-véritable exactement-une-fois côté fournisseur e-mail exigerait une clé d'idempotence supportée
-par celui-ci ; la ledger ne peut pas le simuler.
+**Le premier régime n'a plus d'usager, et c'est récent.** `ProvisionCustomerHandler` et
+`DisableCustomerHandler` l'occupaient tant que le contexte `Shop` vivait ici : leur effet était une
+écriture locale, donc `markProcessed()` partageait sa transaction. Depuis le jalon 3, `Shop` vit dans
+`service_shop` et l'effet est un appel sortant derrière `ShopCustomerClientInterface`. La garantie
+tombe à l'au-moins-une-fois, et **l'idempotence devient la responsabilité du service distant** — le
+contrat du port l'exige explicitement. Le régime reste documenté parce que le mécanisme, lui, est
+intact : le prochain handler à effet local le retrouvera tel quel.
+
+**Limite assumée** : un crash entre l'effet et son marquage produit un doublon — un e-mail réexpédié,
+un provisionnement rejoué. Le véritable exactement-une-fois côté fournisseur e-mail exigerait une clé
+d'idempotence supportée par celui-ci ; le ledger ne peut pas le simuler.
 
 ### Pourquoi une table plutôt que `DeduplicateStamp`
 
@@ -394,7 +403,7 @@ Il empêche donc qu'un **second message** portant la même clé soit émis penda
 en vol : c'est de l'exclusion mutuelle, pas de l'idempotence.
 
 Or le scénario qui nous occupe est la **redélivrance du même message**. Un worker meurt après avoir
-créé le Customer mais avant l'ack, `redeliver_timeout` remet la ligne en file, le message repasse —
+envoyé l'e-mail d'activation mais avant l'ack, `redeliver_timeout` remet la ligne en file, le message repasse —
 et il porte alors un `ReceivedStamp`, donc le middleware se contente de relâcher le verrou. Les
 handlers rejouent intégralement. Le verrou n'a rien empêché.
 
@@ -415,9 +424,11 @@ La granularité aussi : `UserRegisteredEvent` déclenche trois handlers (journal
 cache, provisioning). Si seul le provisioning échoue, on veut rejouer celui-là — un verrou unique
 par enveloppe ne sait pas l'exprimer.
 
-Et surtout l'atomicité, qui est la raison d'être du dispositif : `markProcessed()` partage la
-transaction de la création du Customer, donc si elle rollback la trace disparaît avec elle. Aucun
-verrou ne peut offrir ça.
+Et surtout l'atomicité : un handler à effet local peut appeler `markProcessed()` dans la
+transaction de son effet, si bien qu'un rollback emporte la trace avec lui. Aucun verrou ne peut
+offrir ça. Aucun handler n'exerce cette propriété aujourd'hui — le dernier à le faire était
+`ProvisionCustomerHandler`, avant que `Shop` ne parte — mais c'est elle qui a dicté le choix de la
+table, et elle reste disponible.
 
 S'ajoute une incompatibilité propre à notre chaîne : `publishAll()` est appelé **à l'intérieur** de
 la transaction métier. Y poser un verrou violerait la règle « pas d'I/O externe dans le chemin de
@@ -472,27 +483,26 @@ Un véritable plafond par fenêtre relève des limiteurs déclarés dans
 
 ### Idempotence métier, en plus du ledger
 
-Le ledger n'est pas la seule ligne de défense. `ProvisionCustomerHandler` attrape
-`CustomerAlreadyExistsException` et la traite comme un succès :
+Le ledger n'est pas la seule ligne de défense, et il ne peut pas l'être seul dès que l'effet sort du
+service : il ne couvre que le chemin nominal, jamais un crash entre l'effet et son marquage.
+
+C'est pourquoi `ShopCustomerClientInterface` **exige** l'idempotence de ses deux opérations, dans son
+contrat plutôt que dans une convention :
 
 ```php
-try {
-    $this->commandBus->dispatch(new CreateCustomerCommand($userId));
-} catch (CustomerAlreadyExistsException) {
-    // Redélivrance, ou création concurrente arbitrée par la contrainte unique
-    // sur shop_customer.user_account_id. La réaction est satisfaite.
-}
-$this->ledger->markProcessed($eventId, self::class);
+/** Idempotent : ne lève pas si le client existe déjà. */
+public function provisionCustomer(string $userAccountId): void;
 ```
 
 Deux points importants :
 
-- La sémantique de `CreateCustomerCommand` est **inchangée** : elle continue de lever une
-  exception de conflit, ce qui porte le 409 de `CustomerPostProcessor` côté API. C'est le
-  handler d'événement qui décide que, dans son contexte, le conflit est un succès.
-- L'unicité est garantie en base (`shop_customer.user_account_id` en `unique: true`), donc la
-  concurrence réelle est couverte même si deux workers passent simultanément le contrôle
-  d'existence : le perdant échoue, Messenger retente, et la seconde tentative trouve le Customer.
+- La responsabilité a changé de côté. Tant que `Shop` vivait ici, c'est le handler qui attrapait le
+  conflit de création et le traitait comme un succès, l'unicité étant garantie par une contrainte
+  locale. Désormais, c'est le service distant qui arbitre — l'appelant ne sait rien de la contrainte
+  qui le protège, et n'a pas à le savoir.
+- L'ordre des deux lignes du handler porte tout le reste : `markProcessed()` **après** l'appel. Les
+  inverser rendrait un transport en échec indistinguable d'un succès, et la réaction disparaîtrait
+  sans trace. C'est ce que tiennent `ProvisionCustomerHandlerTest` et `DisableCustomerHandlerTest`.
 
 ## 6. Échecs et données obsolètes
 

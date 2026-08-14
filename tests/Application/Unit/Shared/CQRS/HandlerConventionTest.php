@@ -85,8 +85,8 @@ final class HandlerConventionTest extends TestCase
 
     /**
      * Maps a use case class to its expected unit test class, e.g.
-     * App\Application\Shop\UseCase\Command\Catalog\CreateProductByAdmin\CreateProductByAdminCommand
-     * → App\Tests\Application\Unit\Shop\UseCase\Command\Catalog\CreateProductByAdminTest.
+     * App\Application\User\UseCase\Command\UserManagement\CreateUserByAdmin\CreateUserByAdminCommand
+     * → App\Tests\Application\Unit\User\UseCase\Command\UserManagement\CreateUserByAdminTest.
      */
     private function expectedTestClass(string $useCaseClass, string $suffix): string
     {

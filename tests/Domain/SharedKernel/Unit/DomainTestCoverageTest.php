@@ -91,8 +91,8 @@ final class DomainTestCoverageTest extends TestCase
 
     /**
      * Maps a source file to its expected test file, swapping category and sub-context, e.g.
-     * src/Domain/Shop/Ordering/ValueObject/CartId.php
-     * → tests/Domain/Shop/Unit/ValueObject/Ordering/CartIdTest.php.
+     * src/Domain/User/ValueObject/Identity/UserId.php
+     * → tests/Domain/User/Unit/ValueObject/Identity/UserIdTest.php.
      */
     private function expectedTestFile(string $file, string $srcDir, string $testsDir): string
     {

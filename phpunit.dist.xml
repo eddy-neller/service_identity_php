@@ -22,18 +22,12 @@
             <directory>tests/Application/Unit/User/UseCase</directory>
             <directory>tests/Application/Unit/User/Service</directory>
         </testsuite>
-        <testsuite name="appli.shop">
-            <directory>tests/Application/Unit/Shop/UseCase</directory>
-        </testsuite>
         <testsuite name="appli.shared">
             <directory>tests/Application/Unit/Shared</directory>
         </testsuite>
 
         <testsuite name="domain.shared">
             <directory>tests/Domain/SharedKernel/Unit</directory>
-        </testsuite>
-        <testsuite name="domain.shop">
-            <directory>tests/Domain/Shop/Unit</directory>
         </testsuite>
         <testsuite name="domain.user">
             <directory>tests/Domain/User/Unit</directory>
@@ -84,19 +78,10 @@
         <testsuite name="pres.state.shared">
             <directory>tests/Presentation/Unit/State/Shared</directory>
         </testsuite>
-        <testsuite name="pres.state.shop">
-            <directory>tests/Presentation/Unit/State/Shop</directory>
-        </testsuite>
         <testsuite name="pres.state.user">
             <directory>tests/Presentation/Unit/State/User</directory>
         </testsuite>
 
-        <testsuite name="api.shop.category">
-            <file>tests/Presentation/Api/Shop/CategoryTest.php</file>
-        </testsuite>
-        <testsuite name="api.shop.product">
-            <file>tests/Presentation/Api/Shop/ProductTest.php</file>
-        </testsuite>
         <testsuite name="api.user">
             <directory>tests/Presentation/Api/User</directory>
         </testsuite>
@@ -108,10 +93,8 @@
             restrictWarnings="true"
     >
         <include>
-            <directory>src/Application/Shop</directory>
             <directory>src/Application/User</directory>
             <directory>src/Domain/SharedKernel</directory>
-            <directory>src/Domain/Shop</directory>
             <directory>src/Domain/User</directory>
             <directory>src/Infrastructure</directory>
             <directory>src/Presentation</directory>

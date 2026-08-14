@@ -71,19 +71,20 @@ $result = $this->cache->get(
 
 ## 5) Queries concernées aujourd'hui
 
-Seules 4 Queries implémentent `CacheableQueryInterface` — **ce n'est pas limité aux listes** :
+Seules 2 Queries implémentent `CacheableQueryInterface` — **ce n'est pas limité aux listes** :
 
 | Query | Type | Clé | Tags | TTL |
 |---|---|---|---|---|
-| `DisplayListProductQuery` | liste | `product-list-<sha256(payload)>` | `products-collection` | 3600s |
-| `DisplayListCategoryQuery` | liste | `category-list-<sha256(payload)>` | `categories-collection` | 3600s |
 | `DisplayListUserQuery` | liste | `user-list-<sha256(payload)>` | `users-collection` | 3600s |
 | `DisplayUserQuery` | item (single) | `user-item-<userId>` | `users-collection`, `user-<userId>` | 3600s |
 
-Toutes les autres Queries (`DisplayListAddressQuery`, `DisplayListCustomerQuery`, etc.) implémentent
-seulement `QueryInterface` : elles passent le middleware sans jamais toucher Redis.
+Toutes les autres Queries implémentent seulement `QueryInterface` : elles passent le middleware sans
+jamais toucher Redis.
 
-Pour les 3 Queries de liste, la clé est un hash SHA-256 du payload normalisé (`page`, `itemsPerPage`,
+`DisplayListProductQuery` et `DisplayListCategoryQuery` figuraient ici jusqu'au retrait du contexte
+`Shop` ; elles vivent désormais dans `service_shop`.
+
+Pour la Query de liste, la clé est un hash SHA-256 du payload normalisé (`page`, `itemsPerPage`,
 `filters` et `orderBy` triés par clé via `ksort()`) — deux appels équivalents mais avec des filtres/tri
 dans un ordre différent produisent la même clé de cache.
 
@@ -98,12 +99,12 @@ Redis tag-aware. Seul le domaine **User** a un listener d'invalidation aujourd'h
 mot de passe erronées...) et invalide systématiquement `['users-collection', 'user-' . $userId]` — ce
 qui purge à la fois la liste utilisateurs et l'item de l'utilisateur concerné.
 
-**Point d'attention** : il n'existe **aucun listener équivalent pour `products-collection` et
-`categories-collection`**. Une création/mise à jour/suppression de produit ou catégorie n'invalide pas
-le cache de `DisplayListProductQuery` / `DisplayListCategoryQuery` — ces listes ne se rafraîchissent
-qu'à l'expiration du TTL (1h). À traiter si des écritures catalogue doivent être visibles avant
-l'expiration : ajouter un listener symétrique à `UserCacheInvalidationListener`, sur les événements
-domain Product/Category, taguant `products-collection` / `categories-collection`.
+C'est aujourd'hui le seul domaine caché, donc le seul à invalider : le trou qui existait ici — des
+listes catalogue cachées 1h que **rien** ne purgeait — est parti avec le contexte `Shop`. Il y a été
+refermé, `service_shop` invalidant par tags depuis ses Domain Events.
+
+La règle à retenir pour la suite : **une Query ne devient `CacheableQueryInterface` qu'avec son
+invalidation.** Les deux ensemble, ou aucun des deux.
 
 ## 7) Diagnostic
 
