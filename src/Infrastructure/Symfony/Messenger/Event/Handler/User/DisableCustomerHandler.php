@@ -4,48 +4,40 @@ declare(strict_types=1);
 
 namespace App\Infrastructure\Symfony\Messenger\Event\Handler\User;
 
-use App\Application\Shared\CQRS\Command\CommandBusInterface;
-use App\Application\Shared\Port\TransactionalInterface;
-use App\Application\Shop\Port\CustomerRepositoryInterface;
-use App\Application\Shop\UseCase\Command\Customer\DisableCustomer\DisableCustomerCommand;
-use App\Domain\Shop\Customer\ValueObject\UserAccountId;
 use App\Domain\User\Event\Management\UserDeletedByAdminEvent;
+use App\Infrastructure\Http\ShopService\ShopCustomerClientInterface;
 use App\Infrastructure\Symfony\Messenger\Event\DomainEventLedgerInterface;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 
 /**
- * Désactive le Customer Shop lorsqu'un compte utilisateur est supprimé.
+ * Désactive le client `Shop` lorsqu'un compte utilisateur est supprimé.
  *
- * Effet en base, donc marquage dans la même transaction.
+ * Même bascule que `ProvisionCustomerHandler` : l'effet est externe depuis le jalon 3, donc
+ * `hasProcessed()` en garde d'entrée puis `markProcessed()` après succès, hors transaction.
+ *
+ * La traduction `userAccountId` → `customerId` a disparu avec le dépôt local. C'est désormais le
+ * service distant qui la fait, et lui seul qui sait si un client est rattaché à ce compte : d'où
+ * un port silencieux quand il n'y en a pas, là où ce handler testait `null` lui-même.
  */
 #[AsMessageHandler(bus: 'event.bus', sign: true)]
 final readonly class DisableCustomerHandler
 {
     public function __construct(
-        private CustomerRepositoryInterface $customerRepository,
-        private CommandBusInterface $commandBus,
+        private ShopCustomerClientInterface $shopCustomerClient,
         private DomainEventLedgerInterface $ledger,
-        private TransactionalInterface $transactional,
     ) {
     }
 
     public function __invoke(UserDeletedByAdminEvent $event): void
     {
         $eventId = $event->eventId();
-        $userId = $event->getUserId()->toString();
 
-        $this->transactional->transactional(function () use ($eventId, $userId): void {
-            if ($this->ledger->hasProcessed($eventId, self::class)) {
-                return;
-            }
+        if ($this->ledger->hasProcessed($eventId, self::class)) {
+            return;
+        }
 
-            $customer = $this->customerRepository->findByUserAccountId(UserAccountId::fromString($userId));
+        $this->shopCustomerClient->disableCustomer($event->getUserId()->toString());
 
-            if (null !== $customer) {
-                $this->commandBus->dispatch(new DisableCustomerCommand($customer->getId()->toString()));
-            }
-
-            $this->ledger->markProcessed($eventId, self::class);
-        });
+        $this->ledger->markProcessed($eventId, self::class);
     }
 }

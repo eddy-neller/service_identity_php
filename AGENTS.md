@@ -130,6 +130,7 @@ Lancer la suite correspondante **avant chaque livraison** si le périmètre est 
 | `src/Infrastructure/Adapter/Storage` | `infra.adapter.storage` |
 | `src/Infrastructure/Adapter/Token` | `infra.adapter.token` |
 | `src/Infrastructure/ApiPlatform` | `infra.api_platform` |
+| `src/Infrastructure/Http/ShopService` | `infra.http.shop_service` |
 | `src/Infrastructure/Persistence` (Doctrine réel) | `infra.persist` |
 | `src/Infrastructure/Symfony/Command` | `infra.symfony.command` |
 | `src/Infrastructure/Symfony/EventSubscriber` | `infra.symfony.event_subscriber` |

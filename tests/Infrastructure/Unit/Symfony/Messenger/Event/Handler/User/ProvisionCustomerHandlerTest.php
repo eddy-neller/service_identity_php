@@ -4,25 +4,22 @@ declare(strict_types=1);
 
 namespace App\Tests\Infrastructure\Unit\Symfony\Messenger\Event\Handler\User;
 
-use App\Application\Shared\CQRS\Command\CommandBusInterface;
-use App\Application\Shared\Port\TransactionalInterface;
-use App\Application\Shop\UseCase\Command\Customer\CreateCustomer\CreateCustomerCommand;
-use App\Domain\Shop\Customer\Exception\CustomerAlreadyExistsException;
 use App\Domain\User\Event\Lifecycle\UserRegisteredEvent;
 use App\Domain\User\Event\Management\UserCreatedByAdminEvent;
 use App\Domain\User\ValueObject\Identity\UserId;
+use App\Infrastructure\Http\ShopService\ShopCustomerClientInterface;
 use App\Infrastructure\Symfony\Messenger\Event\DomainEventLedgerInterface;
 use App\Infrastructure\Symfony\Messenger\Event\Handler\User\ProvisionCustomerHandler;
 use DateTimeImmutable;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
-use Psr\Log\LoggerInterface;
+use RuntimeException;
 
 final class ProvisionCustomerHandlerTest extends TestCase
 {
     private const string USER_ID = '550e8400-e29b-41d4-a716-446655440000';
 
-    private CommandBusInterface&MockObject $commandBus;
+    private ShopCustomerClientInterface&MockObject $shopCustomerClient;
 
     private DomainEventLedgerInterface&MockObject $ledger;
 
@@ -30,19 +27,10 @@ final class ProvisionCustomerHandlerTest extends TestCase
 
     protected function setUp(): void
     {
-        $this->commandBus = $this->createMock(CommandBusInterface::class);
+        $this->shopCustomerClient = $this->createMock(ShopCustomerClientInterface::class);
         $this->ledger = $this->createMock(DomainEventLedgerInterface::class);
 
-        $transactional = $this->createStub(TransactionalInterface::class);
-        $transactional->method('transactional')
-            ->willReturnCallback(static fn (callable $operation): mixed => $operation());
-
-        $this->handler = new ProvisionCustomerHandler(
-            $this->commandBus,
-            $this->ledger,
-            $transactional,
-            $this->createStub(LoggerInterface::class),
-        );
+        $this->handler = new ProvisionCustomerHandler($this->shopCustomerClient, $this->ledger);
     }
 
     public function testItProvisionsTheCustomerOnRegistration(): void
@@ -50,9 +38,9 @@ final class ProvisionCustomerHandlerTest extends TestCase
         $event = $this->registeredEvent();
 
         $this->ledger->expects($this->once())->method('hasProcessed')->willReturn(false);
-        $this->commandBus->expects($this->once())
-            ->method('dispatch')
-            ->with($this->callback(static fn (CreateCustomerCommand $command): bool => self::USER_ID === $command->userAccountId));
+        $this->shopCustomerClient->expects($this->once())
+            ->method('provisionCustomer')
+            ->with(self::USER_ID);
         $this->ledger->expects($this->once())
             ->method('markProcessed')
             ->with($event->eventId(), ProvisionCustomerHandler::class);
@@ -68,8 +56,12 @@ final class ProvisionCustomerHandlerTest extends TestCase
         );
 
         $this->ledger->expects($this->once())->method('hasProcessed')->willReturn(false);
-        $this->commandBus->expects($this->once())->method('dispatch');
-        $this->ledger->expects($this->once())->method('markProcessed');
+        $this->shopCustomerClient->expects($this->once())
+            ->method('provisionCustomer')
+            ->with(self::USER_ID);
+        $this->ledger->expects($this->once())
+            ->method('markProcessed')
+            ->with($event->eventId(), ProvisionCustomerHandler::class);
 
         $this->handler->onUserCreatedByAdmin($event);
     }
@@ -77,27 +69,28 @@ final class ProvisionCustomerHandlerTest extends TestCase
     public function testItSkipsAnAlreadyProcessedEvent(): void
     {
         $this->ledger->expects($this->once())->method('hasProcessed')->willReturn(true);
-        $this->commandBus->expects($this->never())->method('dispatch');
+        $this->shopCustomerClient->expects($this->never())->method('provisionCustomer');
         $this->ledger->expects($this->never())->method('markProcessed');
 
         $this->handler->onUserRegistered($this->registeredEvent());
     }
 
     /**
-     * Création concurrente ou redélivrance avant marquage : le Customer existe déjà, la
-     * réaction est donc satisfaite. Le 409 porté par la commande reste intact pour l'API.
+     * L'effet étant externe, le marquage n'a lieu qu'au retour de l'appel : un transport en échec
+     * laisse l'événement non marqué, donc rejouable par Messenger. Inverser les deux lignes ferait
+     * disparaître la réaction en silence — c'est cet ordre que le test tient.
      */
-    public function testItTreatsAnExistingCustomerAsSuccess(): void
+    public function testItLeavesTheEventUnmarkedWhenTheCallFails(): void
     {
-        $event = $this->registeredEvent();
-
         $this->ledger->expects($this->once())->method('hasProcessed')->willReturn(false);
-        $this->commandBus->expects($this->once())->method('dispatch')->willThrowException(new CustomerAlreadyExistsException());
-        $this->ledger->expects($this->once())
-            ->method('markProcessed')
-            ->with($event->eventId(), ProvisionCustomerHandler::class);
+        $this->shopCustomerClient->expects($this->once())
+            ->method('provisionCustomer')
+            ->willThrowException(new RuntimeException('shop service unreachable'));
+        $this->ledger->expects($this->never())->method('markProcessed');
 
-        $this->handler->onUserRegistered($event);
+        $this->expectException(RuntimeException::class);
+
+        $this->handler->onUserRegistered($this->registeredEvent());
     }
 
     private function registeredEvent(): UserRegisteredEvent

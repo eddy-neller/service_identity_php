@@ -52,6 +52,9 @@
         <testsuite name="infra.adapter.token">
             <directory>tests/Infrastructure/Unit/Adapter/Token</directory>
         </testsuite>
+        <testsuite name="infra.http.shop_service">
+            <directory>tests/Infrastructure/Unit/Http/ShopService</directory>
+        </testsuite>
         <testsuite name="infra.persist">
             <directory>tests/Infrastructure/Integration/Persistence</directory>
         </testsuite>
