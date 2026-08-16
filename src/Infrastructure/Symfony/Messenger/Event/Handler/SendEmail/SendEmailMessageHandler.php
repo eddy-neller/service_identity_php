@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Infrastructure\Symfony\Service\Notification\Messenger\Handler;
+namespace App\Infrastructure\Symfony\Messenger\Event\Handler\SendEmail;
 
 use App\Application\Shared\Messenger\Message\SendEmailMessage;
 use App\Infrastructure\Symfony\Service\Notification\Mailer\Mailer;
