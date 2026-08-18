@@ -28,6 +28,8 @@ class UserFixtures extends Fixture implements FixtureGroupInterface
 
     public const string ACTIVATION_RAW_TOKEN = 'valid-activation-token-123';
 
+    private const string USER_ID_NAMESPACE = 'd2766be4-a9d4-5a98-a2bb-705ef940e535';
+
     public function __construct(
         private readonly UserPasswordHasherInterface $passwordHasher,
     ) {
@@ -85,12 +87,12 @@ class UserFixtures extends Fixture implements FixtureGroupInterface
 
         foreach ($usersData as $userData) {
             $user = new User();
-            $user->setId(Uuid::uuid4());
             $user->firstname = $faker->firstName();
             $user->lastname = $faker->lastName();
 
             $username = $userData['username'];
 
+            $user->setId(Uuid::fromString(self::userIdOf($username)));
             $user->setUsername($username);
             $hashedPassword = $this->passwordHasher->hashPassword($user, $userData['password']);
             $user->setPassword($hashedPassword);
@@ -121,12 +123,17 @@ class UserFixtures extends Fixture implements FixtureGroupInterface
         return ['test'];
     }
 
+    public static function userIdOf(string $username): string
+    {
+        return Uuid::uuid5(self::USER_ID_NAMESPACE, $username)->toString();
+    }
+
     private function addUserActivation(ObjectManager $manager): void
     {
         $faker = Factory::create();
 
         $activationUser = new User();
-        $activationUser->setId(Uuid::uuid4());
+        $activationUser->setId(Uuid::fromString(self::userIdOf('user_activation')));
         $activationUser->firstname = $faker->firstName();
         $activationUser->lastname = $faker->lastName();
         $activationUser->setUsername('user_activation');

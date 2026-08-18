@@ -6,11 +6,15 @@ namespace App\Tests\Presentation\Api;
 
 use ApiPlatform\Symfony\Bundle\Test\ApiTestCase;
 use ApiPlatform\Symfony\Bundle\Test\Client;
+use App\Infrastructure\Adapter\Token\AuthVersionStoreInterface;
+use App\Infrastructure\Symfony\DataFixtures\test\User\UserFixtures;
 use App\Tests\Presentation\Api\User\UserTest;
 use Doctrine\ORM\EntityManagerInterface;
 use Faker\Factory;
 use Faker\Generator;
 use JsonException;
+use Lexik\Bundle\JWTAuthenticationBundle\Encoder\JWTEncoderInterface;
+use Lexik\Bundle\JWTAuthenticationBundle\Exception\JWTEncodeFailureException;
 use RuntimeException;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\HttpFoundation\Request;
@@ -71,6 +75,12 @@ abstract class BaseTest extends ApiTestCase
         'ADMIN_TOKEN_PLACEHOLDER' => 'user_admin',
         'MEMBER_TOKEN_PLACEHOLDER' => 'user_member',
         'MEMBER_1_TOKEN_PLACEHOLDER' => 'user_member_1',
+    ];
+
+    private const array USER_ROLES = [
+        'user_admin' => ['ROLE_ADMIN'],
+        'user_member' => ['ROLE_USER'],
+        'user_member_1' => ['ROLE_USER'],
     ];
 
     private const array IMAGE_PLACEHOLDER_MAPPING = [
@@ -187,15 +197,34 @@ abstract class BaseTest extends ApiTestCase
         }
     }
 
-    protected function getToken(string $username): string
+    protected function getToken(string $username, ?int $expiresAt = null): string
     {
-        $data = $this->login($username);
-
-        if (!isset($data['accessToken'])) {
-            throw new RuntimeException('getToken: Token not found');
+        if (!isset(self::USER_ROLES[$username])) {
+            throw new RuntimeException(sprintf('getToken: unknown test user "%s".', $username));
         }
 
-        return $data['accessToken'];
+        $encoder = static::getContainer()->get(JWTEncoderInterface::class);
+        if (!$encoder instanceof JWTEncoderInterface) {
+            throw new RuntimeException('getToken: JWT encoder not found');
+        }
+
+        $authVersionStore = static::getContainer()->get(AuthVersionStoreInterface::class);
+        if (!$authVersionStore instanceof AuthVersionStoreInterface) {
+            throw new RuntimeException('getToken: auth-version store not found');
+        }
+
+        $userId = UserFixtures::userIdOf($username);
+
+        try {
+            return $encoder->encode([
+                'sub' => $userId,
+                'roles' => self::USER_ROLES[$username],
+                'auth_version' => $authVersionStore->getOrCreate($userId),
+                'exp' => $expiresAt ?? time() + 900,
+            ]);
+        } catch (JWTEncodeFailureException $e) {
+            throw new RuntimeException('getToken: ' . $e->getMessage(), 0, $e);
+        }
     }
 
     protected function testSuccess(

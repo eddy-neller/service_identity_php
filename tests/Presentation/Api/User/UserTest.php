@@ -29,20 +29,6 @@ final class UserTest extends BaseTest
 
     protected const string USER_DATA = 'user_member';
 
-    protected const array CRITERIA_IRI = ['username' => self::USER_DATA];
-
-    protected ?string $iri;
-
-    protected function setUp(): void
-    {
-        parent::setUp();
-
-        $user = $this->getInstance(User::class, self::CRITERIA_IRI);
-        self::assertInstanceOf(User::class, $user);
-
-        $this->iri = self::URL_API_OPE . '/' . $user->getId()->toString();
-    }
-
     public static function provideLoginSuccess(): Generator
     {
         yield 'Admin login' => [
@@ -1073,7 +1059,7 @@ newPassword: This value should not be blank.',
 
         $this->testSuccess(
             Request::METHOD_GET,
-            $this->iri,
+            $this->userIri(self::USER_DATA),
             [
                 'auth_bearer' => $adminToken,
             ],
@@ -1505,7 +1491,7 @@ newPassword: This value should not be blank.',
     ): void {
         $this->testSuccess(
             Request::METHOD_DELETE,
-            $this->iri,
+            $this->userIri(self::USER_DATA),
             $options,
             Response::HTTP_NO_CONTENT,
         );
@@ -1530,7 +1516,7 @@ newPassword: This value should not be blank.',
         array $options,
         array $exception,
     ): void {
-        $this->testException(Request::METHOD_DELETE, $this->iri, $options, $exception);
+        $this->testException(Request::METHOD_DELETE, $this->userIri(self::USER_DATA), $options, $exception);
     }
 
     public static function provideCreateUserByAdminSuccess(): Generator
@@ -2083,5 +2069,13 @@ status: This value should not be blank.',
             'username' => $faker->userName(),
             'password' => 'User_max88',
         ];
+    }
+
+    private function userIri(string $username): string
+    {
+        $user = $this->getInstance(User::class, ['username' => $username]);
+        self::assertInstanceOf(User::class, $user);
+
+        return self::URL_API_OPE . '/' . $user->getId()->toString();
     }
 }
