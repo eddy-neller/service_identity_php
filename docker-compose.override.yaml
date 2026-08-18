@@ -7,7 +7,7 @@ services:
 
 ###> symfony/mailer ###
   mailer:
-    container_name: en_shop_service_identity_mailer
+    container_name: en_shop_php_service_identity_mailer
     image: axllent/mailpit
     ports:
       - "${MAILPIT_SMTP_EXPOSED_PORT:-20906}:1025"
@@ -27,6 +27,12 @@ services:
   nginx:
     ports:
       - "${NGINX_EXPOSED_PORT:-20900}:80"
+    # `default` DOIT etre liste explicitement : declarer `networks:` sur un service
+    # remplace son rattachement implicite, et sans lui nginx perdrait l'acces a `app`
+    # (symptome : 502 de la passerelle, qui accuse le mauvais coupable).
+    networks:
+      - default
+      - edge
 
   varnish:
     ports:
@@ -35,3 +41,15 @@ services:
   redis:
     ports:
       - "${REDIS_EXPOSED_PORT:-20903}:6379"
+
+# Seul `nginx` rejoint le reseau de la passerelle. Postgres, RabbitMQ et Redis
+# restent sur le reseau par defaut de la stack : c'est ce qui garantit *par la
+# topologie* qu'aucun autre service ne peut joindre cette base.
+#
+# Reseau `external` : il doit exister avant `docker compose up`, sinon la stack
+# refuse de monter. C'est `make up` qui le cree (idempotent), pour que le service
+# continue de demarrer seul sans dependre de la passerelle.
+networks:
+  edge:
+    external: true
+    name: en_shop_php_edge

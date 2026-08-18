@@ -1,9 +1,9 @@
-name: en_shop_service_identity
+name: en_shop_php_service_identity
 
 services:
 ###> doctrine/doctrine-bundle ###
   database:
-    container_name: en_shop_service_identity_database
+    container_name: en_shop_php_service_identity_database
     restart: always
     build:
         context: ./docker/database
@@ -25,7 +25,7 @@ services:
 ###< doctrine/doctrine-bundle ###
 
   app:
-    container_name: en_shop_service_identity_app
+    container_name: en_shop_php_service_identity_app
     restart: unless-stopped
     build:
       context: .
@@ -47,7 +47,7 @@ services:
       - host.docker.internal:host-gateway
 
   nginx:
-    container_name: en_shop_service_identity_nginx
+    container_name: en_shop_php_service_identity_nginx
     restart: unless-stopped
     depends_on:
       - app
@@ -61,7 +61,7 @@ services:
       - ./var/log/nginx:/var/log/nginx:cached
 
   varnish:
-    container_name: en_shop_service_identity_varnish
+    container_name: en_shop_php_service_identity_varnish
     restart: unless-stopped
     depends_on:
       - nginx
@@ -75,7 +75,7 @@ services:
 
   ###> symfony/messenger with rabbitmq ###
   rabbitmq:
-    container_name: en_shop_service_identity_rabbitmq
+    container_name: en_shop_php_service_identity_rabbitmq
     restart: unless-stopped
     build:
       context: ./docker/rabbitmq
@@ -95,7 +95,7 @@ services:
   ###< symfony/messenger with rabbitmq ###
 
   redis:
-    container_name: en_shop_service_identity_redis
+    container_name: en_shop_php_service_identity_redis
     restart: unless-stopped
     build:
       context: ./docker/redis

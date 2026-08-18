@@ -54,6 +54,8 @@ install:
 	make binc && make up
 	@echo "$(YELLOW)** Load composer install & dump-autoload **$(RESET)"
 	@make ci && make cda
+	@echo "$(YELLOW)** Clean avatars directory **$(RESET)"
+	@make clean-avatar-uploads
 	@echo "$(YELLOW)** Manage DEV database **$(RESET)"
 	@$(APP) sh -c "bin/console doctrine:database:create --if-not-exists && \
 		bin/console doctrine:migrations:migrate --no-interaction"
@@ -65,6 +67,13 @@ install:
 	@echo "$(YELLOW)** Load composer outdated & symfony:recipes **$(RESET)"
 	@make co && make csr
 	@echo "$(GREEN)** Installation completed!!! **$(RESET)"
+
+## Remove generated avatar uploads and restore bundled seed avatars
+.PHONY: clean-avatar-uploads
+clean-avatar-uploads:
+	@echo "$(YELLOW)** Clean avatar uploads **$(RESET)"
+	@$(APP) sh -c "find public/uploads/images/user/avatar -maxdepth 1 -type f ! -name '.gitkeep' ! -name 'index.html' -delete && \
+		find assets/images/user/avatar -maxdepth 1 -type f \( -iname '*.jpg' -o -iname '*.jpeg' -o -iname '*.png' -o -iname '*.gif' -o -iname '*.webp' \) -exec cp -f {} public/uploads/images/user/avatar/ \;"
 
 ## Re-install databases (dev + test) without rebuilding the containers
 .PHONY: reinstall
@@ -103,9 +112,17 @@ console:
 dc:
 	@$(DOCKER)
 
+## Crée le réseau de la passerelle s'il n'existe pas (idempotent)
+##   Déclaré `external` dans docker-compose.override.yaml : absent, `docker compose
+##   up` échoue. Le créer ici plutôt que de dépendre de la passerelle préserve la
+##   propriété « le service démarre seul » (cf. AGENTS.md).
+.PHONY: network
+network:
+	@docker network create en_shop_php_edge 2>/dev/null || true
+
 ## Crée et demarre les containers
 .PHONY: up
-up:
+up: network
 	@$(DOCKER) up -d --remove-orphans
 
 ## Stop et détruits les containers
