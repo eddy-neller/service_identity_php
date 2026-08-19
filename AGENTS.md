@@ -56,6 +56,7 @@ Ne jamais lancer `composer`, `bin/console` ou `vendor/bin/*` directement sur l'h
 make install              # Build images, containers, vendors, init DB dev+test
 make reinstall            # Recrée les DB dev+test (migrations + fixtures) sans rebuild
 make up / make down       # Docker up/down (down-hard pour prune images/volumes)
+make network              # Crée `en_shop_php_edge` si absent (idempotent, appelé par `up`)
 make bash-app             # Shell dans le conteneur applicatif
 make console c="…"        # bin/console dans le conteneur
 make logs s=app           # Logs d'un service
@@ -78,17 +79,94 @@ make unit-coverage                # Coverage HTML dans coverage/
 ### Topologie Docker
 
 ```text
-navigateur ──> varnish:20901 ──> nginx:20900 ──> app (php-fpm:9000)
-                                                  ├─ database (postgres)
-                                                  ├─ rabbitmq · redis
-                                                  └─ mailer (mailpit:20907)
+front ──> gateway Kong :20800 ──> nginx (alias `service-identity`) ──> app  (php-fpm:9000)
+          (back_php/gateway)      │                                    worker (cron + Messenger)
+                                  │                                        │
+                                  └── réseau `en_shop_php_edge` ───────────┘
+                                                                       ├─ database (postgres)
+                                                                       ├─ rabbitmq · redis
+                                                                       └─ mailer (mailpit:20907)
 ```
 
-- `app` = image PHP 8.4-fpm pilotée par **supervisor** : php-fpm + cron + workers Messenger
-  (`async` et `domain_events`). Le code est bind-monté sur `/var/www`.
-- Dans `.env`, les hôtes sont les **noms de services** (`database`, `rabbitmq`, `redis`, `mailer`,
-  `varnish`) avec leurs ports internes ; les variables `*_EXPOSED_PORT` ne servent qu'à publier
-  les ports sur la machine hôte (accès depuis un client SQL, Mailpit, etc.).
+Dans `.env`, les hôtes sont les **noms de services** (`database`, `rabbitmq`, `redis`, `mailer`,
+`varnish`) avec leurs ports internes ; les variables `*_EXPOSED_PORT` ne servent qu'à publier les
+ports sur la machine hôte (accès depuis un client SQL, Mailpit, etc.).
+
+#### Une seule image, deux rôles
+
+`app` et `worker` sont **le même artefact**, distingué par la variable `SUPERVISOR_ROLE` que lit le
+`[include]` de `supervisor.conf` : `web` ne lance que php-fpm, `worker` ne lance que cron et les
+consommateurs Messenger (`async`, `domain_events`). L'ancre YAML `&app_image` du `docker-compose.yaml`
+garantit qu'ils désignent bien la même image.
+
+Construire deux images pour un même code les ferait dériver en silence : **un worker qui ne tourne pas
+sur le binaire testé est une classe de panne entière.** Ne pas séparer les Dockerfile.
+
+Conséquence pratique : les workers se mettent à l'échelle indépendamment du web, et redémarrer les
+consommateurs ne coupe plus le trafic HTTP.
+
+#### `docker-compose.yaml` décrit le workload, l'override décrit le poste de dev
+
+Le fichier de base ne contient que ce qui doit tourner partout. Ports publiés, bind mount du code,
+Xdebug, Mailpit et le rattachement au réseau de la passerelle vivent dans `docker-compose.override.yaml`,
+que Compose charge automatiquement en local et qu'un déploiement ne prend pas.
+
+C'est ce qui remplace les anciens commentaires « Commenter la ligne suivante en production » : une
+consigne qu'il fallait penser à appliquer est devenue une propriété du fichier. **Ne pas remettre de
+réglage de développement dans le fichier de base.**
+
+#### Le Dockerfile est multi-étages, et l'étape `prod` doit le rester
+
+`base` → `vendor` → `prod` / `dev`. L'étape `prod` est la cible par défaut ; `dev` n'est sélectionnée
+que par l'override.
+
+- **Xdebug, Composer, `nano`, `telnet`, `ping` ne sont que dans `dev`.** Xdebug est un débogueur :
+  coût à l'exécution sur chaque appel de fonction, et surface d'attaque.
+- L'étape `vendor` lance `composer install --no-dev` **dans l'image**. Avant, `vendor/` étant exclu
+  par `.dockerignore` et jamais installé, l'image ne contenait **aucune dépendance** : elle ne
+  pouvait démarrer que grâce au bind mount de développement. Le symptôme était nul en local et total
+  ailleurs.
+- `assets:install` y est lancé avec **`APP_ENV=prod`**, et ce n'est pas décoratif : `.env` est exclu
+  du contexte, donc sans lui le noyau démarre en `dev` et charge MakerBundle, que `--no-dev` vient de
+  ne pas installer. Le build échoue alors sur un « class not found » sans rapport apparent.
+
+#### Ni `container_name`, ni `fastcgi_pass` en dur sur `app` et `nginx`
+
+Docker refuse de répliquer un service portant un `container_name`. Il n'en reste que sur les
+singletons (`database`, `rabbitmq`, `redis`, `varnish`).
+
+Le `fastcgi_pass` de nginx passe par une variable et le résolveur `127.0.0.11`. **Écrit en dur, le nom
+est résolu une seule fois au démarrage** : toutes les répliques sauf une restent à zéro requête, sans
+la moindre erreur. Mesuré : `151627 / 0 / 0` octets de logs avant correction, une répartition réelle
+après. Vérification :
+
+```bash
+docker compose up -d --scale app=3
+for c in $(docker compose ps -q app); do
+  printf "%-40s %s
+" "$(docker inspect --format '{{.Name}}' $c)" \
+    "$(docker logs $c 2>&1 | grep -c 'GET /index.php')"
+done
+```
+
+Compter des **lignes** d'access log, pas des octets : le volume dépend de l'état des caches, le nombre
+de requêtes non.
+
+#### Le réseau `en_shop_php_edge`
+
+Seul `nginx` le rejoint, sous l'**alias `service-identity`** — que la passerelle vise. Un alias
+explicite est obligatoire : Compose déclare déjà `nginx` comme alias sur chaque réseau, or les deux
+stacks ont un service nommé `nginx`, donc `nginx` y est ambigu.
+
+Postgres, RabbitMQ et Redis restent sur le réseau par défaut : c'est ce qui garantit **par la
+topologie**, et non par discipline, qu'aucun autre service ne joint cette base.
+
+Le réseau est `external` : absent, `docker compose up` échoue. C'est `make network` (idempotent,
+appelée par `make up`) qui le crée, pour que le service continue de **démarrer seul** sans dépendre de
+la passerelle. Ne pas déplacer cette création dans le dépôt de la passerelle.
+
+> Routage, cloisonnement et règles de la passerelle : `back_php/gateway/AGENTS.md`.
+> Vue d'ensemble de la pile PHP : `back_php/ARCHITECTURE.md`.
 
 ---
 
@@ -225,5 +303,12 @@ Lancer la suite correspondante **avant chaque livraison** si le périmètre est 
 - [ ] Chaque Port Application a son implémentation dans Infrastructure avec binding dans `config/services.yaml`.
 - [ ] `declare(strict_types=1);` dans tout nouveau fichier PHP.
 - [ ] `make stan` et `make phpcsfixer_dry` passent ; suite(s) de tests concernée(s) vertes.
+- [ ] Aucun réglage de développement (port publié, bind mount, Xdebug) dans `docker-compose.yaml` —
+      il décrit le workload ; l'override décrit le poste.
+- [ ] Ni Xdebug ni Composer dans l'étape `prod` du Dockerfile.
+- [ ] Aucun `container_name` sur `app`, `worker` ou `nginx` — ils doivent rester réplicables.
+- [ ] `app` et `worker` partagent la même image (ancre `&app_image`), jamais deux Dockerfile.
+- [ ] `nginx` joint `en_shop_php_edge` sous l'alias `service-identity`, et **lui seul** y est rattaché.
+- [ ] `make up` fonctionne sans que la passerelle ait jamais tourné (le service démarre seul).
 
 > Checklists détaillées par couche : voir le `AGENTS.md` de chaque dossier.

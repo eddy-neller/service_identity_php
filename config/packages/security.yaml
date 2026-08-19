@@ -4,7 +4,6 @@ security:
         Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface:
             algorithm: sodium
 
-    # https://symfony.com/doc/current/security.html#loading-the-user-the-user-provider
     role_hierarchy:
         ROLE_MODERATEUR: [ROLE_USER]
         ROLE_ADMIN: [ROLE_MODERATEUR]
@@ -18,7 +17,7 @@ security:
     firewalls:
         dev:
             # Ensure dev tools and static assets are always allowed
-            pattern: ^/(_profiler|_wdt|assets|build)/
+            pattern: ^/_debug/identity/(_profiler|_wdt)/
             security: false
         main:
             stateless: true

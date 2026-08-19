@@ -1,9 +1,50 @@
+# Surcharges de DEVELOPPEMENT LOCAL uniquement.
+#
+# Compose charge ce fichier automatiquement ; une production ne le deploie pas. Tout
+# ce qui est ici doit donc etre inutile au fonctionnement du service : confort de
+# debogage, acces direct depuis l'hote, code monte a chaud.
+
 services:
 ###> doctrine/doctrine-bundle ###
   database:
     ports:
       - "${POSTGRES_EXPOSED_PORT:-20902}:5432"
 ###< doctrine/doctrine-bundle ###
+
+  app:
+    # Composer et les outils reseau ne vivent que dans cette etape.
+    build:
+      target: dev
+    volumes:
+      # Code monte depuis l'hote : l'image `prod` embarque deja le code et ses
+      # dependances, ce montage ne sert qu'a voir ses modifications sans reconstruire.
+      - ./:/var/www:rw
+
+  worker:
+    build:
+      target: dev
+    volumes:
+      - ./:/var/www:rw
+
+  nginx:
+    ports:
+      - "${NGINX_EXPOSED_PORT:-20900}:80"
+    volumes:
+      - ./:/var/www:rw
+      - ./var/log/nginx:/var/log/nginx:cached
+    # `default` DOIT etre liste explicitement : declarer `networks:` sur un service
+    # remplace son rattachement implicite, et sans lui nginx perdrait l'acces a `app`
+    # (symptome : 502 de la passerelle, qui accuse le mauvais coupable).
+    networks:
+      default: {}
+      edge:
+        # Alias explicite, et NON negociable : Compose declare deja `nginx` comme
+        # alias sur chaque reseau rejoint — or les deux stacks ont un service nomme
+        # `nginx`, donc `nginx` est ambigu sur le reseau partage. La passerelle vise
+        # cet alias-ci, qui est unique. C'est l'equivalent d'un Service Kubernetes,
+        # et il survit a la disparition des `container_name`.
+        aliases:
+          - service-identity
 
 ###> symfony/mailer ###
   mailer:
@@ -23,16 +64,6 @@ services:
       - "${RABBITMQ_EXPOSED_PORT:-20908}:5672" # AMQP protocol
       - "${RABBITMQ_MANAGEMENT_EXPOSED_PORT:-20909}:15672" # Management UI
 ###< symfony/messenger with rabbitmq ###
-
-  nginx:
-    ports:
-      - "${NGINX_EXPOSED_PORT:-20900}:80"
-    # `default` DOIT etre liste explicitement : declarer `networks:` sur un service
-    # remplace son rattachement implicite, et sans lui nginx perdrait l'acces a `app`
-    # (symptome : 502 de la passerelle, qui accuse le mauvais coupable).
-    networks:
-      - default
-      - edge
 
   varnish:
     ports:

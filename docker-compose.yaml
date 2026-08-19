@@ -1,8 +1,19 @@
 name: en_shop_php_service_identity
 
+# Ce fichier decrit le WORKLOAD : ce qui doit tourner pour que le service rende son
+# service, en local comme ailleurs. Tout ce qui n'existe que sur un poste de
+# developpement — ports publies, code monte depuis l'hote, outillage — vit
+# dans docker-compose.override.yaml, que Compose charge automatiquement en local et
+# qu'un deploiement ne prend pas.
+#
+# C'est ce qui remplace les anciens « Commenter la ligne suivante en production » :
+# une consigne qu'il fallait penser a appliquer devient une propriete du fichier.
+
 services:
 ###> doctrine/doctrine-bundle ###
   database:
+    # Singleton : un seul conteneur, donc un nom fixe reste sans danger. Ce n'est
+    # PAS le cas de `app`, `worker` et `nginx`, qui doivent pouvoir etre repliques.
     container_name: en_shop_php_service_identity_database
     restart: always
     build:
@@ -24,12 +35,17 @@ services:
       # - ./docker/db/data:/var/lib/postgresql:rw
 ###< doctrine/doctrine-bundle ###
 
+  # `app` et `worker` partagent une seule image, distinguee par SUPERVISOR_ROLE.
+  # Construire deux images pour un meme code les ferait deriver silencieusement :
+  # un worker qui ne tourne pas sur le binaire teste est une classe de panne entiere.
+  # L'ancre YAML garantit que les deux services designent bien le meme artefact.
   app:
-    container_name: en_shop_php_service_identity_app
     restart: unless-stopped
-    build:
+    build: &app_build
       context: .
       dockerfile: ./docker/app/Dockerfile
+      target: prod
+    image: &app_image en_shop_php_service_identity_app:latest
     depends_on:
       database:
         condition: service_healthy
@@ -38,16 +54,23 @@ services:
       redis:
         condition: service_healthy
     environment:
-      PHP_IDE_CONFIG: serverName=${PHP_IDE_SERVER_NAME:-en-shop-api}
-      XDEBUG_MODE: ${XDEBUG_MODE:-debug}
-    volumes:
-      # Commenter la ligne suivante en production
-      - ./:/var/www:rw
-    extra_hosts:
-      - host.docker.internal:host-gateway
+      SUPERVISOR_ROLE: web
+
+  worker:
+    restart: unless-stopped
+    build: *app_build
+    image: *app_image
+    depends_on:
+      database:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    environment:
+      SUPERVISOR_ROLE: worker
 
   nginx:
-    container_name: en_shop_php_service_identity_nginx
     restart: unless-stopped
     depends_on:
       - app
@@ -55,10 +78,7 @@ services:
       context: .
       dockerfile: ./docker/nginx/Dockerfile
     volumes:
-      # Commenter la ligne suivante en production
-      - ./:/var/www:rw
       - ./docker/nginx/conf.d:/etc/nginx/conf.d:rw
-      - ./var/log/nginx:/var/log/nginx:cached
 
   varnish:
     container_name: en_shop_php_service_identity_varnish
