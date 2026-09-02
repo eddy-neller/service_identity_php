@@ -172,46 +172,6 @@ $em->getUnitOfWork()->getEntityChangeSet($entity); // doit être []
 
 ---
 
-## Associations Doctrine : le côté inverse n'est pas gratuit
-
-Un `OneToMany` inverse n'est pas une commodité neutre : il est **parcouru au `flush()`** par les
-listeners Doctrine, même si aucune ligne de code applicatif ne le lit.
-
-Cas concret rencontré : `PurgeHttpCacheListener` (API Platform, activé par
-`http_cache.invalidation`) itère sur `onFlush` **toutes les associations de chaque entité modifiée**
-pour en dériver les tags de purge Varnish. Il lit chaque association via `PropertyAccessor`, puis
-clone et parcourt les `PersistentCollection` — ce qui force leur chargement complet. Un `User`
-portant un `OneToMany` vers ses commandes chargeait ainsi **tout l'historique du client à chaque
-connexion**, pour un simple `UPDATE` de `last_visit`.
-
-**Do**
-
-- Ne déclarer un côté inverse que si du code le lit réellement. `make:entity` le génère par défaut,
-  avec ses `addX()` / `removeX()` : supprimer ce qui ne sert pas.
-- Exposer les ressources API via les DTO de `src/Presentation/`, **jamais** l'entité Doctrine directement.
-  Une entité annotée `#[ApiResource]` devient une *resource class*, ce qui ouvre le parcours du
-  listener sur toutes les associations qui la ciblent.
-- Avant d'ajouter une association, recenser ce qui tourne au flush :
-  `make console c="debug:container --tag=doctrine.event_listener"`. Tout listener sur `onFlush` est
-  susceptible de toucher l'ensemble du graphe.
-
-**Don't**
-
-- Compter sur le fait que « ça ne charge rien aujourd'hui ». `PurgeHttpCacheListener` sort de sa boucle
-  (`return`, pas `continue`) dès la **première** association dont la cible n'est pas une resource class :
-  la plupart des entités ne sont donc protégées que par l'ordre de déclaration de leurs propriétés.
-  Réordonner deux champs suffit à réarmer le problème.
-
-**Garde-fou**
-
-`tests/Infrastructure/Integration/Persistence/User/UserFlushQueryBudgetTest` vérifie qu'écrire un
-agrégat ne déclenche **aucun `SELECT`**. Il n'a de valeur que parce que `http_cache.invalidation` est
-activé en test (bloc `when@test` de `config/packages/api_platform.yaml`, avec le purger bouchon
-`Tests\Double\HttpCache\NullPurger`) : sans ce câblage, le listener est absent de l'environnement de
-test et la régression y est **structurellement indétectable**.
-
----
-
 ## Pagination
 
 **`Paginator` : préciser `fetchJoinCollection`**

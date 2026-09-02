@@ -1,8 +1,8 @@
 # Cache Redis des Queries
 
-Ce document décrit le cache applicatif (Redis, tag-aware) posé sur certaines Queries CQRS. Il est
-distinct du cache HTTP Varnish/API Platform décrit dans [`varnish_cache.md`](varnish_cache.md) : ici
-on cache le **résultat du handler**, avant toute sérialisation HTTP.
+Ce document décrit le cache applicatif (Redis, tag-aware) posé sur certaines Queries CQRS : ici on
+cache le **résultat du handler**, avant toute sérialisation HTTP. Le service n'embarque plus de cache
+HTTP Varnish.
 
 ## 1) Vue d'ensemble
 

@@ -32,7 +32,7 @@ Le backend est pensé pour être **consommé par plusieurs clients** (web, admin
 ## 🛠️ Stack technique & outils
 
 -   **PHP 8.4**
--   **Symfony 7.3**
+-   **Symfony 7.4**
 -   **API Platform 4**
 -   **Doctrine ORM**
 -   **PostgreSQL** (selon configuration Docker)
@@ -84,7 +84,6 @@ make up             # démarre l'environnement
 | Service | URL / port hôte |
 |---|---|
 | API (nginx → php-fpm) | `http://localhost:20900` — doc API Platform sur `/api` |
-| Varnish (cache HTTP) | `http://localhost:20901` |
 | PostgreSQL | `localhost:20902` |
 | Redis | `localhost:20903` |
 | Mailpit (webmail) | `http://localhost:20907` |

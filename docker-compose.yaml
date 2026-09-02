@@ -1,19 +1,7 @@
 name: en_shop_php_service_identity
 
-# Ce fichier decrit le WORKLOAD : ce qui doit tourner pour que le service rende son
-# service, en local comme ailleurs. Tout ce qui n'existe que sur un poste de
-# developpement — ports publies, code monte depuis l'hote, outillage — vit
-# dans docker-compose.override.yaml, que Compose charge automatiquement en local et
-# qu'un deploiement ne prend pas.
-#
-# C'est ce qui remplace les anciens « Commenter la ligne suivante en production » :
-# une consigne qu'il fallait penser a appliquer devient une propriete du fichier.
-
 services:
-###> doctrine/doctrine-bundle ###
   database:
-    # Singleton : un seul conteneur, donc un nom fixe reste sans danger. Ce n'est
-    # PAS le cas de `app`, `worker` et `nginx`, qui doivent pouvoir etre repliques.
     container_name: en_shop_php_service_identity_database
     restart: always
     build:
@@ -21,7 +9,6 @@ services:
         dockerfile: ./Dockerfile
     environment:
       POSTGRES_DB: ${POSTGRES_DB:-app}
-      # You should definitely change the password in production
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-!ChangeMe!}
       POSTGRES_USER: ${POSTGRES_USER:-app}
     healthcheck:
@@ -31,14 +18,7 @@ services:
       start_period: 60s
     volumes:
       - database_data:/var/lib/postgresql:rw
-      # You may use a bind-mounted host directory instead, so that it is harder to accidentally remove the volume and lose all your data!
-      # - ./docker/db/data:/var/lib/postgresql:rw
-###< doctrine/doctrine-bundle ###
 
-  # `app` et `worker` partagent une seule image, distinguee par SUPERVISOR_ROLE.
-  # Construire deux images pour un meme code les ferait deriver silencieusement :
-  # un worker qui ne tourne pas sur le binaire teste est une classe de panne entiere.
-  # L'ancre YAML garantit que les deux services designent bien le meme artefact.
   app:
     restart: unless-stopped
     build: &app_build
@@ -74,26 +54,16 @@ services:
     restart: unless-stopped
     depends_on:
       - app
+    networks:
+      default:
+        aliases:
+          - identity-nginx
     build:
       context: .
       dockerfile: ./docker/nginx/Dockerfile
     volumes:
       - ./docker/nginx/conf.d:/etc/nginx/conf.d:rw
 
-  varnish:
-    container_name: en_shop_php_service_identity_varnish
-    restart: unless-stopped
-    depends_on:
-      - nginx
-    build:
-      context: ./docker/varnish
-      dockerfile: ./Dockerfile
-    extra_hosts:
-      - host.docker.internal:host-gateway
-    volumes:
-      - ./docker/varnish/conf:/etc/varnish:ro
-
-  ###> symfony/messenger with rabbitmq ###
   rabbitmq:
     container_name: en_shop_php_service_identity_rabbitmq
     restart: unless-stopped
@@ -112,8 +82,6 @@ services:
       start_period: 30s
     volumes:
       - rabbitmq_data:/var/lib/rabbitmq
-  ###< symfony/messenger with rabbitmq ###
-
   redis:
     container_name: en_shop_php_service_identity_redis
     restart: unless-stopped
@@ -130,10 +98,6 @@ services:
       - redis_data:/data
 
 volumes:
-  ###> doctrine/doctrine-bundle ###
   database_data:
-  ###< doctrine/doctrine-bundle ###
-  ###> symfony/messenger with rabbitmq ###
   rabbitmq_data:
-  ###< symfony/messenger with rabbitmq ###
   redis_data:

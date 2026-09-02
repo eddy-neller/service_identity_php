@@ -65,10 +65,6 @@ services:
       - "${RABBITMQ_MANAGEMENT_EXPOSED_PORT:-20909}:15672" # Management UI
 ###< symfony/messenger with rabbitmq ###
 
-  varnish:
-    ports:
-      - "${VARNISH_EXPOSED_PORT:-20901}:80"
-
   redis:
     ports:
       - "${REDIS_EXPOSED_PORT:-20903}:6379"

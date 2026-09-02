@@ -53,7 +53,7 @@ install:
 	@echo "$(YELLOW)** Destroy Docker Containers **$(RESET)"
 	@make down-hard
 	@echo "$(YELLOW)** Update Docker Images **$(RESET)"
-	@docker pull php:8.4-fpm && docker pull nginx:1-alpine && docker pull postgres:18-alpine && docker pull rabbitmq:4-management-alpine && docker pull varnish:8-alpine && docker pull redis:8-alpine
+	@docker pull php:8.4-fpm && docker pull nginx:1-alpine && docker pull postgres:18-alpine && docker pull rabbitmq:4-management-alpine && docker pull redis:8-alpine
 	@echo "$(YELLOW)** Build & Load Docker Containers **$(RESET)"
 	make binc && make up
 	@echo "$(YELLOW)** Load composer install & dump-autoload **$(RESET)"
@@ -184,11 +184,6 @@ bash-db:
 .PHONY: bash-redis
 bash-redis:
 	@$(DOCKER) exec redis sh
-
-## Connection au ssh du container varnish
-.PHONY: bash-varnish
-bash-varnish:
-	@$(DOCKER) exec varnish sh
 
 ## Affiche les logs des containers (Ex: make logs s=app)
 .PHONY: logs $(s)

@@ -68,8 +68,3 @@ when@test:
     # charge ces fixtures deterministes dans la base de donnees dediee.
     App\Infrastructure\Symfony\DataFixtures\test\:
       resource: '../src/Infrastructure/Symfony/DataFixtures/test/'
-
-    # Purger bouchon référencé par api_platform.http_cache.invalidation.purger.
-    # Déclaration explicite : le bloc App\Infrastructure\ ne scanne que
-    # src/Infrastructure/, pas tests/Infrastructure/.
-    App\Tests\Infrastructure\Double\HttpCache\NullPurger: ~

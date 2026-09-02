@@ -18,7 +18,6 @@ api_platform:
             shared_max_age: 0
             vary: ["Content-Type", "Authorization", "Origin"]
             etag: true
-    http_cache: ~
     # Résolution par is_a() : le 1er match dans l'ordre gagne → spécifiques, puis catégories, puis fallback.
     exception_to_status:
         # Cas spécifiques (sémantique propre à la sécurité / rate-limit, pas une simple catégorie)
@@ -34,27 +33,3 @@ api_platform:
         App\Domain\SharedKernel\Exception\EntityNotFoundInterface: 404
         # Fallback : toute DomainException non catégorisée (inclut les bases par BC)
         App\Domain\SharedKernel\Exception\DomainException: 400
-
-when@dev:
-    api_platform:
-        http_cache:
-            invalidation:
-                enabled: true
-                urls: ["%env(VARNISH_URL)%"]
-
-when@prod:
-    api_platform:
-        http_cache:
-            invalidation:
-                enabled: true
-                urls: ["%env(VARNISH_URL)%"]
-
-when@test:
-    api_platform:
-        http_cache:
-            invalidation:
-                # Active PurgeHttpCacheListener en test : sans lui, tout chargement
-                # d'association provoqué par le listener est indétectable par la suite.
-                enabled: true
-                # Pas de clé `urls` : aucun ScopingHttpClient n'est créé.
-                purger: App\Tests\Infrastructure\Double\HttpCache\NullPurger

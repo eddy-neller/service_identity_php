@@ -39,7 +39,7 @@ d'écrire un second adaptateur du port.
 ## Stack & versions
 
 - **PHP** 8.4 (`declare(strict_types=1);` obligatoire dans tout fichier PHP)
-- **Symfony** 7.4 · **API Platform** 4.2 · **Doctrine ORM** + Migrations
+- **Symfony** 7.4 · **API Platform** 4.3 · **Doctrine ORM** 3 + Migrations
 - **Tests** : PHPUnit + DAMA DoctrineTestBundle
 - **Qualité** : PHPStan, PHP-CS-Fixer, Rector, PHPCS, PhpMD
 - Ne pas introduire de dépendances imposant PHP < 8, Symfony < 7 ou API Platform < 4.
@@ -88,8 +88,8 @@ front ──> gateway Kong :20800 ──> nginx (alias `service-identity`) ─�
                                                                        └─ mailer (mailpit:20907)
 ```
 
-Dans `.env`, les hôtes sont les **noms de services** (`database`, `rabbitmq`, `redis`, `mailer`,
-`varnish`) avec leurs ports internes ; les variables `*_EXPOSED_PORT` ne servent qu'à publier les
+Dans `.env`, les hôtes sont les **noms de services** (`database`, `rabbitmq`, `redis`, `mailer`)
+avec leurs ports internes ; les variables `*_EXPOSED_PORT` ne servent qu'à publier les
 ports sur la machine hôte (accès depuis un client SQL, Mailpit, etc.).
 
 #### Une seule image, deux rôles
@@ -133,7 +133,7 @@ que par l'override.
 #### Ni `container_name`, ni `fastcgi_pass` en dur sur `app` et `nginx`
 
 Docker refuse de répliquer un service portant un `container_name`. Il n'en reste que sur les
-singletons (`database`, `rabbitmq`, `redis`, `varnish`).
+singletons (`database`, `rabbitmq`, `redis`).
 
 Le `fastcgi_pass` de nginx passe par une variable et le résolveur `127.0.0.11`. **Écrit en dur, le nom
 est résolu une seule fois au démarrage** : toutes les répliques sauf une restent à zéro requête, sans
@@ -167,6 +167,7 @@ la passerelle. Ne pas déplacer cette création dans le dépôt de la passerelle
 
 > Routage, cloisonnement et règles de la passerelle : `back_php/gateway/AGENTS.md`.
 > Vue d'ensemble de la pile PHP : `back_php/ARCHITECTURE.md`.
+> Détail du workload Compose : [`docs/docker_compose_architecture.md`](docs/docker_compose_architecture.md).
 
 ---
 
@@ -270,7 +271,7 @@ Lancer la suite correspondante **avant chaque livraison** si le périmètre est 
 
 - Collections toujours paginées.
 - Éviter N+1 (joins, fetch modes, DTO read model).
-- Cache (HTTP / Symfony Cache) si pertinent — cf. `docs/varnish_cache.md`.
+- Cache Symfony si pertinent.
 - Logs structurés et corrélables (request ID si possible).
 
 ---
@@ -278,7 +279,7 @@ Lancer la suite correspondante **avant chaque livraison** si le périmètre est 
 ## Documentation
 
 - `README.md` : quickstart, env, commandes, architecture courte.
-- `docs/` : références techniques (`CQRS_messenger.md`, `domain_events.md`, `varnish_cache.md`) et **audits** d'architecture datés dans `docs/audits/` (instantanés d'évaluation, **non normatifs** — les règles font foi dans les `AGENTS.md`).
+- `docs/` : références techniques (`CQRS_messenger.md`, `domain_events.md`) et **audits** d'architecture datés dans `docs/audits/` (instantanés d'évaluation, **non normatifs** — les règles font foi dans les `AGENTS.md`).
 
 ## Référence nouvelle API
 
