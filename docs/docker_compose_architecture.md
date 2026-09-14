@@ -35,7 +35,7 @@ pas être confondu avec l'alias public `service-identity` du réseau `edge`.
 | `rabbitmq` | transports Messenger | singleton avec volume `rabbitmq_data` |
 | `redis` | cache et données Redis dédiées | singleton avec volume `redis_data` |
 | `app` | PHP-FPM, trafic HTTP | attend les trois dépendances saines |
-| `worker` | cron et consommateurs Messenger | même image que `app`, attend les mêmes dépendances |
+| `worker` | consommateurs Messenger | même image que `app`, attend les mêmes dépendances |
 | `nginx` | proxy FastCGI vers les replicas `app` | attend `app` |
 
 Les healthchecks de PostgreSQL, RabbitMQ et Redis forment une vraie barrière pour `app` et `worker`.
@@ -47,7 +47,14 @@ Leur démarrage ne dépend donc pas d'une disponibilité présumée des infrastr
 `en_shop_php_service_identity_app:latest`. La variable `SUPERVISOR_ROLE` sélectionne les processus :
 
 - `web` démarre PHP-FPM ;
-- `worker` démarre cron et les consommateurs `async` et `domain_events`.
+- `worker` démarre les consommateurs `async` et `domain_events`.
+
+### Pas de cron dans le worker
+
+Le worker est **répliqué** : une tâche planifiée qui y vivrait s'exécuterait une fois par réplique.
+cron en a été retiré le 2026-09-14 — sa crontab ne contenait aucune tâche. Une tâche récurrente, le
+jour où il y en aura une, tourne **en une seule instance** : un CronJob Kubernetes, ou à défaut un
+conteneur dédié non répliqué. Jamais dans `worker`.
 
 Cette séparation permet de mettre le web et les consommateurs à l’échelle indépendamment, tout en
 garantissant qu’ils exécutent le même artefact.

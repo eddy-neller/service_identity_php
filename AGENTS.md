@@ -80,7 +80,7 @@ make unit-coverage                # Coverage HTML dans coverage/
 
 ```text
 front ──> gateway Kong :20800 ──> nginx (alias `service-identity`) ──> app  (php-fpm:9000)
-          (back_php/gateway)      │                                    worker (cron + Messenger)
+          (back_php/gateway)      │                                    worker (Messenger)
                                   │                                        │
                                   └── réseau `en_shop_php_edge` ───────────┘
                                                                        ├─ database (postgres)
@@ -95,8 +95,9 @@ ports sur la machine hôte (accès depuis un client SQL, Mailpit, etc.).
 #### Une seule image, deux rôles
 
 `app` et `worker` sont **le même artefact**, distingué par la variable `SUPERVISOR_ROLE` que lit le
-`[include]` de `supervisor.conf` : `web` ne lance que php-fpm, `worker` ne lance que cron et les
-consommateurs Messenger (`async`, `domain_events`). L'ancre YAML `&app_image` du `docker-compose.yaml`
+`[include]` de `supervisor.conf` : `web` ne lance que php-fpm, `worker` ne lance que les
+consommateurs Messenger (`async`, `domain_events`). Pas de cron : répliqué, le worker exécuterait
+chaque tâche une fois par instance — voir `docs/docker_compose_architecture.md`. L'ancre YAML `&app_image` du `docker-compose.yaml`
 garantit qu'ils désignent bien la même image.
 
 Construire deux images pour un même code les ferait dériver en silence : **un worker qui ne tourne pas
