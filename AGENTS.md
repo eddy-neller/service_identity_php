@@ -219,30 +219,71 @@ tests/              Tests des couches, organisés de la même façon que le code
 
 ## Tests — suites par périmètre
 
-Lancer la suite correspondante **avant chaque livraison** si le périmètre est touché (`make unit-suite s=...`).
+**`phpunit.dist.xml` est la référence et doit décrire l'intégralité de `tests/`.** Un `phpunit.xml`
+local est gitignoré et peut le surcharger, mais une suite qui n'existerait que là-bas ne serait
+jouée nulle part en CI — et l'oubli passerait pour un run vert.
 
-| Périmètre modifié | Suite |
-|---|---|
-| `src/Domain/User` | `domain.user` |
-| `src/Domain/SharedKernel` | `domain.shared` |
-| `src/Application/**/User/UseCase` | `appli.user` |
-| `src/Application/**/Shared` | `appli.shared` |
-| `src/Infrastructure/Adapter/Hasher` + `security.password_hashers` | `infra.adapter.hasher` |
-| `src/Infrastructure/Adapter/Storage` | `infra.adapter.storage` |
-| `src/Infrastructure/Adapter/Token` | `infra.adapter.token` |
-| `src/Infrastructure/ApiPlatform` | `infra.api_platform` |
-| `src/Infrastructure/Http/ShopService` | `infra.http.shop_service` |
-| `src/Infrastructure/Persistence` (Doctrine réel) | `infra.persist` |
-| `src/Infrastructure/Symfony/Command` | `infra.symfony.command` |
-| `src/Infrastructure/Symfony/EventSubscriber` | `infra.symfony.event_subscriber` |
-| `src/Infrastructure/Symfony/Messenger/CQRS` | `infra.symfony.messenger.cqrs` |
-| `src/Infrastructure/Symfony/Messenger/Event` | `infra.symfony.messenger.event` |
-| `src/Infrastructure/Symfony/Security` | `infra.symfony.security` |
-| `src/Infrastructure/Symfony/Service/Notification` | `infra.symfony.service.notification` |
-| `src/Presentation/**/State/SendMail` | `pres.state.sendmail` |
-| `src/Presentation/**/State/Shared` | `pres.state.shared` |
-| `src/Presentation/**/State/User` | `pres.state.user` |
-| `tests/Presentation/Api/User` | `api.user` |
+Lancer la suite correspondante **avant chaque livraison** si le périmètre est touché
+(`make unit-suite s=...`). L'arborescence de `tests/` reflète celle de `src/` ; seules les
+correspondances suivantes ne s'en déduisent pas :
+
+- `security.password_hashers` → `infra.adapter.hasher` ;
+- `src/Presentation/Shared/Controller` (`GET /health`) → `api.health` ;
+- schéma de la base (entités Doctrine, migrations) → `infra.persist` **et**
+  `infra.symfony.messenger.event`, qui écrit dans `processed_domain_event` et l'outbox.
+
+Règles :
+
+- **Un test hors de toute suite n'est jamais joué**, même par `make unit` : PHPUnit ne découvre que
+  les répertoires et fichiers déclarés dans `<testsuites>`. Aucune erreur, aucun avertissement.
+- **Toute nouvelle suite est déclarée dans `phpunit.dist.xml` et dans ce tableau, dans le même
+  commit.** Même ordre dans les deux, pour qu'un écart saute aux yeux.
+- **Un renommage de suite se reporte partout où elle est citée** : ce tableau, les `AGENTS.md` de
+  couche, les commandes `make unit-suite s=…` documentées. Un nom obsolète fait échouer la commande
+  sans rien dire du test qu'elle était censée lancer.
+- **« Touche Postgres » = oui** : la suite écrit dans la base de test `shop_test` — nom historique,
+  `POSTGRES_DB` suivi du suffixe `_test` de `doctrine.yaml` — et exige `make up` + `make install`.
+  Une suite à « non » ne doit jamais en dépendre ; `api.health`, qui boote le noyau sans hériter de
+  `BaseTest`, en est l'exemple.
+- **Un fichier `*Test.php` abstrait** (`BaseTest`) n'appartient à aucune suite, et c'est normal.
+
+| Suite | Répertoire | Touche Postgres |
+|---|---|---|
+| `appli.user` | `tests/Application/Unit/User/UseCase`, `tests/Application/Unit/User/Service` | non |
+| `appli.shared` | `tests/Application/Unit/Shared` | non |
+| `domain.shared` | `tests/Domain/SharedKernel/Unit` | non |
+| `domain.user` | `tests/Domain/User/Unit` | non |
+| `infra.api_platform` | `tests/Infrastructure/Unit/ApiPlatform` | non |
+| `infra.adapter.hasher` | `tests/Infrastructure/Integration/Adapter/Hasher` | non |
+| `infra.adapter.storage` | `tests/Infrastructure/Unit/Adapter/Storage` | non |
+| `infra.adapter.token` | `tests/Infrastructure/Unit/Adapter/Token` | non |
+| `infra.http.shop_service` | `tests/Infrastructure/Unit/Http/ShopService` | non |
+| `infra.persist` | `tests/Infrastructure/Integration/Persistence` | **oui** |
+| `infra.symfony.command` | `tests/Infrastructure/Unit/Symfony/Command` | non |
+| `infra.symfony.event_subscriber` | `tests/Infrastructure/Unit/Symfony/EventSubscriber` | non |
+| `infra.symfony.messenger.cqrs` | `tests/Infrastructure/Unit/Symfony/Messenger/CQRS`, `tests/Infrastructure/Integration/Symfony/Messenger/CQRS` | non |
+| `infra.symfony.messenger.event` | `tests/Infrastructure/Unit/Symfony/Messenger/Event`, `tests/Infrastructure/Integration/Symfony/Messenger/Event` | **oui** |
+| `infra.symfony.security` | `tests/Infrastructure/Unit/Symfony/Security` | non |
+| `infra.symfony.service.notification` | `tests/Infrastructure/Unit/Symfony/Service/Notification` | non |
+| `pres.state.sendmail` | `tests/Presentation/Unit/State/SendMail` | non |
+| `pres.state.shared` | `tests/Presentation/Unit/State/Shared` | non |
+| `pres.state.user` | `tests/Presentation/Unit/State/User` | non |
+| `api.user` | `tests/Presentation/Api/User` | **oui** |
+| `api.health` | `tests/Presentation/Api/Shared` | non |
+
+C'est l'usage réel qui classe une suite, pas les imports : `infra.symfony.command` cite
+`EntityManagerInterface` mais le mocke (`GenerateUserImagesCommandTest`). À l'inverse,
+`infra.adapter.hasher`, `infra.symfony.messenger.cqrs` et `api.health` bootent le noyau sans toucher
+la base.
+
+Vérification — aucun fichier de test hors suite, stack démarrée :
+
+```bash
+docker compose exec -T app vendor/bin/phpunit --list-test-files \
+  | grep -oE 'tests/.*Test\.php' | sort -u > /tmp/phpunit_listed.txt
+find tests -name '*Test.php' | sort | comm -13 /tmp/phpunit_listed.txt -
+# seul tests/Presentation/Api/BaseTest.php (abstraite) doit sortir
+```
 
 - Les suites API (`api.*`) sont exécutables dès que la stack Docker tourne et que la DB de test
   est initialisée (`make up` + `make install`) : elles émettent de vraies requêtes HTTP in-process
@@ -251,7 +292,8 @@ Lancer la suite correspondante **avant chaque livraison** si le périmètre est 
 - **`tests/Unit/` vs `tests/Integration/`** : un test qui boote le kernel Symfony, touche la DB ou lit le
   conteneur DI est un test d'**intégration** → `tests/Integration/`. `tests/Unit/` n'accueille que des
   `PHPUnit\Framework\TestCase` sans kernel (doubles pour toutes les dépendances).
-- Ne pas ajouter de tests dans les dossiers exclus de `phpunit.dist.xml` (`<exclude>`) ; placer les nouveaux tests dans les suites existantes.
+- Ne pas ajouter de tests dans les dossiers exclus de `phpunit.dist.xml` (`<exclude>`) ; placer un
+  nouveau test dans une suite existante, ou déclarer une nouvelle suite selon les règles ci-dessus.
 - DB de test dédiée, initialisée par `make install` — ne **jamais** réutiliser la DB de dev pour les tests.
 
 ---

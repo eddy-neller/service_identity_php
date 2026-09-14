@@ -78,6 +78,10 @@ src/Presentation/
 - Endpoints sécurisés : `security` + OpenAPI `security: [['ApiKeyAuth' => []]]`.
 - Pagination : `PaginatedCollectionProvider` → attributs Request `_total_items` / `_total_pages` → `PaginationHeaderListener` produit `X-Total-Count` / `X-Total-Pages`. **Ne pas recalculer/poser manuellement** ces headers.
 - Pas d'endpoints hors API Platform si `ApiResource` + `Provider/Processor` suffit.
+  - **Seule exception : `GET /health`** (`Shared/Controller/HealthController`), contrôleur Symfony.
+    Une sonde doit dépendre du moins de choses possible : hors préfixe `/api`, hors OpenAPI, sans
+    sérialiseur ni provider, sans aucune dépendance d'infrastructure. Même contrat dans `service_shop`.
+    Test : suite `api.health`, qui n'hérite pas de `BaseTest`.
 
 ---
 
@@ -100,7 +104,7 @@ src/Presentation/
 
 ## Tests Presentation
 
-Suites : `pres.state.sendmail`, `pres.state.shared`, `pres.state.user`, `pres.state.shop` ; API (exécutables si la stack Docker tourne, cf. `AGENTS.md` racine) : `api.shop.address`, `api.shop.cart`, `api.shop.category`, `api.shop.customer`, `api.shop.product`, `api.user`.
+Suites : `pres.state.sendmail`, `pres.state.shared`, `pres.state.user` ; API (exécutables si la stack Docker tourne, cf. `AGENTS.md` racine) : `api.user`, `api.health`.
 
 - Ne jamais modifier `tests/Presentation/Api/BaseTest.php` pour faire passer un test API spécifique. Ce helper est transverse. Le faire si demande explicite de refactor global de `BaseTest`.
 - Tests API : ne pas utiliser `ApiTestCase::findIriBy()` pour résoudre l'IRI d'une fixture quand les `ApiResource` Presentation sont séparées des entités Doctrine (`stateOptions: entityClass`). API Platform reçoit alors l'entité Doctrine, qui n'est pas une ressource exposée, et peut générer une IRI Skolem (`/.well-known/genid/...`). Résoudre l'entité avec `getInstance(...)`, asserter son type, puis construire l'IRI attendue depuis la route API réelle (`self::URL_API_OPE . '/' . $entity->getId()->toString()`). `findIriByHttp()` reste réservé aux cas où la valeur recherchée dépend réellement du rendu HTTP, notamment les champs traduits.

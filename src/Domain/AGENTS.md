@@ -152,7 +152,7 @@ private function touch(\DateTimeImmutable $now): void
 
 - Tests unitaires purs : pas de kernel Symfony, pas de DB, pas de services framework.
 - Pattern : créer VOs/Agrégats → appeler méthodes métier → vérifier état, events, exceptions.
-- Suites : `domain.shop`, `domain.user`, `domain.shared` (cf. `AGENTS.md` racine).
+- Suites : `domain.user`, `domain.shared` (cf. `AGENTS.md` racine).
 - Arborescence des tests : on **inverse** catégorie et contexte par rapport à `src/`
   (`src/<Context>/ValueObject/<Vo>.php` → `tests/Unit/ValueObject/<Context>/<Vo>Test.php`).
 - Namespace des tests : `App\Domain\<Context>\Tests\Unit\...`, classe `final`, héritage direct de

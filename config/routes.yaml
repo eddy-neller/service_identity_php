@@ -9,3 +9,11 @@
 
 #controllers:
 #    resource: routing.controllers
+
+# Sonde `GET /health` : seul contrôleur hors API Platform (cf. src/Presentation/AGENTS.md).
+# Import limité à ce dossier, pour qu'aucun autre contrôleur n'apparaisse par accident.
+health:
+    resource:
+        path: ../src/Presentation/Shared/Controller/
+        namespace: App\Presentation\Shared\Controller
+    type: attribute

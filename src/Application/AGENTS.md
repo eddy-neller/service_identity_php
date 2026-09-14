@@ -131,7 +131,7 @@ Calculs de montants/totaux, conversions d'unités monétaires (euros↔cents), a
 - Chaque handler dépend d'interfaces (Ports) → testable avec des mocks (`UserRepositoryInterface`, `ClockInterface`, …), sans kernel.
 - **Aucun** attribut/annotation framework dans Application (`#[AsMessageHandler]`, `#[AutowireIterator]`, …) → wiring uniquement dans Infrastructure.
 - **Test obligatoire par use case** : chaque `*Command`/`*Query` doit avoir sa classe `*Test` (ex. `AddToCartCommand` → `AddToCartTest`), dans `tests/Application/Unit/<Contexte>/UseCase/Command|Query[/<sous-domaine>]/`. Vérifié **automatiquement** par `HandlerConventionTest` (suite `appli.shared`) : un handler livré sans test fait échouer GrumPHP (pre-commit) et la CI — ce n'est pas qu'une recommandation.
-- Suites : `appli.usecase.user`, `appli.shop` (cf. `AGENTS.md` racine).
+- Suites : `appli.user`, `appli.shared` (cf. `AGENTS.md` racine).
 
 ### Conventions de tests unitaires
 

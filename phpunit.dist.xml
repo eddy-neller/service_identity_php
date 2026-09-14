@@ -85,6 +85,9 @@
         <testsuite name="api.user">
             <directory>tests/Presentation/Api/User</directory>
         </testsuite>
+        <testsuite name="api.health">
+            <directory>tests/Presentation/Api/Shared</directory>
+        </testsuite>
     </testsuites>
 
     <source ignoreSuppressionOfDeprecations="true"
