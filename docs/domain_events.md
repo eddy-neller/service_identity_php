@@ -470,7 +470,8 @@ Deux conséquences opérationnelles :
 
 - **`LOCK_DSN` doit pointer sur Redis, pas sur `flock`.** Le verrou doit être partagé entre les
   workers et les conteneurs ; `flock` ne garantit pas cette coordination distribuée. Les verrous
-  sont isolés en base 1 (`LOCK_DSN="${REDIS_URL}/1"`).
+  sont isolés en base 1 (`LOCK_DSN="${REDIS_URL}/1"`). Mesure et procédure de vérification :
+  [`lock.md`](lock.md).
 - **L'envoi écarté ne lève aucune exception.** `UserNotifier` journalise
   `Duplicate user mail discarded…` — sans cette trace, un envoi supprimé serait indiscernable d'un
   envoi perdu.
