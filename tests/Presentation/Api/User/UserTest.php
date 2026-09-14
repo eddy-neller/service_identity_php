@@ -1139,7 +1139,8 @@ newPassword: This value should not be blank.',
                 'message' => 'HTTP 401 returned',
             ],
         ];
-        yield 'Expired token' => [
+        // Refuse pour sa signature, pas pour son `exp` : l'expiration est couverte par `api.jwt`.
+        yield 'Forged signature' => [
             [
                 'auth_bearer' => 'eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJpYXQiOjE2NzM5MjQwMDAsImV4cCI6MTY3MzkyNDAwMSwicm9sZXMiOlsiUk9MRV9VU0VSIl0sInVzZXJuYW1lIjoiZXhwaXJlZCJ9.expired-signature',
             ],

@@ -269,7 +269,8 @@ Règles :
 | `pres.state.shared` | `tests/Presentation/Unit/State/Shared` | non |
 | `pres.state.user` | `tests/Presentation/Unit/State/User` | non |
 | `api.user` | `tests/Presentation/Api/User` | **oui** |
-| `api.health` | `tests/Presentation/Api/Shared` | non |
+| `api.health` | `tests/Presentation/Api/Shared/HealthTest.php` | non |
+| `api.jwt` | `tests/Presentation/Api/Shared/JwtAuthenticationTest.php` | non |
 
 C'est l'usage réel qui classe une suite, pas les imports : `infra.symfony.command` cite
 `EntityManagerInterface` mais le mocke (`GenerateUserImagesCommandTest`). À l'inverse,
