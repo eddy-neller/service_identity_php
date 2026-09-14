@@ -312,5 +312,7 @@ Lancer la suite correspondante **avant chaque livraison** si le périmètre est 
 - [ ] `app` et `worker` partagent la même image (ancre `&app_image`), jamais deux Dockerfile.
 - [ ] `nginx` joint `en_shop_php_edge` sous l'alias `service-identity`, et **lui seul** y est rattaché.
 - [ ] `make up` fonctionne sans que la passerelle ait jamais tourné (le service démarre seul).
+- [ ] `session: false` dans `framework.yaml`, **y compris en test** : le service est sans état (JWT),
+      une session écrirait sur le disque local d'une seule réplique.
 
 > Checklists détaillées par couche : voir le `AGENTS.md` de chaque dossier.
