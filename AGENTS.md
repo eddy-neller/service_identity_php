@@ -291,7 +291,8 @@ Lancer la suite correspondante **avant chaque livraison** si le périmètre est 
 
 ## Git et hygiene
 
-- Convention Git locale : pour committer, utiliser `git cm "<message>"`; pour pousser, utiliser `git psa && git fa`.
+- Convention Git locale : pour committer, utiliser `git cm "<message>"`; pour pousser, utiliser `git ps && git f`.
+- GitLab est le seul dépôt distant. GitHub est alimenté par le miroir GitLab : ne jamais y pousser directement.
 
 ---
 
