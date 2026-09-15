@@ -23,11 +23,16 @@ final class InvalidAvatarException extends ProfileDomainException implements Inv
         return new self(sprintf('Avatar file exceeds the maximum allowed size (%d bytes).', $maxSize));
     }
 
-    public static function invalidDimensions(int $maxDimension): self
+    public static function unreadable(): self
+    {
+        return new self('Avatar file is not a readable image.');
+    }
+
+    public static function invalidDimensions(int $minDimension, int $maxDimension): self
     {
         return new self(sprintf(
-            'Avatar dimensions exceed the maximum allowed (%dx%d).',
-            $maxDimension,
+            'Avatar dimensions must be between %d and %d pixels.',
+            $minDimension,
             $maxDimension,
         ));
     }

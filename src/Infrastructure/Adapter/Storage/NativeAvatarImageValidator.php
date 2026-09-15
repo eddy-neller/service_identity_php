@@ -26,6 +26,7 @@ final readonly class NativeAvatarImageValidator implements AvatarImageValidatorI
     public function validate(FileInterface $file): void
     {
         $maxSize = (int) $this->parameterBag->get('app.avatar.max_size');
+        $minDimension = (int) $this->parameterBag->get('app.avatar.min_dimension');
         $maxDimension = (int) $this->parameterBag->get('app.avatar.max_dimension');
 
         if (!$file->isValid() || $file->getSize() <= 0) {
@@ -44,7 +45,7 @@ final readonly class NativeAvatarImageValidator implements AvatarImageValidatorI
 
         $dimensions = getimagesize($file->getPathname());
         if (false === $dimensions) {
-            throw InvalidAvatarException::invalidDimensions($maxDimension);
+            throw InvalidAvatarException::unreadable();
         }
 
         $contentMimeType = $dimensions['mime'];
@@ -53,8 +54,14 @@ final readonly class NativeAvatarImageValidator implements AvatarImageValidatorI
             throw InvalidAvatarException::invalidMimeType($declaredMimeType);
         }
 
-        if ($dimensions[0] > $maxDimension || $dimensions[1] > $maxDimension) {
-            throw InvalidAvatarException::invalidDimensions($maxDimension);
+        [$width, $height] = $dimensions;
+        if (
+            $width < $minDimension
+            || $height < $minDimension
+            || $width > $maxDimension
+            || $height > $maxDimension
+        ) {
+            throw InvalidAvatarException::invalidDimensions($minDimension, $maxDimension);
         }
     }
 }

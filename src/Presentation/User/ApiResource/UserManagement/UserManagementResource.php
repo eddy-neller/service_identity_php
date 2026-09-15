@@ -83,7 +83,7 @@ use ArrayObject;
                                     'avatarFile' => [
                                         'type' => 'string',
                                         'format' => 'binary',
-                                        'description' => 'Avatar image (JPEG, PNG or WebP; max 2 MiB, max 512×512px)',
+                                        'description' => 'Avatar image (JPEG, PNG or WebP; max 2 MiB; each side between 96 and 512 px)',
                                     ],
                                 ],
                             ],

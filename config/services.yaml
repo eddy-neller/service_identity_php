@@ -59,6 +59,11 @@ when@dev:
       resource: '../src/Infrastructure/Symfony/DataFixtures/dev/'
 
 when@test:
+  parameters:
+    # Les tests API deposent de vrais avatars : hors de `public/`, ils ne se melent
+    # plus aux uploads du poste de dev. `var/` est ignore par git et par le build.
+    app.avatar.uploadDirectory: '%kernel.project_dir%/var/test/uploads/images/user/avatar'
+
   services:
     _defaults:
       autowire: true

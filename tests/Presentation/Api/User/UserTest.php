@@ -1318,35 +1318,79 @@ newPassword: This value should not be blank.',
         );
     }
 
-    public static function provideEditAvatarSuccess(): Generator
+    /**
+     * Images que les deux endpoints d'avatar doivent accepter. Partage par `/me/avatar`
+     * et `/users/{id}/avatar` : ils passent par le meme DTO et le meme validateur.
+     */
+    public static function provideAcceptedAvatar(): Generator
     {
-        yield 'Normal' => [
-            [
-                'extra' => [
-                    'files' => [
-                        'avatarFile' => self::PLACEHOLDERS['IMAGES']['AVATAR'],
-                    ],
-                ],
-                'headers' => ['Content-Type' => 'multipart/form-data'],
-                'auth_bearer' => self::PLACEHOLDERS['TOKENS']['MEMBER'],
-            ],
-            [
-                BaseTest::ASSERTION_TYPE['NOT_NULL'] => ['avatarUrl'],
-            ],
-        ];
+        yield 'JPEG 96x96, the minimum' => [self::PLACEHOLDERS['IMAGES']['AVATAR']];
+        yield 'PNG' => [self::PLACEHOLDERS['IMAGES']['AVATAR_PNG']];
+        yield 'WebP' => [self::PLACEHOLDERS['IMAGES']['AVATAR_WEBP']];
+        yield 'JPEG 512x512, the maximum' => [self::PLACEHOLDERS['IMAGES']['AVATAR_MAX_DIMENSION']];
+        yield 'JPEG of exactly AVATAR_MAX_SIZE bytes' => [self::PLACEHOLDERS['IMAGES']['AVATAR_MAX_SIZE']];
+        yield 'PNG sent as avatar.jpg: the name is ignored' => [self::PLACEHOLDERS['IMAGES']['PNG_NAMED_JPG']];
     }
 
-    #[DataProvider('provideEditAvatarSuccess')]
-    public function testEditAvatarSuccess(
-        array $options,
-        array $asserts,
-    ): void {
+    /**
+     * Images refusees, avec le message attendu. Les messages `avatarFile: …` viennent du
+     * DTO (`Assert\File`), les autres du validateur de l'Infrastructure.
+     */
+    public static function provideRejectedAvatar(): Generator
+    {
+        $invalidMimeType = static fn (string $mimeType): string => sprintf(
+            'avatarFile: The mime type of the file is invalid ("%s"). Allowed mime types are "image/jpeg", "image/png", "image/webp".',
+            $mimeType,
+        );
+        $invalidDimensions = 'Avatar dimensions must be between 96 and 512 pixels.';
+
+        yield 'GIF' => [self::PLACEHOLDERS['IMAGES']['GIF'], $invalidMimeType('image/gif')];
+        yield 'SVG' => [self::PLACEHOLDERS['IMAGES']['SVG'], $invalidMimeType('image/svg+xml')];
+        yield 'PDF' => [self::PLACEHOLDERS['IMAGES']['PDF'], $invalidMimeType('application/pdf')];
+        yield 'Plain text sent as avatar.jpg' => [self::PLACEHOLDERS['IMAGES']['TEXT_NAMED_JPG'], $invalidMimeType('text/plain')];
+        yield 'Empty file' => [self::PLACEHOLDERS['IMAGES']['EMPTY'], 'avatarFile: An empty file is not allowed.'];
+        yield 'Truncated JPEG' => [self::PLACEHOLDERS['IMAGES']['TRUNCATED'], 'Avatar file is not a readable image.'];
+        yield 'One byte over AVATAR_MAX_SIZE' => [
+            self::PLACEHOLDERS['IMAGES']['OVER_MAX_SIZE'],
+            'Avatar file exceeds the maximum allowed size (2097152 bytes).',
+        ];
+        yield 'Over the DTO upload limit' => [
+            self::PLACEHOLDERS['IMAGES']['OVER_UPLOAD_LIMIT'],
+            'avatarFile: The file is too large',
+        ];
+        yield 'Width below the minimum (95x96)' => [self::PLACEHOLDERS['IMAGES']['TOO_NARROW'], $invalidDimensions];
+        yield 'Height below the minimum (96x95)' => [self::PLACEHOLDERS['IMAGES']['TOO_SHORT'], $invalidDimensions];
+        yield 'Width above the maximum (513x96)' => [self::PLACEHOLDERS['IMAGES']['TOO_WIDE'], $invalidDimensions];
+        yield 'Height above the maximum (96x513)' => [self::PLACEHOLDERS['IMAGES']['TOO_TALL'], $invalidDimensions];
+        yield 'Both sides above the maximum (800x600)' => [self::PLACEHOLDERS['IMAGES']['PAYSAGE'], $invalidDimensions];
+    }
+
+    #[DataProvider('provideAcceptedAvatar')]
+    public function testEditAvatarSuccess(string $image): void
+    {
         $this->testSuccess(
             Request::METHOD_POST,
             self::URL_API_OPE . '/me/avatar',
-            $options,
+            $this->avatarOptions($image, self::PLACEHOLDERS['TOKENS']['MEMBER']),
             Response::HTTP_CREATED,
-            $asserts,
+            [
+                BaseTest::ASSERTION_TYPE['NOT_NULL'] => ['avatarUrl'],
+            ],
+        );
+    }
+
+    #[DataProvider('provideRejectedAvatar')]
+    public function testEditAvatarRejectsImage(string $image, string $message): void
+    {
+        $this->testException(
+            Request::METHOD_POST,
+            self::URL_API_OPE . '/me/avatar',
+            $this->avatarOptions($image, self::PLACEHOLDERS['TOKENS']['MEMBER']),
+            [
+                'class' => ClientExceptionInterface::class,
+                'code' => Response::HTTP_UNPROCESSABLE_ENTITY,
+                'message' => $message,
+            ],
         );
     }
 
@@ -1380,70 +1424,6 @@ newPassword: This value should not be blank.',
                 'message' => 'avatarFile: Please upload an avatar.',
             ],
         ];
-        /* yield 'File too large' => [
-            [
-                'extra' => [
-                    'files' => [
-                        'avatarFile' => $this->getImage('large_image.jpg', __METHOD__, 300000), // 300k > 200k
-                    ],
-                ],
-                'headers' => ['Content-Type' => 'multipart/form-data'],
-                'auth_bearer' => $ownerToken,
-            ],
-            [
-                'class' => ClientExceptionInterface::class,
-                'code' => Response::HTTP_UNPROCESSABLE_ENTITY,
-                'message' => 'avatarFile: The file is too large (300 kB). Allowed maximum size is 200 kB.',
-            ],
-        ];
-        yield 'Invalid mime type' => [
-            [
-                'extra' => [
-                    'files' => [
-                        'avatarFile' => $this->getImage('document.pdf', __METHOD__, 50000, 'application/pdf'),
-                    ],
-                ],
-                'headers' => ['Content-Type' => 'multipart/form-data'],
-                'auth_bearer' => $ownerToken,
-            ],
-            [
-                'class' => ClientExceptionInterface::class,
-                'code' => Response::HTTP_UNPROCESSABLE_ENTITY,
-                'message' => 'avatarFile: The mime type of the file is invalid (application/pdf). Allowed mime types are image/png, image/gif, image/jpeg, image/pjpeg.',
-            ],
-        ];
-        yield 'Image too small' => [
-            [
-                'extra' => [
-                    'files' => [
-                        'avatarFile' => $this->getImage('small_image.jpg', __METHOD__, 50000, 'image/jpeg', 50, 50), // 50x50 < 96x96
-                    ],
-                ],
-                'headers' => ['Content-Type' => 'multipart/form-data'],
-                'auth_bearer' => $ownerToken,
-            ],
-            [
-                'class' => ClientExceptionInterface::class,
-                'code' => Response::HTTP_UNPROCESSABLE_ENTITY,
-                'message' => 'avatarFile: The image width is too small (50 px). Minimum width is 96 px.',
-            ],
-        ];
-        yield 'Image too large' => [
-            [
-                'extra' => [
-                    'files' => [
-                        'avatarFile' => $this->getImage('large_image.jpg', __METHOD__, 50000, 'image/jpeg', 200, 200), // 200x200 > 96x96
-                    ],
-                ],
-                'headers' => ['Content-Type' => 'multipart/form-data'],
-                'auth_bearer' => $ownerToken,
-            ],
-            [
-                'class' => ClientExceptionInterface::class,
-                'code' => Response::HTTP_UNPROCESSABLE_ENTITY,
-                'message' => 'avatarFile: The image width is too large (200 px). Maximum width is 96 px.',
-            ],
-        ]; */
         yield 'Wrong content type header' => [
             [
                 'extra' => [
@@ -1472,6 +1452,115 @@ newPassword: This value should not be blank.',
             self::URL_API_OPE . '/me/avatar',
             $options,
             $exception
+        );
+    }
+
+    #[DataProvider('provideAcceptedAvatar')]
+    public function testEditUserAvatarSuccess(string $image): void
+    {
+        $this->testSuccess(
+            Request::METHOD_POST,
+            $this->userIri(self::USER_DATA) . '/avatar',
+            $this->avatarOptions($image, self::PLACEHOLDERS['TOKENS']['ADMIN']),
+            Response::HTTP_CREATED,
+            [
+                BaseTest::ASSERTION_TYPE['NOT_NULL'] => ['avatarUrl'],
+            ],
+        );
+    }
+
+    #[DataProvider('provideRejectedAvatar')]
+    public function testEditUserAvatarRejectsImage(string $image, string $message): void
+    {
+        $this->testException(
+            Request::METHOD_POST,
+            $this->userIri(self::USER_DATA) . '/avatar',
+            $this->avatarOptions($image, self::PLACEHOLDERS['TOKENS']['ADMIN']),
+            [
+                'class' => ClientExceptionInterface::class,
+                'code' => Response::HTTP_UNPROCESSABLE_ENTITY,
+                'message' => $message,
+            ],
+        );
+    }
+
+    public static function provideEditUserAvatarException(): Generator
+    {
+        $adminToken = self::PLACEHOLDERS['TOKENS']['ADMIN'];
+        $image = self::PLACEHOLDERS['IMAGES']['AVATAR'];
+
+        yield 'No role' => [
+            [
+                'extra' => ['files' => ['avatarFile' => $image]],
+                'headers' => ['Content-Type' => 'multipart/form-data'],
+            ],
+            [
+                'class' => ClientExceptionInterface::class,
+                'code' => Response::HTTP_UNAUTHORIZED,
+                'message' => 'HTTP 401 returned',
+            ],
+        ];
+        yield 'Not admin' => [
+            [
+                'extra' => ['files' => ['avatarFile' => $image]],
+                'headers' => ['Content-Type' => 'multipart/form-data'],
+                'auth_bearer' => self::PLACEHOLDERS['TOKENS']['MEMBER'],
+            ],
+            [
+                'class' => ClientExceptionInterface::class,
+                'code' => Response::HTTP_FORBIDDEN,
+                'message' => 'Access Denied',
+            ],
+        ];
+        yield 'Missing file' => [
+            [
+                'headers' => ['Content-Type' => 'multipart/form-data'],
+                'auth_bearer' => $adminToken,
+            ],
+            [
+                'class' => ClientExceptionInterface::class,
+                'code' => Response::HTTP_UNPROCESSABLE_ENTITY,
+                'message' => 'avatarFile: Please upload an avatar.',
+            ],
+        ];
+        yield 'Wrong content type header' => [
+            [
+                'extra' => ['files' => ['avatarFile' => $image]],
+                'headers' => ['Content-Type' => 'application/json'],
+                'auth_bearer' => $adminToken,
+            ],
+            [
+                'class' => ClientExceptionInterface::class,
+                'code' => Response::HTTP_UNSUPPORTED_MEDIA_TYPE,
+                'message' => 'The content-type "application/json" is not supported.',
+            ],
+        ];
+    }
+
+    #[DataProvider('provideEditUserAvatarException')]
+    public function testEditUserAvatarException(
+        array $options,
+        array $exception,
+    ): void {
+        $this->testException(
+            Request::METHOD_POST,
+            $this->userIri(self::USER_DATA) . '/avatar',
+            $options,
+            $exception
+        );
+    }
+
+    public function testEditUserAvatarOfUnknownUser(): void
+    {
+        $this->testException(
+            Request::METHOD_POST,
+            self::URL_API_OPE . '/5f0c8a4e-2b1d-4c3a-9e7f-1a2b3c4d5e6f/avatar',
+            $this->avatarOptions(self::PLACEHOLDERS['IMAGES']['AVATAR'], self::PLACEHOLDERS['TOKENS']['ADMIN']),
+            [
+                'class' => ClientExceptionInterface::class,
+                'code' => Response::HTTP_NOT_FOUND,
+                'message' => null,
+            ],
         );
     }
 
@@ -2069,6 +2158,18 @@ status: This value should not be blank.',
             'email' => $faker->email(),
             'username' => $faker->userName(),
             'password' => 'User_max88',
+        ];
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function avatarOptions(string $image, string $token): array
+    {
+        return [
+            'extra' => ['files' => ['avatarFile' => $image]],
+            'headers' => ['Content-Type' => 'multipart/form-data'],
+            'auth_bearer' => $token,
         ];
     }
 

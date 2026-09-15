@@ -11,6 +11,7 @@ parameters:
     jwt_ttl: "%env(int:JWT_TTL)%"
     jwt_refresh_ttl: "%env(resolve:JWT_REFRESH_TTL)%"
     app.avatar.max_size: "%env(int:AVATAR_MAX_SIZE)%"
+    app.avatar.min_dimension: "%env(int:AVATAR_MIN_DIMENSION)%"
     app.avatar.max_dimension: "%env(int:AVATAR_MAX_DIMENSION)%"
     app.avatar.uploadDirectory: '%kernel.project_dir%/public%app.path.images%/user/avatar'
     app.avatar.uploadUrl: '%app.path.images%/user/avatar'
