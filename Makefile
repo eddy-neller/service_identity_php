@@ -44,6 +44,9 @@ export COMPOSE_BAKE = true
 # `make up APP_REPLICAS=4`.
 APP_REPLICAS ?= 2
 
+# Image des jobs GitLab : etape `ci` de docker/app/Dockerfile.
+CI_IMAGE ?= registry.gitlab.com/en-shop/back-php/serv-identity:ci
+
 ## Install Project
 .PHONY: install
 install:
@@ -189,6 +192,16 @@ bash-redis:
 .PHONY: logs $(s)
 logs:
 	@$(DOCKER) logs -f ${s}
+
+## Build the GitLab CI image (target `ci` of docker/app/Dockerfile)
+.PHONY: ci-image
+ci-image:
+	docker build --target ci -f docker/app/Dockerfile -t $(CI_IMAGE) .
+
+## Build and push the GitLab CI image (requires `docker login registry.gitlab.com`)
+.PHONY: ci-image-push
+ci-image-push: ci-image
+	docker push $(CI_IMAGE)
 
 ##--------------------------------- Composer -----------------------------------
 

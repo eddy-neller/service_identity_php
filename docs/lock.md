@@ -136,7 +136,8 @@ Les limites effectivement appliquées aujourd'hui sont ailleurs :
 ## Pourquoi `flock` en test
 
 - La CI (`.gitlab-ci.yml`) ne démarre **que Postgres** : aucun Redis n'y est joignable.
-- Elle force `MESSENGER_TRANSPORT_DSN=sync://` : un seul processus, `flock` suffit.
+- Les tests tournent dans un seul processus, transports Messenger en `in-memory://` (`.env.test`) :
+  `flock` suffit.
 - `UserNotifierTest` mocke `LockFactory` : il vérifie le comportement du notifier, pas le store.
 
 **Conséquence : aucun test ne prouve l'exclusion entre conteneurs.** Elle se vérifie à la main, stack

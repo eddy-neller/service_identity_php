@@ -118,11 +118,14 @@ réglage de développement dans le fichier de base.**
 
 #### Le Dockerfile est multi-étages, et l'étape `prod` doit le rester
 
-`base` → `vendor` → `prod` / `dev`. L'étape `prod` est la cible par défaut ; `dev` n'est sélectionnée
-que par l'override.
+`base` → `vendor` → `prod` / `dev` / `ci`. L'étape `prod` est la cible par défaut ; `dev` n'est
+sélectionnée que par l'override, `ci` que par `make ci-image` (image des jobs de `.gitlab-ci.yml`).
 
-- **Xdebug, Composer, `nano`, `telnet`, `ping` ne sont que dans `dev`.** Xdebug est un débogueur :
-  coût à l'exécution sur chaque appel de fonction, et surface d'attaque.
+- **Xdebug, `nano`, `telnet`, `ping` ne sont que dans `dev` ; Composer, dans `dev` et `ci`.** Xdebug
+  est un débogueur : coût à l'exécution sur chaque appel de fonction, et surface d'attaque.
+- **L'image de CI part de `base`, jamais d'un Dockerfile à part** : les tests tournent sur les
+  extensions PHP de l'image déployée. L'ancien `docker/ci/` en avait dérivé en silence (cron lancé à
+  chaque job, Xdebug actif, `php.ini` propre). Après toute modification de `base` : `make ci-image-push`.
 - L'étape `vendor` lance `composer install --no-dev` **dans l'image**. Avant, `vendor/` étant exclu
   par `.dockerignore` et jamais installé, l'image ne contenait **aucune dépendance** : elle ne
   pouvait démarrer que grâce au bind mount de développement. Le symptôme était nul en local et total
