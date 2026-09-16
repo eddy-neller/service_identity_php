@@ -46,9 +46,10 @@ token de réinitialisation. Un jitter de 10 % évite que plusieurs workers rées
 
 Les erreurs définitives sont séparées : `async` alimente `failed_async` et `domain_events` alimente
 `failed_domain_events`. Les deux sont des files Doctrine distinctes, ce qui permet des alertes, une
-rétention et des reprises adaptées. `failed_legacy` ne reçoit plus rien ; il reste disponible pour
-vider l'ancienne file commune lors du déploiement avec
-`messenger:failed:show --transport=failed_legacy` puis `messenger:failed:retry --transport=failed_legacy`.
+rétention et des reprises adaptées. L'ancienne file commune `failed` a été retirée : elle ne recevait
+plus rien et la table ne contenait aucune ligne. Le `failure_transport` global vise désormais
+`failed_domain_events`, c'est-à-dire la cible de `messenger:failed:show` et `messenger:failed:retry`
+sans `--transport` ; pour l'autre file, passer `--transport=failed_async`.
 
 ### Intégrité des messages asynchrones
 

@@ -21,29 +21,9 @@ framework:
           - doctrine_close_connection
       async.bus: ~
 
-    failure_transport: failed_legacy
+    failure_transport: failed_domain_events
 
     transports:
-      # https://symfony.com/doc/current/messenger.html#transport-configuration
-      # async: '%env(MESSENGER_TRANSPORT_DSN)%'
-      # failed: 'doctrine://default?queue_name=failed'
-      # sync: 'sync://'
-      async:
-        dsn: "%env(MESSENGER_TRANSPORT_DSN)%"
-        failure_transport: failed_async
-        retry_strategy:
-          max_retries: 6
-          delay: 30000
-          multiplier: 2
-          max_delay: 900000
-          jitter: 0.1
-      # Outbox transactionnel : l'INSERT est émis sur la connexion Doctrine courante,
-      # donc dans la même transaction que la persistance de l'agrégat.
-      # LISTEN/NOTIFY activé (défaut) : le producteur émet de toute façon un
-      # `SELECT pg_notify(...)` à chaque insert — c'est inconditionnel sur Postgres dans
-      # Connection::executeInsert(). `use_notify: false` n'agit que sur le consommateur, en
-      # le privant du LISTEN : on payait le notify pour personne et les workers tombaient
-      # en polling. À true, le coût producteur est identique et le réveil est immédiat.
       domain_events:
         dsn: "doctrine://default?queue_name=domain_events&auto_setup=false"
         failure_transport: failed_domain_events
@@ -53,18 +33,21 @@ framework:
           multiplier: 2
           max_delay: 300000
           jitter: 0.1
-      # Files d'échec : consommées manuellement (`messenger:failed:retry`), jamais par un
-      # worker en attente. Le LISTEN n'a rien à réveiller, on garde `use_notify: false`.
-      failed_async:
-        dsn: "doctrine://default?queue_name=failed_async&auto_setup=false"
-        options:
-          use_notify: false
       failed_domain_events:
         dsn: "doctrine://default?queue_name=failed_domain_events&auto_setup=false"
         options:
           use_notify: false
-      failed_legacy:
-        dsn: "doctrine://default?queue_name=failed&auto_setup=false"
+      async:
+        dsn: "%env(MESSENGER_TRANSPORT_DSN)%"
+        failure_transport: failed_async
+        retry_strategy:
+          max_retries: 6
+          delay: 30000
+          multiplier: 2
+          max_delay: 900000
+          jitter: 0.1
+      failed_async:
+        dsn: "doctrine://default?queue_name=failed_async&auto_setup=false"
         options:
           use_notify: false
 
@@ -76,9 +59,4 @@ when@test:
   framework:
     messenger:
       transports:
-        # replace with your transport name here (e.g., my_transport: 'in-memory://')
-        # For more Messenger testing tools, see https://github.com/zenstruck/messenger-test
-        # async: 'in-memory://'
-        # Les réactions s'exécutent en ligne : les tests API conservent le comportement
-        # synchrone d'avant l'outbox.
         domain_events: "sync://"
