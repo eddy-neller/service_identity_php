@@ -48,10 +48,48 @@ reste dans `src/Infrastructure/`, à côté de son implémentation.
 | `Service\Uuid\UuidGeneratorInterface` | `RamseyUuidGenerator` | repositories Doctrine |
 | `Service\Token\AuthVersionStoreInterface` | `RedisAuthVersionStore` | `JwtAuthVersionSubscriber`, `LexikJwtAccessTokenProvider` |
 | `Symfony\Service\Notification\User\UserNotifierInterface` | `UserNotifier` | handlers `Symfony\Messenger\Event\Handler\User` |
-| `Messenger\Event\DomainEventLedgerInterface` | `DoctrineDomainEventLedger` | handlers `Messenger\Event\Handler` |
+| `Messenger\Event\DomainEventLedgerInterface` | `Persistence\Doctrine\Inbox\DoctrineDomainEventLedger` | handlers `Messenger\Event\Handler` |
 
 > Avant de créer une interface dans `src/Application/…/Port`, vérifier qu'elle est bien injectée par un
 > handler ou un service applicatif. Sinon → `src/Infrastructure/`.
+
+### Où vit l'accès Doctrine
+
+**Un fichier qui connaît le schéma vit dans `src/Infrastructure/Persistence/`.** Le critère n'est pas
+« est-ce une entité ? » mais « ce fichier nomme-t-il une table, une colonne, ou du SQL dialectal ? ».
+
+C'est pour cela que `DoctrineDomainEventLedger` a quitté `Symfony/Messenger/Event/` : il porte le nom
+de la table `processed_domain_event` et un `ON CONFLICT` propre à PostgreSQL. Avec la migration, ce
+sont les deux seuls fichiers à dépendre de cette table ; les garder voisins évite qu'un renommage
+oblige à fouiller un dossier `Symfony/`. Son **interface**, elle, reste auprès de ses consommateurs :
+c'est le contrat, il ne connaît aucun schéma.
+
+**Co-localiser interface et implémentation est la norme** — c'est ce que font `Adapter/Cache/`,
+`Adapter/Token/` et `Adapter/Uuid/`, dossiers nommés par la **fonction**, l'implémentation nommée par
+la technologie. Ça ne pose aucun problème là : Redis, le cache Symfony et Ramsey ne nomment ni table
+ni colonne.
+
+**Sauf quand l'implémentation connaît le schéma** : elle part alors dans `Persistence/`, et le
+contrat reste auprès de ses consommateurs. C'est déjà le cas des repositories —
+`UserRepositoryInterface` dans `Application/User/Port/`, `DoctrineUserRepository` dans
+`Persistence/Doctrine/` — et c'est pour la même raison que `DomainEventLedgerInterface` reste dans
+`Symfony/Messenger/Event/`. La mettre auprès de son adaptateur donnerait aux handlers un
+`use App\Infrastructure\Persistence\Doctrine\Inbox\DomainEventLedgerInterface` : la flèche de
+dépendance s'inverserait, le nom laisserait croire que Doctrine fait partie du contrat, et un second
+adaptateur — une inbox Redis, un double en mémoire — n'aurait plus de place logique.
+
+Vérification, qui doit ne rendre que les exceptions ci-dessous :
+
+```bash
+grep -rn '^use Doctrine' src/ | grep -v 'src/Infrastructure/Persistence'
+```
+
+- **Exception assumée** : les fixtures (`Symfony/DataFixtures/**`) étendent `Fixture` et reçoivent un
+  `ObjectManager` — c'est le contrat du bundle, il n'y a pas de version sans Doctrine.
+- **Écart connu, à corriger** : `Symfony/Command/User/GenerateUserImagesCommand` injecte
+  l'`EntityManager` et modifie des entités Doctrine directement, sans passer par le Domain. Le
+  corriger n'est pas un déplacement de fichier mais l'extraction d'un cas d'usage — à traiter pour
+  lui-même, pas au détour d'un autre chantier.
 
 ---
 

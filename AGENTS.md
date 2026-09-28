@@ -232,8 +232,9 @@ correspondances suivantes ne s'en déduisent pas :
 
 - `security.password_hashers` → `infra.adapter.hasher` ;
 - `src/Presentation/Shared/Controller` (`GET /health`) → `api.health` ;
-- schéma de la base (entités Doctrine, migrations) → `infra.persist` **et**
-  `infra.symfony.messenger.event`, qui écrit dans `processed_domain_event` et l'outbox.
+- schéma de la base (entités Doctrine, migrations) → `infra.persist`, qui couvre les repositories
+  **et** l'inbox `processed_domain_event`, **et** `infra.symfony.messenger.event`, qui écrit dans
+  l'outbox.
 
 Règles :
 

@@ -2,9 +2,10 @@
 
 declare(strict_types=1);
 
-namespace App\Infrastructure\Symfony\Messenger\Event;
+namespace App\Infrastructure\Persistence\Doctrine\Inbox;
 
 use App\Application\Shared\Port\ClockInterface;
+use App\Infrastructure\Symfony\Messenger\Event\DomainEventLedgerInterface;
 use Doctrine\DBAL\Connection;
 use Doctrine\ORM\EntityManagerInterface;
 
@@ -12,6 +13,11 @@ use Doctrine\ORM\EntityManagerInterface;
  * Inbox portée par la table `processed_domain_event`, sur la connexion Doctrine courante :
  * un `markProcessed()` appelé depuis un callback transactionnel est donc commité — ou annulé —
  * avec l'effet du handler.
+ *
+ * Vit dans `Persistence/` et non à côté de son interface, parce qu'elle connaît le **schéma** :
+ * le nom de la table, et un `ON CONFLICT` propre à PostgreSQL. Ce sont les deux seuls endroits,
+ * avec la migration qui crée la table, à en dépendre — les garder voisins évite qu'un renommage
+ * de table oblige à fouiller un dossier `Symfony/`.
  */
 final readonly class DoctrineDomainEventLedger implements DomainEventLedgerInterface
 {
