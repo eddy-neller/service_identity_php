@@ -1,6 +1,6 @@
 # RefreshTokenCommandHandler
 
-Fichier documenté : `src/Application/User/UseCase/Command/RefreshToken/RefreshTokenCommandHandler.php`.
+Fichier documenté : `src/Application/User/UseCase/Command/Auth/RefreshToken/RefreshTokenCommandHandler.php`.
 
 ## Rôle
 

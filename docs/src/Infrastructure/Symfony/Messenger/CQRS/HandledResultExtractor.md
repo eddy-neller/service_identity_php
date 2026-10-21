@@ -1,6 +1,6 @@
 # HandledResultExtractor
 
-Fichier documenté : `src/Infrastructure/Messenger/CQRS/HandledResultExtractor.php`.
+Fichier documenté : `src/Infrastructure/Symfony/Messenger/CQRS/HandledResultExtractor.php`.
 
 ## Rôle
 

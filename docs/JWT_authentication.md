@@ -109,6 +109,7 @@ l'état présent.
 
 - `config/packages/security.yaml` : firewall et provider `lexik_jwt`.
 - `config/packages/lexik_jwt_authentication.yaml` : clés, TTL et claim `sub`.
-- `src/Infrastructure/Service/Token/LexikJwtAccessTokenProvider.php` : émission.
-- `src/Infrastructure/EventSubscriber/JwtAuthVersionSubscriber.php` : validation Redis.
-- `src/Infrastructure/EventSubscriber/User/UserEventSubscriber.php` : révocation.
+- `src/Infrastructure/Adapter/Token` : émission.
+- `src/Infrastructure/Symfony/EventSubscriber/JwtAuthVersionSubscriber.php` : validation Redis.
+- `src/Infrastructure/Symfony/Messenger/Event/Handler/User/RevokeSessionsHandler.php` :
+  révocation des sessions, en réaction à `UserReauthenticationRequiredEvent`.

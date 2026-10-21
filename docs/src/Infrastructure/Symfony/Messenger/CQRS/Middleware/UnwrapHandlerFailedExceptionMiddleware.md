@@ -1,6 +1,6 @@
 # UnwrapHandlerFailedExceptionMiddleware
 
-Fichier documenté : `src/Infrastructure/Messenger/CQRS/Middleware/UnwrapHandlerFailedExceptionMiddleware.php`.
+Fichier documenté : `src/Infrastructure/Symfony/Messenger/CQRS/Middleware/UnwrapHandlerFailedExceptionMiddleware.php`.
 
 ## Rôle
 

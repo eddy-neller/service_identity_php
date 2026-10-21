@@ -44,7 +44,7 @@ reste dans `src/Infrastructure/`, à côté de son implémentation.
 
 | Contrat interne | Implémentation | Consommateurs |
 |---|---|---|
-| `Service\Cache\QueryCacheInterface` | `SymfonyTagAwareQueryCache` | `QueryCacheMiddleware`, `UserCacheInvalidationListener` |
+| `Service\Cache\QueryCacheInterface` | `SymfonyTagAwareQueryCache` | `QueryCacheMiddleware`, `CacheInvalidationMiddleware` |
 | `Service\Uuid\UuidGeneratorInterface` | `RamseyUuidGenerator` | repositories Doctrine |
 | `Service\Token\AuthVersionStoreInterface` | `RedisAuthVersionStore` | `JwtAuthVersionSubscriber`, `LexikJwtAccessTokenProvider` |
 | `Symfony\Service\Notification\User\UserNotifierInterface` | `UserNotifier` | handlers `Symfony\Messenger\Event\Handler\User` |
@@ -101,7 +101,7 @@ Les use cases publient leurs Domain Events **dans** leur transaction via `Domain
 événements sont commités ensemble. Les réactions ne s'exécutent qu'au worker
 `messenger:consume domain_events`.
 
-Règles pour un handler d'événement (`src/Infrastructure/Messenger/Event/Handler/`) :
+Règles pour un handler d'événement (`src/Infrastructure/Symfony/Messenger/Event/Handler/`) :
 
 - Un handler par réaction, annoté `#[AsMessageHandler(bus: 'event.bus')]` — pas de subscriber monolithique.
 - **Effet en base** : `markProcessed()` dans la même transaction que l'effet.
@@ -316,7 +316,7 @@ services:
 
 ## Fixtures
 
-- Chaque nouvelle feature persistée doit livrer ses fixtures `test` dans `src/Infrastructure/DataFixtures/test/<Contexte>/`.
+- Chaque nouvelle feature persistée doit livrer ses fixtures `test` dans `src/Infrastructure/Symfony/DataFixtures/test/<Contexte>/`.
 - Ajouter des fixtures `dev` uniquement si elles servent un parcours métier réaliste ou l'UX de développement ; ne pas préremplir un état qui doit naturellement démarrer vide (ex. panier utilisateur).
 - Les fixtures d'une feature déclarent leurs dépendances via `DependentFixtureInterface` et réutilisent les références des fixtures amont (`CustomerFixtures`, `ProductFixtures`, etc.) au lieu de requêter une donnée arbitraire.
 - Les fixtures `test` doivent être déterministes : références nommées, volumes limités, données stables pour les tests API/infra.

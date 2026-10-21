@@ -1,6 +1,6 @@
 # LoginCommandHandler
 
-Fichier documenté : `src/Application/User/UseCase/Command/Login/LoginCommandHandler.php`.
+Fichier documenté : `src/Application/User/UseCase/Command/Auth/Login/LoginCommandHandler.php`.
 
 ## Rôle
 

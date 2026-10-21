@@ -35,9 +35,9 @@ Une exception métier se classe selon **deux axes indépendants**, portés par d
 ```text
                       DomainException (SharedKernel)  ── fallback 400
                               ▲
-        ┌─────────────────────┼─────────────────────┐      axe « bounded context »
-   UserDomainException  CatalogDomainException  CartDomainException…   (héritage de classe)
-        ▲
+                              │                             axe « bounded context »
+                      UserDomainException                    (héritage de classe)
+                              ▲
    UserNotFoundException  ── implements EntityNotFoundInterface ──▶ 404   axe « sémantique »
                                                                          (interface marqueur)
 ```
@@ -138,11 +138,11 @@ flowchart TD
 En pratique, pour une exception qui entre dans une catégorie :
 
 ```php
-final class OrderAlreadyPaidException extends CartDomainException implements ConflictInterface
+final class EmailAlreadyUsedException extends UserDomainException implements ConflictInterface
 {
     public function __construct()
     {
-        parent::__construct('Order is already paid.');   // message métier, jamais de code HTTP
+        parent::__construct('Email is already used.');   // message métier, jamais de code HTTP
     }
 }
 ```
@@ -157,16 +157,12 @@ final class OrderAlreadyPaidException extends CartDomainException implements Con
 `InvalidUuidException` (SharedKernel) · `InvalidEmailAddressException` · `InvalidFirstnameException` ·
 `InvalidLastnameException` · `InvalidRoleException` · `InvalidUsernameException` ·
 `Security\InvalidCurrentPasswordException` · `Security\SamePasswordException` · `Profile\InvalidAvatarException`
-(User) · `Ordering\CartQuantityExceededException` (Shop)
+(User)
 
 **404 — `EntityNotFoundInterface`**
-`UserNotFoundException` (User) · `Catalog\CategoryNotFoundException` · `Catalog\ProductNotFoundException` ·
-`Customer\AddressNotFoundException` · `Customer\CustomerNotFoundException` · `Ordering\CartLineNotFoundException`
-(Shop)
+`UserNotFoundException` (User)
 
 **409 — `ConflictInterface`**
-`Catalog\CategoryTitleAlreadyUsedException` · `Catalog\ProductTitleAlreadyUsedException` ·
-`Customer\AddressLimitReachedException` · `Customer\CustomerAlreadyExistsException` (Shop) ·
 `Uniqueness\EmailAlreadyUsedException` · `Uniqueness\UsernameAlreadyUsedException` (User)
 
 **Cas spécifiques (lignes explicites)**
@@ -174,9 +170,8 @@ final class OrderAlreadyPaidException extends CartDomainException implements Con
 423 `UserLockedException` · 429 `ActivationLimitReachedException`, `ResetPasswordLimitReachedException`
 
 **400 — fallback `DomainException`**
-Toute exception Domain non catégorisée, y compris les bases par BC (`ShopDomainException`,
-`UserDomainException`, `CatalogDomainException`, `CustomerDomainException`, `CartDomainException`) et les
-`throw new <BC>DomainException(...)` directs.
+Toute exception Domain non catégorisée, y compris la base de contexte (`UserDomainException`,
+seule de ce service depuis le jalon 3) et les `throw new <BC>DomainException(...)` directs.
 
 ---
 

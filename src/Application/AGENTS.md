@@ -138,8 +138,8 @@ Calculs de montants/totaux, conversions d'unités monétaires (euros↔cents), a
 - Les tests Application sont des tests unitaires PHPUnit purs : pas de kernel Symfony, pas de conteneur, pas de DB, pas d'implémentation Infrastructure.
 - Namespace attendu : `App\Tests\Application\Unit\<Contexte>\...`, miroir du namespace `App\Application\<Contexte>\...`.
 - Nom de classe : retirer le dossier de use case et remplacer le suffixe `Command` / `Query` par `Test`.
-  - `App\Application\Shop\UseCase\Command\Catalog\CreateProductByAdmin\CreateProductByAdminCommand`
-  - → `App\Tests\Application\Unit\Shop\UseCase\Command\Catalog\CreateProductByAdminTest`
+  - `App\Application\User\UseCase\Command\Auth\Login\LoginCommand`
+  - → `App\Tests\Application\Unit\User\UseCase\Command\Auth\LoginTest`
 - Chaque classe de test est `final`, étend `PHPUnit\Framework\TestCase`, déclare `strict_types=1` et type ses mocks avec intersections `PortInterface&MockObject`.
 - Les dépendances du handler/service sont créées dans `setUp()` avec `$this->createMock(...)`; le handler/service testé y est instancié directement.
 - Les tests appellent `handle()` directement **uniquement dans la couche de tests Application** pour vérifier le handler isolé. Le code de production hors Application passe toujours par les Bus.

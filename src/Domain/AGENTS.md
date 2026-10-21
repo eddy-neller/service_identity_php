@@ -70,13 +70,15 @@ src/Domain/
 
 ## Domain Events
 
-- Représentent des faits métier : `OrderPlaced`, `OrderCancelled`, `UserRegistered`, …
+- Représentent des faits métier **accomplis**, donc nommés au passé : `UserRegistered`,
+  `UserActivated`, `UserDeletedByAdmin`, `PasswordResetRequested`, …
 - Vivent dans `src/Domain/<Context>/Event/` et implémentent `DomainEventInterface` du SharedKernel :
   `eventId()`, `aggregateId()`, `occurredOn()`, `eventName()`.
 - **Obligatoire** : utiliser `DomainEventIdentityTrait` et assigner `$this->eventId = self::generateEventId();`
   dans le constructeur. Cet identifiant est la clé de déduplication côté consommateur — sans lui, une
   redélivrance rejouerait la réaction.
-- `aggregateId()` retourne l'identifiant du sujet (`$this->userId->toString()`, `$this->orderId->toString()`) :
+- `aggregateId()` retourne l'identifiant du sujet (`$this->userId->toString()`, les événements de
+  ce service portant tous sur un utilisateur) :
   c'est ce qui rend les journaux corrélables. **Jamais** une donnée personnelle.
 - Les événements du contexte User implémentent `UserDomainEventInterface` (qui étend `DomainEventInterface`
   et expose `getUserId()`) : un consommateur peut ainsi réagir à tout fait touchant un compte sans
@@ -96,8 +98,9 @@ src/Domain/
 **Deux axes orthogonaux, à respecter tous les deux :**
 
 - **Axe bounded context** (héritage de classe) : chaque exception hérite de la base de son BC —
-  `UserDomainException`, `CatalogDomainException`, `CustomerDomainException`, `CartDomainException`, … elles-mêmes
-  sous `SharedKernel\Exception\DomainException`. Sert au regroupement par contexte (throws génériques,
+  `UserDomainException` est la seule de ce service depuis le jalon 3, et un contexte ajouté
+  apporterait la sienne, sous `SharedKernel\Exception\DomainException`. Sert au regroupement par
+  contexte (throws génériques,
   `expectException(<BC>DomainException::class)` des tests) et constitue le **fallback 400**.
 - **Axe sémantique** (interface marqueur de `SharedKernel\Exception`, matchée par `is_a()`) : la feuille `implements`
   la catégorie qui décrit *ce qui s'est passé*, indépendamment du BC :
@@ -219,7 +222,7 @@ masquer la donnée importante du scénario : toute valeur qui explique le cas te
 
 ### Pattern de test des Value Objects
 
-Tout VO a un test couvrant **systématiquement** (cf. `Catalog`/`Customer`/`Ordering` comme références) :
+Tout VO a un test couvrant **systématiquement** (cf. `User`/`SharedKernel` comme références) :
 
 1. **Construction valide** : `fromString()`/`fromInt()`/… renvoie la valeur via `toString()`/getter.
 2. **Invariants** : un cas `expectException` + `expectExceptionMessage` **par règle** rejetée
@@ -255,7 +258,6 @@ adaptés au comportement public :
 
 ### Vérification avant livraison
 
-- Modification dans `src/Domain/Shop` : lancer `make unit-suite s=domain.shop`.
 - Modification dans `src/Domain/User` : lancer `make unit-suite s=domain.user`.
 - Modification dans `src/Domain/SharedKernel` ou ajout d'un `Model`/`ValueObject` : lancer
   `make unit-suite s=domain.shared`.

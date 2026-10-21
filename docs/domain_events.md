@@ -116,7 +116,7 @@ construction, et voyage avec l'événement lors de la sérialisation : il reste 
 chaque redélivrance du même message. C'est précisément ce qui rend la déduplication possible.
 
 `aggregateId()` est implémenté par chaque événement et retourne l'identifiant de son sujet
-(`$this->userId->toString()` pour les événements User, `$this->orderId->toString()` pour Ordering).
+(`$this->userId->toString()`, les événements de ce service portant tous sur un utilisateur).
 Il sert à corréler les journaux : retrouver toutes les réactions déclenchées par un utilisateur
 donné se fait par cet identifiant technique, jamais par une donnée personnelle (voir ci-dessous).
 
@@ -168,17 +168,11 @@ identifier le sujet sans l'exposer.
 | `PasswordResetCompletedEvent` | `user.password_reset.completed` | — |
 | `UserWrongPasswordAttemptRegisteredEvent` | `user.wrong_password_attempt.registered` | — |
 | `UserWrongPasswordAttemptsResetEvent` | `user.wrong_password_attempts.reset` | — |
-| `OrderPlacedEvent` | `shop.order.placed` | *non publié* — Ordering non extrait |
-| `OrderPaidEvent` | `shop.order.paid` | *non publié* — Ordering non extrait |
 
 Les 13 événements User déclenchent en outre, systématiquement, la journalisation
 (`LogDomainEventHandler`) dans le worker et l'invalidation du cache de queries
 (`CacheInvalidationMiddleware`) dans la requête : la colonne ci-dessus ne liste que les
 réactions spécifiques.
-
-Les deux événements `Ordering` existent dans le Domain mais ne sont émis par aucun use case :
-l'écriture des commandes passe encore par le legacy `src/Entity/Shop/Order.php`. Ils seront
-raccordés automatiquement (le routage cible l'interface) le jour où le use case sera extrait.
 
 ## 2. Publier dans la transaction
 
@@ -318,7 +312,7 @@ le conteneur `app` recréé lorsque `docker/app/supervisor/conf.d/messenger-work
 fichier est copié dans l'image. Surveiller aussi
 `messenger:failed:show --transport=failed_domain_events`.
 
-Les handlers vivent dans `src/Infrastructure/Messenger/Event/Handler/`, un par réaction, annotés
+Les handlers vivent dans `src/Infrastructure/Symfony/Messenger`, un par réaction, annotés
 `#[AsMessageHandler(bus: 'event.bus')]`. Un handler peut couvrir plusieurs événements en portant
 l'attribut sur plusieurs méthodes (`ProvisionCustomerHandler`).
 
@@ -574,9 +568,9 @@ C'est **exhaustif sans être redondant** : les 13 publieurs sont tous des comman
 tous traversent ce middleware. Un handler d'invalidation branché en plus sur l'outbox n'attraperait
 rien de mieux, et laisserait croire que cette purge tolère un délai — ce qui est précisément le bug.
 
-Corollaire : les queries Shop (`DisplayListProduct`, `DisplayListCategory`, `DisplayMyCustomer`)
-sont cachées sans qu'aucun événement ne les invalide, faute de `ShopDomainEventInterface`. Elles
-dépendent aujourd'hui de leur seul TTL.
+Corollaire pour un contexte ajouté ici : ses queries cachées ne seront invalidées que s'il
+déclare ses tags dans `DomainEventCacheTags`. Sans quoi elles dépendront de leur seul TTL, sans que
+rien ne le signale.
 
 ## 7. Sérialisation
 
@@ -638,7 +632,7 @@ transaction avant le commit, elle disparaît au rollback, et le message stocké 
 
 ### Ajouter une réaction
 
-1. Créer le handler dans `src/Infrastructure/Messenger/Event/Handler/<Context>/`, `final readonly`,
+1. Créer le handler dans `src/Infrastructure/Symfony/Messenger`, `final readonly`,
    annoté `#[AsMessageHandler(bus: 'event.bus')]`.
 2. Choisir le régime d'idempotence (§5) et injecter `DomainEventLedgerInterface` en conséquence.
    Utiliser `self::class` comme clé de handler.
@@ -681,7 +675,5 @@ Un outbox qui grossit sans se vider signifie que le worker est arrêté — c'es
   n'en dépend, mais un futur enchaînement causal devrait l'expliciter plutôt que de compter sur
   l'ordre d'insertion.
 - **Doublon d'e-mail possible** en cas de crash entre l'envoi et le marquage (§5).
-- **Cache Shop non invalidé.** Les queries Shop sont cachées, mais `DomainEventCacheTags` ne
-  connaît que les événements User : elles dépendent de leur seul TTL (§6).
-- **`OrderPlacedEvent` / `OrderPaidEvent` ne sont pas publiés** tant que le use case Ordering
-  n'est pas extrait du legacy.
+- **`DomainEventCacheTags` ne connaît que les événements `user.*`.** Un contexte ajouté ici
+  devrait y déclarer ses tags, sans quoi ses queries cachées ne dépendraient que de leur TTL (§6).

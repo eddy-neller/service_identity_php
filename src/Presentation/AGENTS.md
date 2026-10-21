@@ -111,7 +111,7 @@ Suites : `pres.state.sendmail`, `pres.state.shared`, `pres.state.user` ; API (ex
 
 ### Conventions de test (à suivre pour tout nouveau test)
 
-Tout nouveau test de State **doit** reproduire les conventions des tests existants (`State/Shop/Customer`, `State/Shop/Catalog`, `State/Shop/Ordering`). Ne pas réinventer un autre style.
+Tout nouveau test de State **doit** reproduire les conventions des tests existants (`State/User`, `State/SendMail`). Ne pas réinventer un autre style.
 
 - **Test unitaire pur** : `final class …Test extends PHPUnit\Framework\TestCase` (pas de `KernelTestCase`/conteneur). Namespace = miroir de `src/` (cf. règle d'arborescence ci-dessous).
 - **Doubles** :
@@ -136,7 +136,7 @@ dès qu'un Provider/Processor est livré sans test.
 - Les **Presenters ne sont pas garde-fous** : ils sont exercés indirectement par les tests des States qui les consomment.
 - L'arborescence des tests **reflète `src/`**, en remontant le segment `State` :
   `src/<Context>/State/<rest>/<Name>.php` → `tests/Unit/State/<Context>/<rest>/<Name>Test.php`
-  (ex. `Shop/State/Catalog/Category/CategoryGetProvider` → `State/Shop/Catalog/Category/CategoryGetProviderTest`).
+  (ex. `User/State/Auth/RefreshTokenProcessor` → `State/User/Auth/RefreshTokenProcessorTest`).
 - Le code pas encore branché peut être listé dans `StateTestCoverageTest::EXCLUDED` (FQCN + commentaire) ;
   **retirer l'entrée dès qu'il est implémenté**.
 
