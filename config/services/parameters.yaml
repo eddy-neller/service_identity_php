@@ -16,6 +16,12 @@ parameters:
     app.avatar.uploadDirectory: '%kernel.project_dir%/public%app.path.images%/user/avatar'
     app.avatar.uploadUrl: '%app.path.images%/user/avatar'
 
+    ###> Bus inter-services (SNS) ###
+    app.bus.region: "%env(AWS_REGION)%"
+    app.bus.endpoint: "%env(AWS_ENDPOINT)%"
+    app.bus.user_events_topic_arn: "%env(USER_EVENTS_TOPIC_ARN)%"
+    ###< Bus inter-services (SNS) ###
+
     ###> symfony/mailer ###
     mailer_dsn: "%env(resolve:MAILER_DSN)%"
     mailer_user: "%env(resolve:MAILER_USER)%"

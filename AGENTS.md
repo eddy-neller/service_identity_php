@@ -262,6 +262,7 @@ Règles :
 | `infra.adapter.storage` | `tests/Infrastructure/Unit/Adapter/Storage` | non |
 | `infra.adapter.token` | `tests/Infrastructure/Unit/Adapter/Token` | non |
 | `infra.http.shop_service` | `tests/Infrastructure/Unit/Http/ShopService` | non |
+| `infra.messaging` | `tests/Infrastructure/Unit/Messaging` | non |
 | `infra.persist` | `tests/Infrastructure/Integration/Persistence` | **oui** |
 | `infra.symfony.command` | `tests/Infrastructure/Unit/Symfony/Command` | non |
 | `infra.symfony.event_subscriber` | `tests/Infrastructure/Unit/Symfony/EventSubscriber` | non |

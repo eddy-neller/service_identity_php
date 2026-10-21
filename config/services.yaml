@@ -47,6 +47,26 @@ services:
   App\Application\Shared\CQRS\Query\QueryBusInterface:
     alias: App\Infrastructure\Symfony\Messenger\CQRS\MessengerQueryBus
 
+  # Client SNS : il vit dans vendor/, donc le `resource: ../src/` ne l'enregistre pas.
+  # Aucun identifiant n'est passe — la chaine par defaut d'AsyncAws s'en charge, ce qui donne
+  # EKS Pod Identity en production. `endpoint` est toujours renseigne : vide, AsyncAws retomberait
+  # sur son modele `https://%%service%%.%%region%%.amazonaws.com`, ce qui masquerait une erreur de
+  # configuration en developpement.
+  AsyncAws\Sns\SnsClient:
+    arguments:
+      $configuration:
+        region: '%app.bus.region%'
+        endpoint: '%app.bus.endpoint%'
+
+  App\Infrastructure\Messaging\Sns\SnsUserIntegrationEventPublisher:
+    arguments:
+      $topicArn: '%app.bus.user_events_topic_arn%'
+
+  # Alias explicite : le contrat a deux implementations (SNS et, en test, un double), donc
+  # l'aliasing automatique de Symfony ne s'applique plus.
+  App\Infrastructure\Messaging\UserIntegrationEventPublisherInterface:
+    alias: App\Infrastructure\Messaging\Sns\SnsUserIntegrationEventPublisher
+
 when@dev:
   services:
     _defaults:
@@ -73,3 +93,10 @@ when@test:
     # charge ces fixtures deterministes dans la base de donnees dediee.
     App\Infrastructure\Symfony\DataFixtures\test\:
       resource: '../src/Infrastructure/Symfony/DataFixtures/test/'
+
+    # Publication en memoire : aucune suite ne doit dependre de la brique `aws_local`, dont
+    # LocalStack exige un jeton que la CI n'a pas.
+    App\Tests\Infrastructure\Double\Messaging\InMemoryUserIntegrationEventPublisher: ~
+
+    App\Infrastructure\Messaging\UserIntegrationEventPublisherInterface:
+      alias: App\Tests\Infrastructure\Double\Messaging\InMemoryUserIntegrationEventPublisher

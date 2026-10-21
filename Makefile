@@ -126,6 +126,7 @@ dc:
 .PHONY: network
 network:
 	@docker network create en_shop_php_edge 2>/dev/null || true
+	@docker network create en_shop_php_bus 2>/dev/null || true
 
 ## Crée et demarre les containers (plusieurs instances de `app`)
 ##   Surcharge du nombre d'instances : make up APP_REPLICAS=4
