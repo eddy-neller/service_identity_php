@@ -218,7 +218,7 @@ logs:
 ## Build the GitLab CI image (target `ci` of docker/app/Dockerfile)
 .PHONY: ci-image
 ci-image:
-	docker build --target ci -f docker/app/Dockerfile -t $(CI_IMAGE) .
+	docker build --pull --target ci -f docker/app/Dockerfile -t $(CI_IMAGE) .
 
 ## Build and push the GitLab CI image (requires `docker login registry.gitlab.com`)
 .PHONY: ci-image-push

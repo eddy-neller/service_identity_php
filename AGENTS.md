@@ -133,6 +133,14 @@ sélectionnée que par l'override, `ci` que par `make ci-image` (image des jobs 
 - **L'image de CI part de `base`, jamais d'un Dockerfile à part** : les tests tournent sur les
   extensions PHP de l'image déployée. L'ancien `docker/ci/` en avait dérivé en silence (cron lancé à
   chaque job, Xdebug actif, `php.ini` propre). Après toute modification de `base` : `make ci-image-push`.
+- **L'image `:ci` du registre vieillit seule, et c'est `composer install` qui le dit.** `base` part du
+  tag flottant `php:8.4-fpm`, mais l'image du registre n'est reconstruite qu'à la main. Or
+  `roave/security-advisories` est verrouillé en `dev-latest` : dès qu'une version de PHP sort pour une
+  faille, le job échoue sur « roave/security-advisories dev-latest conflicts with php … <8.4.27 »,
+  alors que tout passe en local, où la base a été retirée entre-temps. **Le lock n'y est pour rien,
+  ne pas y toucher** : `make ci-image` (qui tire la base avec `--pull`), vérifier la version de PHP
+  dans l'image, puis `make ci-image-push`. Vécu le 22/10/2026 : image en 8.4.25, 8.4.27 exigée.
+  L'image `prod` est dans le même cas : la reconstruire avec `--pull`.
 - L'étape `vendor` lance `composer install --no-dev` **dans l'image**. Avant, `vendor/` étant exclu
   par `.dockerignore` et jamais installé, l'image ne contenait **aucune dépendance** : elle ne
   pouvait démarrer que grâce au bind mount de développement. Le symptôme était nul en local et total
