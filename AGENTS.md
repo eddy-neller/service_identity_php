@@ -39,7 +39,7 @@ et `back_php/ARCHITECTURE.md`.
 ## Stack & versions
 
 - **PHP** 8.4 (`declare(strict_types=1);` obligatoire dans tout fichier PHP)
-- **Symfony** 7.4 · **API Platform** 4.3 · **Doctrine ORM** 3 + Migrations
+- **Symfony** 7.4 · **API Platform** 4.4 · **Doctrine ORM** 3 + Migrations
 - **Tests** : PHPUnit + DAMA DoctrineTestBundle
 - **Qualité** : PHPStan, PHP-CS-Fixer, Rector, PHPCS, PhpMD
 - Ne pas introduire de dépendances imposant PHP < 8, Symfony < 7 ou API Platform < 4.
