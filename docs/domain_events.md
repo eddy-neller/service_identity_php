@@ -56,8 +56,8 @@ et les réactions sont exécutées plus tard, avec retries.
                            ▼
 ┌─ Worker (Infrastructure) ────────────────────────────────────┐
 │  LogDomainEventHandler           tous les événements         │
-│  ProvisionCustomerHandler        registered, created_by_admin│
-│  DisableCustomerHandler          deleted                     │
+│  PublishUserIntegrationEventHandler                          │
+│       registered, created_by_admin, deleted  ──▶ SNS          │
 │  SendActivationEmailHandler      activation_email.requested  │
 │  SendResetPasswordEmailHandler   password_reset.requested    │
 │  RevokeSessionsHandler           reauthentication.required   │
@@ -155,9 +155,9 @@ identifier le sujet sans l'exposer.
 
 | Événement | `eventName()` | Réaction |
 |---|---|---|
-| `UserRegisteredEvent` | `user.registered` | provisioning Customer |
-| `UserCreatedByAdminEvent` | `user.created_by_admin` | provisioning Customer |
-| `UserDeletedByAdminEvent` | `user.deleted` | désactivation Customer |
+| `UserRegisteredEvent` | `user.registered` | publication SNS (`identity.user.registered`) |
+| `UserCreatedByAdminEvent` | `user.created_by_admin` | publication SNS (`identity.user.created_by_admin`) |
+| `UserDeletedByAdminEvent` | `user.deleted` | publication SNS (`identity.user.deleted`) |
 | `ActivationEmailRequestedEvent` | `user.activation_email.requested` | e-mail d'activation |
 | `PasswordResetRequestedEvent` | `user.password_reset.requested` | e-mail de réinitialisation |
 | `UserReauthenticationRequiredEvent` | `user.reauthentication.required` | révocation des sessions |
@@ -314,7 +314,7 @@ fichier est copié dans l'image. Surveiller aussi
 
 Les handlers vivent dans `src/Infrastructure/Symfony/Messenger`, un par réaction, annotés
 `#[AsMessageHandler(bus: 'event.bus')]`. Un handler peut couvrir plusieurs événements en portant
-l'attribut sur plusieurs méthodes (`ProvisionCustomerHandler`).
+l'attribut sur plusieurs méthodes (`PublishUserIntegrationEventHandler`, qui en porte trois).
 
 `LogDomainEventHandler` est typé sur `DomainEventInterface` : il journalise **tout** événement
 consommé sans qu'aucune déclaration ne soit nécessaire pour un nouvel événement.
@@ -330,8 +330,9 @@ $this->logger->info('Domain event handled', [
 
 Un handler de réaction n'a donc **pas** à re-journaliser le fait : ce serait une ligne en double,
 et sémantiquement fausse à cet endroit. Il journalise sa propre réaction quand elle mérite une
-trace — `LoggingShopCustomerClient` signale par exemple qu'aucun transport n'est branché, ce qui
-n'est pas déductible de l'événement seul.
+trace — ce qui n'est pas déductible de l'événement seul. `PublishUserIntegrationEventHandler`,
+lui, n'en journalise aucune : le worker trace déjà le message traité, et un échec de publication
+remonte en exception.
 
 L'invalidation du cache de queries, elle, ne passe **pas** par un handler de réaction : elle vit
 dans le `CacheInvalidationMiddleware` du `command.bus` (§7). `DomainEventCacheTags` y applique le
@@ -341,8 +342,9 @@ faudrait réénumérer les 13 événements User à chaque ajout.
 
 Les handlers restent de l'**adaptation** : quand une réaction est un vrai cas d'usage métier local,
 ils passent par le `CommandBusInterface` plutôt que de manipuler les agrégats eux-mêmes ; quand
-elle sort du service, ils passent par un port (`ProvisionCustomerHandler` appelle
-`ShopCustomerClientInterface`). Dans les deux cas, jamais l'agrégat en direct.
+elle sort du service, ils passent par un contrat d'infrastructure
+(`PublishUserIntegrationEventHandler` appelle `UserIntegrationEventPublisherInterface`). Dans les
+deux cas, jamais l'agrégat en direct.
 
 ## 5. Idempotence
 
@@ -365,16 +367,16 @@ Trois régimes, selon la nature de l'effet :
 | Régime | Handlers | Mécanique | Garantie |
 |---|---|---|---|
 | **Effet en base** | *aucun aujourd'hui* | `hasProcessed()` puis effet puis `markProcessed()`, le tout dans **une même transaction** | exactement-une-fois réel : si l'effet est annulé, la trace l'est aussi |
-| **Effet externe** | `ProvisionCustomerHandler`, `DisableCustomerHandler`, `SendActivationEmailHandler`, `SendResetPasswordEmailHandler`, `RevokeSessionsHandler` | `hasProcessed()` en garde d'entrée, `markProcessed()` **après** succès | au-moins-une-fois, dédupliqué sur le chemin nominal |
+| **Effet externe** | `PublishUserIntegrationEventHandler`, `SendActivationEmailHandler`, `SendResetPasswordEmailHandler`, `RevokeSessionsHandler` | `hasProcessed()` en garde d'entrée, `markProcessed()` **après** succès | au-moins-une-fois, dédupliqué sur le chemin nominal |
 | **Journalisation** | `LogDomainEventHandler` | aucun ledger | idempotent par nature |
 
-**Le premier régime n'a plus d'usager, et c'est récent.** `ProvisionCustomerHandler` et
-`DisableCustomerHandler` l'occupaient tant que le contexte `Shop` vivait ici : leur effet était une
-écriture locale, donc `markProcessed()` partageait sa transaction. Depuis le jalon 3, `Shop` vit dans
-`service_shop` et l'effet est un appel sortant derrière `ShopCustomerClientInterface`. La garantie
-tombe à l'au-moins-une-fois, et **l'idempotence devient la responsabilité du service distant** — le
-contrat du port l'exige explicitement. Le régime reste documenté parce que le mécanisme, lui, est
-intact : le prochain handler à effet local le retrouvera tel quel.
+**Le premier régime n'a plus d'usager, et c'est récent.** Les deux handlers de provisionnement
+l'occupaient tant que le contexte `Shop` vivait ici : leur effet était une écriture locale, donc
+`markProcessed()` partageait sa transaction. Depuis le jalon 3, `Shop` vit dans `service_shop`, et ce
+service ne fait plus que **publier un fait** — un appel réseau, qu'aucune transaction ne couvre. La
+garantie tombe à l'au-moins-une-fois, et **la déduplication devient l'affaire du consommateur**, qui
+s'en charge dans son inbox à partir de l'`eventId` qu'on lui transmet. Le régime reste documenté
+parce que le mécanisme, lui, est intact : le prochain handler à effet local le retrouvera tel quel.
 
 **Limite assumée** : un crash entre l'effet et son marquage produit un doublon — un e-mail réexpédié,
 un provisionnement rejoué. Le véritable exactement-une-fois côté fournisseur e-mail exigerait une clé
@@ -414,14 +416,14 @@ Le TTL suffirait à trancher : les retries suivent un backoff exponentiel plafon
 message rejoué depuis `failed_domain_events` via `messenger:failed:retry` peut l'être des jours plus tard. Le
 verrou a expiré depuis longtemps.
 
-La granularité aussi : `UserRegisteredEvent` déclenche trois handlers (journal, invalidation de
-cache, provisioning). Si seul le provisioning échoue, on veut rejouer celui-là — un verrou unique
-par enveloppe ne sait pas l'exprimer.
+La granularité aussi : `UserRegisteredEvent` déclenche plusieurs handlers (journal, publication
+sur le bus). Si seule la publication échoue, on veut rejouer celle-là — un verrou unique par
+enveloppe ne sait pas l'exprimer.
 
 Et surtout l'atomicité : un handler à effet local peut appeler `markProcessed()` dans la
 transaction de son effet, si bien qu'un rollback emporte la trace avec lui. Aucun verrou ne peut
-offrir ça. Aucun handler n'exerce cette propriété aujourd'hui — le dernier à le faire était
-`ProvisionCustomerHandler`, avant que `Shop` ne parte — mais c'est elle qui a dicté le choix de la
+offrir ça. Aucun handler n'exerce cette propriété aujourd'hui — les derniers à le faire étaient
+ceux du provisionnement, avant que `Shop` ne parte — mais c'est elle qui a dicté le choix de la
 table, et elle reste disponible.
 
 S'ajoute une incompatibilité propre à notre chaîne : `publishAll()` est appelé **à l'intérieur** de
@@ -481,23 +483,22 @@ Un véritable plafond par fenêtre relève des limiteurs déclarés dans
 Le ledger n'est pas la seule ligne de défense, et il ne peut pas l'être seul dès que l'effet sort du
 service : il ne couvre que le chemin nominal, jamais un crash entre l'effet et son marquage.
 
-C'est pourquoi `ShopCustomerClientInterface` **exige** l'idempotence de ses deux opérations, dans son
-contrat plutôt que dans une convention :
+C'est pourquoi la publication transmet l'**`eventId` du Domain Event** sans le régénérer : c'est
+avec lui que le consommateur déduplique, dans sa propre inbox. Un doublon publié après un crash
+entre l'appel et le marquage lui paraîtra donc identique au premier, et sera écarté.
 
-```php
-/** Idempotent : ne lève pas si le client existe déjà. */
-public function provisionCustomer(string $userAccountId): void;
-```
+Trois points importants :
 
-Deux points importants :
-
-- La responsabilité a changé de côté. Tant que `Shop` vivait ici, c'est le handler qui attrapait le
-  conflit de création et le traitait comme un succès, l'unicité étant garantie par une contrainte
-  locale. Désormais, c'est le service distant qui arbitre — l'appelant ne sait rien de la contrainte
-  qui le protège, et n'a pas à le savoir.
-- L'ordre des deux lignes du handler porte tout le reste : `markProcessed()` **après** l'appel. Les
-  inverser rendrait un transport en échec indistinguable d'un succès, et la réaction disparaîtrait
-  sans trace. C'est ce que tiennent `ProvisionCustomerHandlerTest` et `DisableCustomerHandlerTest`.
+- **La responsabilité a changé de côté.** Tant que `Shop` vivait ici, c'est le handler qui attrapait
+  le conflit de création et le traitait comme un succès, l'unicité étant garantie par une contrainte
+  locale. Désormais ce service **annonce un fait et n'attend rien** : ce qu'il faut en faire, et
+  comment ne le faire qu'une fois, appartient à chaque consommateur.
+- **La déduplication exige la stabilité de l'`eventId`.** C'est la seule obligation que ce service
+  garde envers ses consommateurs, et elle est invisible : régénérer l'identifiant à la publication
+  ferait passer chaque redélivrance pour un fait neuf, sans qu'aucun test local ne rougisse.
+- **L'ordre des deux lignes du handler porte le reste** : `markProcessed()` **après** la publication.
+  Les inverser rendrait un échec de transport indistinguable d'un succès, et le fait disparaîtrait
+  sans trace. C'est ce que tient `PublishUserIntegrationEventHandlerTest`.
 
 ## 6. Échecs et données obsolètes
 

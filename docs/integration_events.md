@@ -134,11 +134,23 @@ l'intéressent, sans que ce service change.
 |---|---|---|
 | `AWS_ENDPOINT` | `http://aws-local:4566` (LocalStack) | `https://sns.$AWS_REGION.amazonaws.com` |
 | `USER_EVENTS_TOPIC_ARN` | ARN LocalStack, compte `000000000000` | l'ARN fourni par l'IaC |
+| `AWS_ACCESS_KEY_ID` / `AWS_SECRET_ACCESS_KEY` | `test` / `test` | **absentes** |
 
-**Aucune clé n'est passée au client**, nulle part. La chaîne d'identifiants par défaut d'AsyncAws
-prend le relais : variables d'environnement en local, **EKS Pod Identity** en production. Le seul
-droit nécessaire y est `sns:Publish` sur ce topic — c'est ce qui remplace toute idée de
-`ROLE_SERVICE`, puisqu'il n'y a plus d'appel HTTP à autoriser.
+**Aucune clé n'est passée au client dans le code**, et c'est leur absence en production qui laisse
+la chaîne d'identifiants par défaut d'AsyncAws prendre le relais — **EKS Pod Identity**, où le seul
+droit nécessaire est `sns:Publish` sur ce topic. C'est ce qui remplace toute idée de `ROLE_SERVICE`,
+puisqu'il n'y a plus d'appel HTTP à autoriser.
+
+> **Mais LocalStack exige des identifiants, et son refus accuse le mauvais coupable.** Sans
+> `AWS_ACCESS_KEY_ID` ni `AWS_SECRET_ACCESS_KEY`, AsyncAws envoie une requête **non signée** ;
+> LocalStack ne peut alors rattacher l'ARN à aucun compte et répond
+> `InvalidParameter: Invalid parameter: TopicArn` — un message qui désigne l'ARN alors que celui-ci
+> est parfaitement correct. Mesuré : le même appel passe dès que les deux variables existent, avec
+> n'importe quelle valeur. Elles sont donc dans `.env.dist` à `test`, et **ne doivent pas être
+> définies en production**, sous peine de masquer Pod Identity.
+>
+> AsyncAws les lit par `$_ENV` / `$_SERVER` / `getenv()`, dans cet ordre, donc `.env` suffit : rien
+> à passer au client ni à déclarer dans `services.yaml`.
 
 Seul le conteneur `worker` rejoint le réseau `en_shop_php_bus` : c'est lui qui publie. En production
 il n'y a pas de réseau Docker à rejoindre — le bus est AWS, joint par l'egress normal.
@@ -159,12 +171,50 @@ adaptateur journalisait — a disparu du dépôt avec ses deux handlers.
 ```bash
 # Aucune suite ne touche SNS : un double en mémoire remplace l'adaptateur sous `when@test`.
 make unit-suite s=infra.messaging
-
-# Bout en bout, les trois stacks démarrées (aws_local, service_identity, service_shop)
-curl -X POST localhost:20800/api/users/register -H 'Content-Type: application/json' \
-  -d '{"email":"…","password":"…"}'
-docker compose logs worker | grep -i 'integration event'
-cd ../aws_local && make queues          # la file du shop a recu le message
-
-# Ce que le consommateur en a fait : voir sa propre doc, section « Verification de bout en bout »
 ```
+
+Bout en bout, les **trois** stacks démarrées (`aws_local`, `service_identity`, `service_shop`), et
+le `worker` d'identity recréé après un `docker compose build` — c'est l'override qui le rattache au
+réseau du bus, donc un conteneur plus ancien n'y est pas.
+
+```bash
+# 1. Une inscription cree le client, sans intervention
+#    `preferences` est obligatoire : sans lui, 422 sur `preferences: should not be blank`.
+ACCOUNT=$(curl -s -X POST localhost:20900/api/users/register -H 'Content-Type: application/json' \
+  -d '{"email":"e2e@en-develop.fr","password":"userVenom1@","username":"e2e",
+       "preferences":{"lang":"fr"}}' | python3 -c 'import sys,json; print(json.load(sys.stdin)["id"])')
+
+cd ../service_shop && make bash-db
+> db.customer.findOne({userAccountId: "<ACCOUNT>"})       # status 1, cree par le bus
+
+# 2. Le meme `eventId` des deux cotes — la preuve que la cle de deduplication traverse
+#    identity :
+docker compose exec database psql -U "$POSTGRES_USER" -d "$POSTGRES_DB" \
+  -c "SELECT handler, event_id FROM processed_domain_event ORDER BY processed_at DESC LIMIT 1;"
+#    shop :
+> db.processed_event.find({}, {eventId: 1, handler: 1, source: 1}).sort({processedAt: -1}).limit(1)
+
+# 3. Une suppression admin desactive le client
+TOKEN=$(curl -s -X POST localhost:20900/api/auth/login -H 'Content-Type: application/json' \
+  -d '{"email":"venom@en-develop.fr","password":"userVenom1@"}' \
+  | python3 -c 'import sys,json; print(json.load(sys.stdin)["accessToken"])')
+curl -X DELETE "localhost:20900/api/users/$ACCOUNT" -H "Authorization: Bearer $TOKEN"   # 204
+> db.customer.findOne({userAccountId: "<ACCOUNT>"})       # status 2, et `version` incremente :
+                                                          # le meme document, pas une pierre tombale
+
+# 4. Bus eteint : rien n'est perdu
+cd ../aws_local && make down
+curl -s -o /dev/null -w '%{http_code}\n' localhost:20900/health   # 200, le service vit seul
+#   une inscription repond 201, et la publication part en retry (10 s -> 5 min, six essais)
+docker compose logs worker | grep -E 'Could not contact|Sending for retry'
+docker compose exec app bin/console messenger:stats                # failed_domain_events reste a 0
+cd ../aws_local && make up                                         # le compte est rattrape seul
+```
+
+**Mesuré** : une publication en echec pendant trois minutes, puis la configuration corrigee — le
+cinquieme essai est passe et le client a ete cree, sans intervention ni rejeu manuel. Le worker du
+consommateur, lui, est reparti seul apres le retour de la brique, son budget de 50 essais Supervisor
+n'etant pas epuise.
+
+Ce que le consommateur fait du message, et ses propres scenarios (type inconnu, corps invalide,
+commutativite) : [`../../service_shop/docs/integration_events.md`](../../service_shop/docs/integration_events.md).

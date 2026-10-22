@@ -181,9 +181,13 @@ sans que ce service change une ligne.
   mensonger.
 - **Il ne journalise pas les succès.** Le worker Messenger trace déjà chaque message traité et le
   handler ajoute sa ligne ; un troisième log au même instant n'apprendrait rien.
-- **Il ne connaît aucune clé.** Ni dans le fichier, ni dans la configuration. La chaîne
+- **Il ne connaît aucune clé.** Ni dans le fichier, ni dans `services.yaml`. La chaîne
   d'identifiants par défaut d'AsyncAws s'en charge — EKS Pod Identity en production, où le seul droit
-  nécessaire est `sns:Publish` sur ce topic.
+  nécessaire est `sns:Publish` sur ce topic. En développement, LocalStack exige en revanche des
+  identifiants *quelconques* dans l'environnement : sans eux la requête part non signée et son refus
+  accuse l'ARN à tort. Détail dans
+  [`docs/integration_events.md`](../../../integration_events.md) — mais rien à changer **ici**,
+  l'adaptateur n'en voit jamais la couleur.
 - **Il ne crée pas le topic.** Celui-ci appartient à la brique `aws_local` en développement et à
   l'IaC en production. Le créer ici exigerait un droit IAM de création pour une ressource qu'on ne
   possède pas — même raisonnement que l'`auto_setup=false` du transport SQS du consommateur.
