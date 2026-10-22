@@ -19,20 +19,20 @@ Le bounded context `Shop` — `Catalog`, `Customer`, `Ordering` — a été reti
 désormais dans [`../service_shop`](../service_shop), sur MongoDB. Ne pas le réintroduire ici, même
 partiellement : c'est ce service qui émet les JWT, et l'autre qui les valide.
 
-### Le provisionnement des clients est débranché
+### Ce service annonce, il ne commande pas
 
-`ProvisionCustomerHandler` et `DisableCustomerHandler` réagissent toujours aux événements `User`,
-mais leur effet passe par `ShopCustomerClientInterface`, dont le seul adaptateur
-(`LoggingShopCustomerClient`) **journalise sans rien faire**. Le protocole inter-services n'est pas
-encore choisi.
+Depuis que le contexte `Shop` est parti, ce service **n'ordonne plus rien à personne**. Il publie des
+faits publics sur un topic SNS — « ce compte a été créé », « ce compte a été supprimé » — et ignore
+qui les écoute. `service_shop` en provisionne ses clients ; ce dépôt ne le sait pas et n'a pas à le
+savoir.
 
-Conséquence pratique, à connaître avant de conclure à un bug : **un compte créé aujourd'hui n'a pas
-de client dans `service_shop`.** Il faut l'y créer à la main (`POST /api/shop/customers`). Chaque
-ligne `warning` « Shop customer provisioning is not wired to any transport yet » désigne un compte
-concerné.
+C'est un renversement par rapport au jalon 3, où `ProvisionCustomerHandler` appelait un port nommé
+d'après l'effet attendu chez l'autre (`provisionCustomer()`). Un tel nom fait fuiter le besoin du
+consommateur dans l'émetteur, et un second consommateur l'aurait rendu faux.
 
-Le correctif n'est pas de rebrancher un command bus local vers un contexte qui n'existe plus, mais
-d'écrire un second adaptateur du port.
+**Ne pas revenir à un appel direct.** Si une lecture synchrone paraît un jour nécessaire, c'est le
+modèle qu'il faut rediscuter, pas contourner — voir [`docs/integration_events.md`](docs/integration_events.md)
+et `back_php/ARCHITECTURE.md`.
 
 ---
 
@@ -261,7 +261,6 @@ Règles :
 | `infra.adapter.hasher` | `tests/Infrastructure/Integration/Adapter/Hasher` | non |
 | `infra.adapter.storage` | `tests/Infrastructure/Unit/Adapter/Storage` | non |
 | `infra.adapter.token` | `tests/Infrastructure/Unit/Adapter/Token` | non |
-| `infra.http.shop_service` | `tests/Infrastructure/Unit/Http/ShopService` | non |
 | `infra.messaging` | `tests/Infrastructure/Unit/Messaging` | non |
 | `infra.persist` | `tests/Infrastructure/Integration/Persistence` | **oui** |
 | `infra.symfony.command` | `tests/Infrastructure/Unit/Symfony/Command` | non |

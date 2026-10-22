@@ -150,8 +150,9 @@ file d'échec, et `messenger:failed:retry` le publie.
 
 ## État
 
-L'adaptateur et le contrat existent et sont testés. **Le handler qui les appelle arrive au commit
-suivant** : jusque-là, `ShopCustomerClientInterface` journalise toujours, et rien n'est publié.
+**Les trois faits sont publiés.** `PublishUserIntegrationEventHandler` réagit aux trois événements
+du Domain depuis le consommateur d'outbox, et `ShopCustomerClientInterface` — le port dont l'unique
+adaptateur journalisait — a disparu du dépôt avec ses deux handlers.
 
 ## Vérification
 

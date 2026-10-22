@@ -11,8 +11,7 @@ use App\Infrastructure\Symfony\Messenger\CQRS\MessengerCommandBus;
 use App\Infrastructure\Symfony\Messenger\CQRS\MessengerQueryBus;
 use App\Infrastructure\Symfony\Messenger\Event\Handler\LogDomainEventHandler;
 use App\Infrastructure\Symfony\Messenger\Event\Handler\SendEmail\SendEmailMessageHandler;
-use App\Infrastructure\Symfony\Messenger\Event\Handler\User\DisableCustomerHandler;
-use App\Infrastructure\Symfony\Messenger\Event\Handler\User\ProvisionCustomerHandler;
+use App\Infrastructure\Symfony\Messenger\Event\Handler\User\PublishUserIntegrationEventHandler;
 use App\Infrastructure\Symfony\Messenger\Event\Handler\User\RevokeSessionsHandler;
 use App\Infrastructure\Symfony\Messenger\Event\Handler\User\SendActivationEmailHandler;
 use App\Infrastructure\Symfony\Messenger\Event\Handler\User\SendResetPasswordEmailHandler;
@@ -107,9 +106,9 @@ final class MessengerHandlerRegistrationTest extends KernelTestCase
     public static function signedHandlerProvider(): iterable
     {
         yield 'domain event log' => [LogDomainEventHandler::class];
-        yield 'disable customer' => [DisableCustomerHandler::class];
-        yield 'provision customer after registration' => [ProvisionCustomerHandler::class, 'onUserRegistered'];
-        yield 'provision customer after admin creation' => [ProvisionCustomerHandler::class, 'onUserCreatedByAdmin'];
+        yield 'publish after registration' => [PublishUserIntegrationEventHandler::class, 'onUserRegistered'];
+        yield 'publish after admin creation' => [PublishUserIntegrationEventHandler::class, 'onUserCreatedByAdmin'];
+        yield 'publish after admin deletion' => [PublishUserIntegrationEventHandler::class, 'onUserDeletedByAdmin'];
         yield 'revoke sessions' => [RevokeSessionsHandler::class];
         yield 'activation email' => [SendActivationEmailHandler::class];
         yield 'password reset email' => [SendResetPasswordEmailHandler::class];
