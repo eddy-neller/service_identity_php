@@ -74,7 +74,7 @@ install:
 		bin/console doctrine:migrations:migrate -e test --no-interaction"
 	@$(APP) sh -c "bin/console doctrine:fixtures:load -e test --no-interaction --group=test"
 	@echo "$(YELLOW)** Load composer outdated & symfony:recipes **$(RESET)"
-	@make co && make csr
+	@make co && make cr
 	@echo "$(GREEN)** Installation completed!!! **$(RESET)"
 
 # Le `chmod 644` n'est pas cosmetique : php-fpm tourne en `www-data`, et une cle que seul
@@ -247,6 +247,7 @@ ci-dry:
 .PHONY: cu
 cu:
 	@$(APP) sh -c "composer update"
+	@make console c="cache:clear -e test"
 
 ## Execute composer update dry-run
 .PHONY: cu-dry

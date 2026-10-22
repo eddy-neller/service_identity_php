@@ -19,6 +19,7 @@ use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 use Symfony\Component\DependencyInjection\ServiceLocator;
 use Symfony\Component\Messenger\Bridge\Doctrine\Transport\DoctrineTransportFactory;
 use Symfony\Component\Messenger\Exception\InvalidMessageSignatureException;
+use Symfony\Component\Messenger\Exception\MessageDecodingFailedException;
 use Symfony\Component\Messenger\MessageBus;
 use Symfony\Component\Messenger\Middleware\SendMessageMiddleware;
 use Symfony\Component\Messenger\Transport\Sender\SendersLocator;
@@ -119,7 +120,11 @@ final class DomainEventOutboxTest extends KernelTestCase
 
         $headers = json_decode((string) $row['headers'], true);
         $this->assertIsArray($headers);
-        $this->assertSame(hash_hmac('sha256', (string) $row['body'], $this->signingKey), $headers['Body-Sign']);
+        // Le format de `Body-Sign` appartient à Symfony (préfixe `v2:` et en-têtes couverts depuis
+        // 7.4.21) : le recalculer ici lierait le test à un détail interne. Un message signé ne se
+        // décode qu'avec une signature valide, c'est donc le décodage qui la prouve.
+        $this->assertIsString($headers['Body-Sign'] ?? null);
+        $this->assertNotSame('', $headers['Body-Sign']);
         $this->assertSame('sha256', $headers['Sign-Algo']);
 
         $decoded = $this->signingSerializer()->decode([
@@ -148,12 +153,20 @@ final class DomainEventOutboxTest extends KernelTestCase
         $headers = json_decode((string) $row['headers'], true);
         $this->assertIsArray($headers);
 
-        $this->expectException(InvalidMessageSignatureException::class);
+        // Depuis 7.4.21, le refus de signature arrive enveloppé dans une
+        // `MessageDecodingFailedException` : c'est la cause qui dit pourquoi le message est rejeté.
+        try {
+            $this->signingSerializer()->decode([
+                'body' => $row['body'] . 'tampered',
+                'headers' => $headers,
+            ]);
+        } catch (MessageDecodingFailedException $e) {
+            $this->assertInstanceOf(InvalidMessageSignatureException::class, $e->getPrevious());
 
-        $this->signingSerializer()->decode([
-            'body' => $row['body'] . 'tampered',
-            'headers' => $headers,
-        ]);
+            return;
+        }
+
+        $this->fail('A tampered message must not be decoded.');
     }
 
     private function doctrineTransport(object $registry): TransportInterface
