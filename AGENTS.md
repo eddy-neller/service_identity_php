@@ -53,10 +53,11 @@ Utiliser **`make`** — **tout s'exécute dans le conteneur `app`** (`docker com
 Ne jamais lancer `composer`, `bin/console` ou `vendor/bin/*` directement sur l'hôte.
 
 ```bash
-make install              # Build images, containers, vendors, init DB dev+test
+make install              # Build images, containers, vendors, cles JWT, init DB dev+test
 make reinstall            # Recrée les DB dev+test (migrations + fixtures) sans rebuild
 make up / make down       # Docker up/down (down-hard pour prune images/volumes)
 make network              # Crée `en_shop_php_edge` si absent (idempotent, appelé par `up`)
+make jwt-keys             # Génère config/jwt/{private,public}.pem s'ils manquent, en 644
 make bash-app             # Shell dans le conteneur applicatif
 make console c="…"        # bin/console dans le conteneur
 make logs s=app           # Logs d'un service
@@ -75,6 +76,12 @@ make unit-filter f=ClassNameTest  # Test ciblé
 make unit-suite s=<suite>         # Suite ciblée (voir table)
 make unit-coverage                # Coverage HTML dans coverage/
 ```
+
+**La paire JWT n'est pas versionnée, et il n'en existe qu'une** : les tests fonctionnels signent
+leurs jetons avec `config/jwt/private.pem` via `BaseTest::getToken()`, comme le fait le runtime.
+Sur un clone frais, `make install` la génère ; sinon `make jwt-keys` suffit, et il est idempotent.
+Les deux fichiers doivent rester lisibles par `www-data` (644) — une clé en 600 ou 640 fait
+répondre **500** à `POST /api/auth/login`, en accusant la configuration.
 
 ### Topologie Docker
 

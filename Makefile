@@ -61,6 +61,8 @@ install:
 	make binc && make up
 	@echo "$(YELLOW)** Load composer install & dump-autoload **$(RESET)"
 	@make ci && make cda
+	@echo "$(YELLOW)** Paire de cles JWT **$(RESET)"
+	@make jwt-keys
 	@echo "$(YELLOW)** Clean avatars directory **$(RESET)"
 	@make clean-avatar-uploads
 	@echo "$(YELLOW)** Manage DEV database **$(RESET)"
@@ -74,6 +76,25 @@ install:
 	@echo "$(YELLOW)** Load composer outdated & symfony:recipes **$(RESET)"
 	@make co && make csr
 	@echo "$(GREEN)** Installation completed!!! **$(RESET)"
+
+# Le `chmod 644` n'est pas cosmetique : php-fpm tourne en `www-data`, et une cle que seul
+# son proprietaire peut lire fait repondre 500 a POST /api/auth/login, avec un message qui
+# accuse la configuration (« Signature key does not exist or is not readable »).
+#
+# `--skip-if-exists` rend la cible idempotente, donc appelable par `install` : regenerer la
+# paire invaliderait tous les tokens et refresh tokens de la base de dev. Pour la renouveler
+# volontairement, supprimer les deux fichiers puis relancer la cible.
+#
+# La commande de Lexik est preferee a `openssl` brut car elle chiffre la cle avec
+# JWT_PASSPHRASE, que le bundle attend ensuite pour signer.
+
+## Generate the JWT signing key pair (config/jwt/) if it is missing
+.PHONY: jwt-keys
+jwt-keys:
+	@echo "$(YELLOW)** Generation de la paire JWT si absente **$(RESET)"
+	@$(APP) sh -c "bin/console lexik:jwt:generate-keypair --skip-if-exists && \
+		chmod 644 config/jwt/private.pem config/jwt/public.pem"
+	@echo "$(GREEN)** Paire JWT prete (644, lisible par www-data) **$(RESET)"
 
 ## Remove generated avatar uploads and restore bundled seed avatars
 .PHONY: clean-avatar-uploads
