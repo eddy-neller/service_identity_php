@@ -36,7 +36,7 @@ seul** handler. `HandledResultExtractor` fait respecter ce contrat en comptant l
 - **0 stamp** : aucun handler ne correspond au message (convention `FooCommand` →
   `FooCommandHandler` rompue, ou message routé par erreur vers un transport asynchrone
   au lieu d'être traité en synchrone — cf.
-  [`docs/CQRS_messenger.md`](../../../../CQRS_messenger.md)) ;
+  [`docs/CQRS_messenger.md`](../../../../../CQRS_messenger.md)) ;
 - **> 1 stamp** : plusieurs handlers sont enregistrés sur le même message, ce qui
   viole la convention CQRS un-message/un-handler.
 

@@ -22,7 +22,7 @@ middleware est un no-op et délègue directement à la suite de la chaîne. Voir
   `cacheKey(): string`, `cacheTtl(): int`, `cacheTags(): array`. Une Query cacheable porte donc
   elle-même la logique de clé/TTL/tags — aucune configuration externe. C'est le **seul** contrat de
   cache connu de l'Application.
-- **Infrastructure** — `App\Infrastructure\Service\Cache\QueryCacheInterface`
+- **Infrastructure** — `App\Infrastructure\Adapter\Cache\QueryCacheInterface`
   (`src/Infrastructure/Adapter/Cache/QueryCacheInterface.php`) : contrat interne
   `get(key, ttlSeconds, tags, callback)` / `invalidateTags(tags)`. Ce n'est **pas** un Port : aucun
   use case ne l'injecte, seuls le middleware et les listeners Infrastructure le consomment
@@ -30,7 +30,7 @@ middleware est un no-op et délègue directement à la suite de la chaîne. Voir
 
 ## 3) Implémentation (Infrastructure)
 
-- `App\Infrastructure\Service\Cache\SymfonyTagAwareQueryCache`
+- `App\Infrastructure\Adapter\Cache\SymfonyTagAwareQueryCache`
   (`src/Infrastructure/Adapter/Cache/SymfonyTagAwareQueryCache.php`) implémente `QueryCacheInterface`
   au-dessus du pool Symfony `cache.tag`.
 - `config/packages/cache.yaml` :

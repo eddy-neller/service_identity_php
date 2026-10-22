@@ -35,7 +35,7 @@ try {
 
 Par convention CQRS du projet, un Command ou une Query est traité par **un et un
 seul** handler (`FooCommand` → `FooCommandHandler`, cf.
-[`docs/CQRS_messenger.md`](../../../../../CQRS_messenger.md)). Dans ce cas normal,
+[`docs/CQRS_messenger.md`](../../../../../../CQRS_messenger.md)). Dans ce cas normal,
 `getWrappedExceptions()` contient donc exactement une entrée : c'est elle qui est
 relancée telle quelle, avec son type et son message d'origine intacts.
 

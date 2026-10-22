@@ -308,7 +308,7 @@ après son message en cours lorsqu'il atteint une de ces bornes : une heure, 256
 
 Lors d'un déploiement, demander d'abord l'arrêt propre avec `make messenger-stop-workers` : Messenger
 termine le message en cours, puis Supervisor redémarre le processus. L'image doit être reconstruite et
-le conteneur `app` recréé lorsque `docker/app/supervisor/conf.d/messenger-worker.conf` change, car ce
+le conteneur `app` recréé lorsque `docker/app/supervisor/conf.d/worker/messenger-worker.conf` change, car ce
 fichier est copié dans l'image. Surveiller aussi
 `messenger:failed:show --transport=failed_domain_events`.
 
@@ -604,8 +604,8 @@ production ne fait pas. Les tests d'intégration ci-dessous couvrent le comporte
 
 | Suite | Périmètre |
 |---|---|
-| `infra.messenger.event` | bus et handlers en isolation, avec doubles (`tests/Unit/Messenger/Event`) |
-| `infra.outbox` | atomicité et ledger avec un Doctrine réel (`tests/Integration/Messenger`) |
+| `infra.symfony.messenger.event` | bus et handlers en isolation avec doubles, **et** l'atomicité de l'outbox avec un Doctrine réel — la suite couvre les deux dossiers (`tests/Infrastructure/Unit/Symfony/Messenger/Event` et `tests/Infrastructure/Integration/Symfony/Messenger/Event`) |
+| `infra.persist` | le ledger de déduplication contre un Doctrine réel (`tests/Infrastructure/Integration/Persistence/DoctrineDomainEventLedgerTest.php`) |
 | `domain.shared` | stabilité de `eventId` à travers la sérialisation |
 | `appli.user` | publication effectuée **dans** le callback transactionnel |
 

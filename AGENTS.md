@@ -301,9 +301,13 @@ find tests -name '*Test.php' | sort | comm -13 /tmp/phpunit_listed.txt -
   est initialisée (`make up` + `make install`) : elles émettent de vraies requêtes HTTP in-process
   contre `shop_test`. Sans conteneurs ni DB de test, elles échouent en bloc — vérifier
   `docker compose ps` avant d'en conclure quoi que ce soit.
-- **`tests/Unit/` vs `tests/Integration/`** : un test qui boote le kernel Symfony, touche la DB ou lit le
-  conteneur DI est un test d'**intégration** → `tests/Integration/`. `tests/Unit/` n'accueille que des
-  `PHPUnit\Framework\TestCase` sans kernel (doubles pour toutes les dépendances).
+- **`Unit/` vs `Integration/`, sous la couche** : l'arborescence de `tests/` reproduit celle de `src/`,
+  et c'est **à l'intérieur** de chaque couche que la distinction se fait — `tests/Application/Unit/`,
+  `tests/Infrastructure/Unit/`, `tests/Infrastructure/Integration/`. Il n'existe pas de `tests/Unit/`
+  ni de `tests/Integration/` à la racine. Un test qui boote le kernel Symfony, touche la DB ou lit le
+  conteneur DI est un test d'**intégration** ; `Unit/` n'accueille que des
+  `PHPUnit\Framework\TestCase` sans kernel (doubles pour toutes les dépendances). Seule
+  `Infrastructure` a aujourd'hui un dossier `Integration/`.
 - Ne pas ajouter de tests dans les dossiers exclus de `phpunit.dist.xml` (`<exclude>`) ; placer un
   nouveau test dans une suite existante, ou déclarer une nouvelle suite selon les règles ci-dessus.
 - DB de test dédiée, initialisée par `make install` — ne **jamais** réutiliser la DB de dev pour les tests.
@@ -339,12 +343,6 @@ find tests -name '*Test.php' | sort | comm -13 /tmp/phpunit_listed.txt -
   même chemin, avec l'extension `.md` — par exemple
   [`docs/config/packages/messenger.md`](docs/config/packages/messenger.md), qui explique chaque
   option de `config/packages/messenger.yaml` et pourquoi elle a cette valeur.
-
-## Référence nouvelle API
-
-- La « nouvelle API » désigne le projet NestJS voisin : [`../api_js`](../api_js).
-- Pour aligner un comportement avec elle, consulter en priorité `src/application/` (cas d'usage), `src/presentation/http/` (contrats et validations) et `test/` (comportement attendu).
-
 
 ---
 

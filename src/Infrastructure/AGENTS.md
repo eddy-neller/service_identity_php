@@ -44,11 +44,11 @@ reste dans `src/Infrastructure/`, à côté de son implémentation.
 
 | Contrat interne | Implémentation | Consommateurs |
 |---|---|---|
-| `Service\Cache\QueryCacheInterface` | `SymfonyTagAwareQueryCache` | `QueryCacheMiddleware`, `CacheInvalidationMiddleware` |
-| `Service\Uuid\UuidGeneratorInterface` | `RamseyUuidGenerator` | repositories Doctrine |
-| `Service\Token\AuthVersionStoreInterface` | `RedisAuthVersionStore` | `JwtAuthVersionSubscriber`, `LexikJwtAccessTokenProvider` |
+| `Adapter\Cache\QueryCacheInterface` | `SymfonyTagAwareQueryCache` | `QueryCacheMiddleware`, `CacheInvalidationMiddleware` |
+| `Adapter\Uuid\UuidGeneratorInterface` | `RamseyUuidGenerator` | repositories Doctrine |
+| `Adapter\Token\AuthVersionStoreInterface` | `RedisAuthVersionStore` | `JwtAuthVersionSubscriber`, `LexikJwtAccessTokenProvider` |
 | `Symfony\Service\Notification\User\UserNotifierInterface` | `UserNotifier` | handlers `Symfony\Messenger\Event\Handler\User` |
-| `Messenger\Event\DomainEventLedgerInterface` | `Persistence\Doctrine\Inbox\DoctrineDomainEventLedger` | handlers `Messenger\Event\Handler` |
+| `Symfony\Messenger\Event\DomainEventLedgerInterface` | `Persistence\Doctrine\Inbox\DoctrineDomainEventLedger` | handlers `Symfony\Messenger\Event\Handler` |
 
 > Avant de créer une interface dans `src/Application/…/Port`, vérifier qu'elle est bien injectée par un
 > handler ou un service applicatif. Sinon → `src/Infrastructure/`.
@@ -117,7 +117,7 @@ Règles pour un handler d'événement (`src/Infrastructure/Symfony/Messenger/Eve
   avant tout renommage ou déplacement** d'une classe d'événement ou d'un Value Object qu'elle transporte.
 
 > Référence complète (outbox, worker, régimes d'idempotence, diagnostic, recettes) :
-> [`docs/domain_events.md`](../docs/domain_events.md).
+> [`docs/domain_events.md`](../../docs/domain_events.md).
 
 ### Déduplication des e-mails à token
 
