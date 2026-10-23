@@ -4,8 +4,12 @@ declare(strict_types=1);
 
 namespace App\Infrastructure\Messaging\Sns;
 
+use App\Infrastructure\Messaging\IntegrationBusUnavailableException;
 use App\Infrastructure\Messaging\UserIntegrationEvent;
 use App\Infrastructure\Messaging\UserIntegrationEventPublisherInterface;
+use AsyncAws\Core\Exception\Http\ClientException;
+use AsyncAws\Core\Exception\Http\NetworkException;
+use AsyncAws\Core\Exception\Http\ServerException;
 use AsyncAws\Sns\SnsClient;
 use AsyncAws\Sns\ValueObject\MessageAttributeValue;
 
@@ -34,12 +38,33 @@ use AsyncAws\Sns\ValueObject\MessageAttributeValue;
  * jusqu'à la réponse et lève sur erreur — c'est ce qui rend le retour de cette méthode digne de
  * confiance.
  *
+ * ## Dire si attendre a un sens
+ *
+ * Trois échecs signifient « le bus est injoignable », et deviennent
+ * {@see IntegrationBusUnavailableException} : le réseau (`NetworkException`, hôte introuvable ou
+ * connexion refusée), une erreur 5xx de SNS (`ServerException`), et le throttling — HTTP 429, ou
+ * HTTP 400 portant un code d'étranglement, la forme que prend SNS. Le handler les rejoue alors
+ * sans limite, jusqu'au retour du bus.
+ *
+ * Quand l'une d'elles arrive ici, AsyncAws l'a **déjà** réessayée quelques fois en interne
+ * (`AwsRetryStrategy`) : ce n'est pas un hoquet, c'est une indisponibilité.
+ *
+ * Toute autre erreur — `InvalidParameter`, droits refusés, topic inexistant — remonte **telle
+ * quelle**. Rejouer une requête que SNS refuse ne la fera jamais passer : elle doit finir dans la file
+ * d'échec, où un humain la verra.
+ *
+ * Traduire n'est pas attraper : l'exception remonte dans tous les cas, et le handler ne marque
+ * jamais un événement dont la publication a échoué.
+ *
  * Identifiants : aucun n'est passé ici. La chaîne par défaut d'AsyncAws s'en charge — variables
  * d'environnement en développement avec LocalStack, **EKS Pod Identity** en production, où le seul
  * droit nécessaire est `sns:Publish` sur ce topic.
  */
 final readonly class SnsUserIntegrationEventPublisher implements UserIntegrationEventPublisherInterface
 {
+    /** Codes AWS d'étranglement : SNS les renvoie en HTTP 400, pas en 429. */
+    private const array THROTTLING_CODES = ['Throttling', 'ThrottlingException', 'ThrottledException', 'RequestLimitExceeded'];
+
     public function __construct(
         private SnsClient $sns,
         private string $topicArn,
@@ -59,7 +84,23 @@ final readonly class SnsUserIntegrationEventPublisher implements UserIntegration
             ],
         ]);
 
-        // Force l'envoi et fait remonter l'echec : voir le docblock de cette classe.
-        $result->resolve();
+        try {
+            // Force l'envoi et fait remonter l'echec : voir le docblock de cette classe.
+            $result->resolve();
+        } catch (NetworkException|ServerException $e) {
+            throw IntegrationBusUnavailableException::because($e);
+        } catch (ClientException $e) {
+            if ($this->isThrottling($e)) {
+                throw IntegrationBusUnavailableException::because($e);
+            }
+
+            throw $e;
+        }
+    }
+
+    private function isThrottling(ClientException $exception): bool
+    {
+        return 429 === $exception->getResponse()->getStatusCode()
+            || in_array($exception->getAwsCode(), self::THROTTLING_CODES, true);
     }
 }

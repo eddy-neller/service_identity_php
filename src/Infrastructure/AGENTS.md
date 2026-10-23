@@ -110,6 +110,10 @@ Règles pour un handler d'événement (`src/Infrastructure/Symfony/Messenger/Eve
 - Une situation métier attendue (token périmé ou remplacé, agrégat disparu) est un **no-op** : la
   journaliser, la marquer comme traitée, puis retourner normalement. Réserver
   `UnrecoverableMessageHandlingException` à un message réellement invalide, jamais à un état métier normal.
+- Une **dépendance momentanément injoignable**, reconnue comme telle par son adaptateur, se rend à
+  Messenger en `RecoverableMessageHandlingException` : rejouée sans limite de nombre, elle se rattrape
+  seule au retour de la dépendance. Jamais pour un échec quelconque, qui n'atteindrait alors jamais la
+  file d'échec. Exemple et raisons : `PublishUserIntegrationEventHandler`.
 - Tout handler consommant un transport asynchrone porte `sign: true` dans `#[AsMessageHandler]` :
   Messenger vérifie ainsi l'HMAC du corps avant le handler. La signature protège l'intégrité, jamais
   la confidentialité ; les messages restent dépourvus de secrets.

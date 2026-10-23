@@ -116,6 +116,12 @@ workers ne réessaient pas à la même seconde après une panne commune.
 
 Au-delà de `max_retries`, le message part dans le `failure_transport` du transport.
 
+**Sauf pour une exception récupérable.** Messenger rejoue `RecoverableMessageHandlingException` sans
+limite de nombre, au même rythme (le plafond de 5 min devient la cadence). C'est ce que lève
+`PublishUserIntegrationEventHandler` quand le bus est injoignable : la publication attend le retour
+du bus au lieu de finir dans la file d'échec ([`docs/integration_events.md`](../../integration_events.md)).
+`max_retries` ne borne donc que les vrais échecs, ceux qu'un humain doit voir.
+
 ### `async` — messages techniques
 
 ```yaml

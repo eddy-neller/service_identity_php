@@ -9,6 +9,7 @@ use App\Domain\User\Event\Management\UserCreatedByAdminEvent;
 use App\Domain\User\Event\Management\UserDeletedByAdminEvent;
 use App\Domain\User\Event\UserDomainEventInterface;
 use App\Domain\User\ValueObject\Identity\UserId;
+use App\Infrastructure\Messaging\IntegrationBusUnavailableException;
 use App\Infrastructure\Messaging\UserIntegrationEvent;
 use App\Infrastructure\Messaging\UserIntegrationEventPublisherInterface;
 use App\Infrastructure\Symfony\Messenger\Event\DomainEventLedgerInterface;
@@ -18,6 +19,8 @@ use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use RuntimeException;
+use Symfony\Component\Messenger\Exception\RecoverableExceptionInterface;
+use Symfony\Component\Messenger\Exception\RecoverableMessageHandlingException;
 
 final class PublishUserIntegrationEventHandlerTest extends TestCase
 {
@@ -141,16 +144,48 @@ final class PublishUserIntegrationEventHandlerTest extends TestCase
      * puis l'envoie en file d'echec au bout de six essais. Un fait annonce a tort serait, lui,
      * definitivement perdu.
      */
+    /**
+     * Un echec qui n'est pas une indisponibilite remonte **tel quel** : six essais, puis la file
+     * d'echec, ou il sera vu. `RecoverableMessageHandlingException` heritant elle aussi de
+     * `RuntimeException`, attendre ce type ne suffit pas : il faut verifier qu'il n'est pas
+     * devenu recuperable, sans quoi un defaut serait rejoue sans fin, en silence.
+     */
     public function testItMarksNothingWhenThePublicationFails(): void
     {
+        $failure = new RuntimeException('requete refusee');
+
         $this->ledger->method('hasProcessed')->willReturn(false);
-        $this->publisher->expects($this->once())->method('publish')
-            ->willThrowException(new RuntimeException('sns indisponible'));
+        $this->publisher->expects($this->once())->method('publish')->willThrowException($failure);
         $this->ledger->expects($this->never())->method('markProcessed');
 
-        $this->expectException(RuntimeException::class);
+        try {
+            $this->handler->onUserRegistered($this->registeredEvent());
+            self::fail('Un echec de publication doit remonter.');
+        } catch (RuntimeException $e) {
+            self::assertSame($failure, $e);
+            self::assertNotInstanceOf(RecoverableExceptionInterface::class, $e);
+        }
+    }
 
-        $this->handler->onUserRegistered($this->registeredEvent());
+    /**
+     * Le bus injoignable devient un echec **recuperable** : Messenger le rejoue sans limite de
+     * nombre, au lieu de l'envoyer dans la file d'echec au bout de dix minutes. Rien n'est marque,
+     * donc le fait partira au retour du bus.
+     */
+    public function testItKeepsRetryingWhileTheBusIsUnavailable(): void
+    {
+        $unavailable = IntegrationBusUnavailableException::because(new RuntimeException('Could not contact remote server.'));
+
+        $this->ledger->method('hasProcessed')->willReturn(false);
+        $this->publisher->expects($this->once())->method('publish')->willThrowException($unavailable);
+        $this->ledger->expects($this->never())->method('markProcessed');
+
+        try {
+            $this->handler->onUserRegistered($this->registeredEvent());
+            self::fail('Un bus injoignable doit faire echouer la publication.');
+        } catch (RecoverableMessageHandlingException $e) {
+            self::assertSame($unavailable, $e->getPrevious());
+        }
     }
 
     private function registeredEvent(): UserRegisteredEvent

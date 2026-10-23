@@ -8,10 +8,12 @@ use App\Domain\User\Event\Lifecycle\UserRegisteredEvent;
 use App\Domain\User\Event\Management\UserCreatedByAdminEvent;
 use App\Domain\User\Event\Management\UserDeletedByAdminEvent;
 use App\Domain\User\Event\UserDomainEventInterface;
+use App\Infrastructure\Messaging\IntegrationBusUnavailableException;
 use App\Infrastructure\Messaging\UserIntegrationEvent;
 use App\Infrastructure\Messaging\UserIntegrationEventPublisherInterface;
 use App\Infrastructure\Symfony\Messenger\Event\DomainEventLedgerInterface;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
+use Symfony\Component\Messenger\Exception\RecoverableMessageHandlingException;
 
 /**
  * Annonce aux autres services les faits publics de ce service.
@@ -42,8 +44,22 @@ use Symfony\Component\Messenger\Attribute\AsMessageHandler;
  * absorbe. Marquer puis publier risque une **perte définitive**, que personne ne rattrape.
  *
  * Si la publication échoue, l'exception remonte, le marquage n'a pas lieu, et Messenger rejoue le
- * message depuis l'outbox — jusqu'à `failed_domain_events` au bout de six essais. Un compte créé
- * pendant une panne du bus n'est donc pas perdu : il attend dans la file d'échec.
+ * message depuis l'outbox.
+ *
+ * ## Une panne du bus se rattrape seule, un défaut reste visible
+ *
+ * **Bus injoignable** ({@see IntegrationBusUnavailableException}) : l'échec est rendu à Messenger
+ * comme `RecoverableMessageHandlingException`, qu'il rejoue **sans limite de nombre**, au rythme du
+ * transport — 10 s, doublé à chaque essai, plafonné à 5 min. Le fait part dès le retour du bus, quelle
+ * qu'ait été la durée de la panne. Avant, il partait au bout de six essais (une dizaine de minutes)
+ * dans `failed_domain_events`, d'où seul un `messenger:failed:retry` manuel le sortait.
+ *
+ * **Tout autre échec** remonte tel quel : six essais, puis la file d'échec. Une requête que SNS
+ * refuse ne passera jamais en attendant, et doit être vue.
+ *
+ * Rejouer sans limite ne rejoue que ce qui a échoué : Messenger saute les handlers qui ont déjà
+ * réussi sur ce message (leur `HandledStamp` voyage avec lui), et le ledger les arrêterait de toute
+ * façon. L'e-mail d'activation ne repart donc pas toutes les 5 minutes pendant la panne.
  *
  * `sign: true` comme tous les handlers de ce service : l'événement vient de **notre** outbox, donc
  * la signature HMAC de `kernel.secret` a un sens ici. C'est l'inverse chez le consommateur, dont
@@ -81,12 +97,16 @@ final readonly class PublishUserIntegrationEventHandler
             return;
         }
 
-        $this->publisher->publish(new UserIntegrationEvent(
-            eventId: $event->eventId(),
-            type: $type,
-            userAccountId: $event->getUserId()->toString(),
-            occurredAt: $event->occurredOn(),
-        ));
+        try {
+            $this->publisher->publish(new UserIntegrationEvent(
+                eventId: $event->eventId(),
+                type: $type,
+                userAccountId: $event->getUserId()->toString(),
+                occurredAt: $event->occurredOn(),
+            ));
+        } catch (IntegrationBusUnavailableException $e) {
+            throw new RecoverableMessageHandlingException($e->getMessage(), 0, $e);
+        }
 
         $this->ledger->markProcessed($event->eventId(), self::class);
     }

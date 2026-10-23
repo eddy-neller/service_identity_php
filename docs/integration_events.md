@@ -156,9 +156,17 @@ Seul le conteneur `worker` rejoint le réseau `en_shop_php_bus` : c'est lui qui 
 il n'y a pas de réseau Docker à rejoindre — le bus est AWS, joint par l'egress normal.
 
 **Brique `aws_local` éteinte, ce service démarre et répond quand même.** La publication échoue dans
-le consommateur d'outbox, suit donc son retry (10 s → 5 min, six essais) et finit dans
-`failed_domain_events`. Un compte créé pendant une panne du bus n'est pas perdu : il attend dans la
-file d'échec, et `messenger:failed:retry` le publie.
+le consommateur d'outbox, et l'adaptateur reconnaît un bus injoignable : réseau, erreur 5xx ou
+throttling deviennent `IntegrationBusUnavailableException`, que le handler rend à Messenger comme
+échec **récupérable**. Messenger la rejoue alors sans limite de nombre (10 s, doublé, plafonné à
+5 min), et le fait part **seul** au retour du bus, quelle qu'ait été la durée de la panne.
+
+Avant, la publication partait au bout de six essais, environ 10 minutes, dans `failed_domain_events`,
+d'où seul un `messenger:failed:retry` manuel la sortait. Une panne de vingt minutes devenait une
+intervention humaine.
+
+Une requête que SNS **refuse** (`InvalidParameter`, droits, topic inexistant) garde ce chemin
+ordinaire : attendre ne la ferait jamais passer, elle doit finir dans la file d'échec et être vue.
 
 ## État
 
@@ -202,17 +210,28 @@ curl -X DELETE "localhost:20900/api/users/$ACCOUNT" -H "Authorization: Bearer $T
 > db.customer.findOne({userAccountId: "<ACCOUNT>"})       # status 2, et `version` incremente :
                                                           # le meme document, pas une pierre tombale
 
-# 4. Bus eteint : rien n'est perdu
+# 4. Bus eteint : rien n'est perdu, et rien n'attend d'humain
 cd ../aws_local && make down
 curl -s -o /dev/null -w '%{http_code}\n' localhost:20900/health   # 200, le service vit seul
-#   une inscription repond 201, et la publication part en retry (10 s -> 5 min, six essais)
-docker compose logs worker | grep -E 'Could not contact|Sending for retry'
-docker compose exec app bin/console messenger:stats                # failed_domain_events reste a 0
-cd ../aws_local && make up                                         # le compte est rattrape seul
+#   une inscription repond 201, et la publication part en retry : 10 s, double, plafonne a 5 min,
+#   SANS limite de nombre. Le 7e essai (vers 10 min) est celui qui n'existait pas avant.
+#   Messenger journalise dans var/log, pas sur la sortie du conteneur :
+grep -E 'UserRegisteredEvent.*Sending for retry' var/log/dev.log | grep -oE 'retry #[0-9]+' | tail -1
+#   `messenger:stats` ne compte pas un message differe : il affiche 0 alors que l'essai attend.
+#   C'est la table qui dit la verite :
+docker compose exec database sh -c 'psql -U "$POSTGRES_USER" -d "$POSTGRES_DB" \
+  -c "SELECT id, queue_name, available_at FROM messenger_messages ORDER BY id;"'
+cd ../aws_local && make up        # au prochain essai (5 min au plus), le fait part seul
 ```
 
-**Mesuré** : une publication en echec pendant trois minutes, puis la configuration corrigee — le
-cinquieme essai est passe et le client a ete cree, sans intervention ni rejeu manuel. Le worker du
+**Mesuré le 2026-10-23** : bus éteint 19 minutes, une inscription faite pendant la panne. La
+publication a été rejouée au-delà du sixième essai (« Sending for retry #7 using 300000 ms delay »),
+`failed_domain_events` ne l'a jamais reçue, et elle est partie 61 s après le retour du bus. Le
+client a été créé dans le shop à la même seconde, sans intervention. Avec l'ancienne configuration,
+elle aurait quitté l'outbox pour la file d'échec vers la dixième minute.
+
+**Mesuré auparavant** : une publication en échec pendant trois minutes, puis la configuration
+corrigée — le cinquième essai est passé et le client a été créé, sans intervention ni rejeu manuel. Le worker du
 consommateur, lui, est reparti seul apres le retour de la brique, son budget de 50 essais Supervisor
 n'etant pas epuise.
 

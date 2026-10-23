@@ -515,6 +515,17 @@ bin/console messenger:failed:show --transport=failed_domain_events <id> -vv
 bin/console messenger:failed:retry --transport=failed_domain_events
 ```
 
+### Dépendance injoignable : `RecoverableMessageHandlingException`
+
+L'inverse du cas suivant. Quand l'échec tient à une dépendance **momentanément injoignable**, et que
+l'adaptateur l'a reconnu comme tel, le handler lève `RecoverableMessageHandlingException` : Messenger
+le rejoue **sans limite de nombre**, toutes les 5 minutes une fois le plafond atteint, jusqu'au retour
+de la dépendance. Seul `PublishUserIntegrationEventHandler` l'utilise aujourd'hui, pour le bus.
+
+Ne jamais l'appliquer à un échec quelconque : rejoué sans fin, il n'atteindrait jamais la file
+d'échec, et personne ne le verrait. Messenger saute au rejeu les handlers qui ont déjà réussi sur le
+message (`HandledStamp`) ; seul celui qui a échoué recommence.
+
 ### Échec définitif : `UnrecoverableMessageHandlingException`
 
 Certaines situations ne sont pas rattrapables par un retry. Les relancer plusieurs fois ne fait que

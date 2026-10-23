@@ -4,9 +4,10 @@ Sources :
 
 - [`src/Infrastructure/Messaging/UserIntegrationEvent.php`](../../../../src/Infrastructure/Messaging/UserIntegrationEvent.php) — le contrat ;
 - [`src/Infrastructure/Messaging/UserIntegrationEventPublisherInterface.php`](../../../../src/Infrastructure/Messaging/UserIntegrationEventPublisherInterface.php) — ce que le handler injecte ;
+- [`src/Infrastructure/Messaging/IntegrationBusUnavailableException.php`](../../../../src/Infrastructure/Messaging/IntegrationBusUnavailableException.php) — « le bus est injoignable, attendre a un sens » ;
 - [`src/Infrastructure/Messaging/Sns/SnsUserIntegrationEventPublisher.php`](../../../../src/Infrastructure/Messaging/Sns/SnsUserIntegrationEventPublisher.php) — l'adaptateur AWS.
 
-> **Une doc pour trois fichiers**, là où la convention en demande une par fichier : les trois ne se
+> **Une doc pour quatre fichiers**, là où la convention en demande une par fichier : ils ne se
 > comprennent qu'ensemble, et les séparer disperserait des décisions qui se répondent. Même choix que
 > `service_shop` pour son inbox.
 >
@@ -21,6 +22,7 @@ Sources :
 | `UserIntegrationEvent` | porte le contrat et le rend en tableau | tout transport, tout Domain Event |
 | `UserIntegrationEventPublisherInterface` | ce que le handler injecte | toute technologie |
 | `SnsUserIntegrationEventPublisher` | parle à AWS | la forme du contrat |
+| `IntegrationBusUnavailableException` | dit qu'attendre a un sens | toute technologie, toute politique de retry |
 
 Le découpage n'est pas décoratif : **la forme du message et le moyen de l'envoyer changent pour des
 raisons différentes**, et à des rythmes différents.
@@ -119,6 +121,10 @@ sans LocalStack et son jeton, que la CI n'a pas.
    ses propres erreurs « pour ne pas casser le worker » détruirait la garantie entière.
 3. **Un seul paramètre.** `publish(UserIntegrationEvent $event)` et non quatre scalaires dont trois
    `string` dans un ordre arbitraire, qui s'inversent un jour sans que rien ne le détecte.
+4. **Dire si attendre a un sens.** Un bus injoignable lève `IntegrationBusUnavailableException`, tout
+   autre échec autre chose. C'est la seule distinction dont le handler a besoin pour choisir entre
+   « rejouer jusqu'au retour du bus » et « six essais, puis la file d'échec ». L'exception ne nomme
+   aucune technologie : un second adaptateur la lèverait pour ses propres raisons.
 
 ---
 
@@ -146,6 +152,24 @@ de l'interface digne de confiance : **si la méthode revient, le message est che
 
 C'est testé par la négative — `testItFailsWhenSnsRejectsThePublication` fabrique un résultat en
 échec et attend une exception. **Retirer `resolve()` fait tomber ce test, et lui seul.**
+
+### Traduire l'indisponibilité, sans rien avaler
+
+Trois échecs deviennent `IntegrationBusUnavailableException`, la cause d'origine gardée en `previous` :
+
+| Échec AsyncAws | Ce qu'il signifie |
+|---|---|
+| `NetworkException` | hôte introuvable, connexion refusée : la brique `aws_local` éteinte, le réseau coupé |
+| `ServerException` | SNS répond en 5xx |
+| `ClientException` en 429, ou en 400 avec un code d'étranglement (`Throttling`…) | trop de requêtes ; SNS utilise la seconde forme |
+
+Quand l'un d'eux arrive ici, **AsyncAws l'a déjà réessayé** en interne (`AwsRetryStrategy`, quelques
+essais rapprochés) : ce n'est plus un hoquet, c'est une indisponibilité.
+
+Tout le reste remonte **tel quel**, et c'est voulu : une requête que SNS refuse (`InvalidParameter`,
+droits, topic inexistant) ne passera jamais en attendant. Rejouée sans fin, elle n'atteindrait jamais
+la file d'échec, et personne ne la verrait. `testItLetsARejectedRequestThroughUnchanged` tient cette
+frontière.
 
 ### Les deux drapeaux de `json_encode()`
 
@@ -176,9 +200,9 @@ sans que ce service change une ligne.
 
 ### Ce que l'adaptateur ne fait pas
 
-- **Il n'attrape rien.** Aucun `try/catch`, aucun log d'erreur : c'est l'obligation posée par
-  l'interface. Un `catch` ici, même suivi d'un `$logger->error()`, rendrait au handler un succès
-  mensonger.
+- **Il n'avale rien.** Son seul `try/catch` traduit trois échecs en un autre, et relance dans tous
+  les cas : aucun chemin ne rend au handler un succès qu'il n'a pas eu. Un `catch` suivi d'un simple
+  `$logger->error()` serait la faute que l'interface interdit.
 - **Il ne journalise pas les succès.** Le worker Messenger trace déjà chaque message traité et le
   handler ajoute sa ligne ; un troisième log au même instant n'apprendrait rien.
 - **Il ne connaît aucune clé.** Ni dans le fichier, ni dans `services.yaml`. La chaîne
@@ -201,8 +225,12 @@ sans que ce service change une ligne.
   rien : seule la vérification de bout en bout attrape la rupture.
 - **Ne jamais retirer `resolve()`**, ni le remplacer par une lecture partielle du résultat. Un
   événement perdu sans trace est le mode de défaillance que cette ligne existe pour empêcher.
-- **Ne jamais attraper l'échec de publication** dans l'adaptateur ni dans le handler. L'exception est
-  ce qui empêche le marquage, donc ce qui garantit le rejeu.
+- **Ne jamais avaler l'échec de publication**, ni dans l'adaptateur ni dans le handler. On peut le
+  traduire, jamais le faire disparaître : l'exception est ce qui empêche le marquage, donc ce qui
+  garantit le rejeu.
+- **Ne pas élargir la traduction en indisponibilité.** Traduire une erreur qui ne se résorbera pas
+  seule (une requête refusée, un bug) la ferait rejouer sans limite, sans qu'elle atteigne jamais la
+  file d'échec. Réseau, 5xx et throttling, rien d'autre.
 - **Ne pas déplacer l'interface dans `Application/`** : aucun cas d'usage ne l'injecte.
 - **Ne pas incrémenter `VERSION` pour un ajout de champ** — règle détaillée dans
   [`docs/integration_events.md`](../../../integration_events.md).
@@ -216,7 +244,13 @@ Suite `infra.messaging` (`make unit-suite s=infra.messaging`), sans réseau ni c
   explicite (vérifiée sur une heure de Paris, donc `+02:00`), et les trois types figés avec la
   version ;
 - `SnsUserIntegrationEventPublisherTest` — l'ARN visé, le corps publié comparé **caractère pour
-  caractère** au contrat, l'attribut de message, et l'échec de publication qui remonte.
+  caractère** au contrat, l'attribut de message, l'échec de publication qui remonte, le bus
+  injoignable sous ses quatre formes (réseau, 5xx, 429, throttling en 400) et la requête refusée qui,
+  elle, n'est **pas** traduite.
+
+Hors de cette suite, `PublishUserIntegrationEventHandlerTest` (`infra.symfony.messenger.event`) tient
+l'autre moitié : bus injoignable → échec récupérable, tout autre échec → remonté tel quel, jamais
+récupérable. Chacun de ces cas a été vu rougir en retirant ce qu'il protège.
 
 Aucune de ces suites ne touche SNS : en test, un double en mémoire remplace l'adaptateur
 (`config/services.yaml`, `when@test`).
