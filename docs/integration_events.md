@@ -242,6 +242,13 @@ publication a été rejouée au-delà du sixième essai (« Sending for retry #7
 client a été créé dans le shop à la même seconde, sans intervention. Avec l'ancienne configuration,
 elle aurait quitté l'outbox pour la file d'échec vers la dixième minute.
 
+Ces 61 s n'étaient pas un hasard : chaque retry attendait **au moins une minute**, quel que soit son
+délai, parce que le consommateur ne relisait les messages différés que toutes les 60 s
+(`check_delayed_interval` par défaut, voir [`config/packages/messenger.md`](config/packages/messenger.md)).
+**Remesuré le 2026-10-24 avec `check_delayed_interval: 1000`** : délais de 10,7 s, 19,5 s et 37,0 s,
+relus 12,0 s, 20,0 s et 38,0 s après chaque renvoi, contre 60 s chacun avant. Le retry n° 4 est parti
+1,2 s après son échéance, et le client du shop est apparu dans la seconde suivante.
+
 **Mesuré auparavant** : une publication en échec pendant trois minutes, puis la configuration
 corrigée — le cinquième essai est passé et le client a été créé, sans intervention ni rejeu manuel. Le worker du
 consommateur, lui, est reparti seul apres le retour de la brique, son budget de 50 essais Supervisor

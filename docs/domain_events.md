@@ -256,10 +256,14 @@ Deux réglages ne sont pas cosmétiques :
   si Messenger déclenchait la création de `messenger_messages` à l'intérieur d'une transaction
   métier, un rollback ferait disparaître la table avec elle. Les tables viennent donc des
   migrations (`Version20260806120000`), jamais de l'auto-setup.
-- **`use_notify: false`.** Le transport PostgreSQL utilise `LISTEN`/`NOTIFY` via un trigger que
-  seul `auto_setup` sait créer. Comme l'auto-setup est désactivé, on coupe la notification et le
-  worker retombe sur le polling. Attention : `use_notify` est une **option de transport**, pas un
-  paramètre de DSN — le mettre dans l'URL fait échouer le démarrage.
+- **`LISTEN`/`NOTIFY` reste actif, et `check_delayed_interval` passe à 1 000 ms.** Le producteur
+  émet un `pg_notify` à chaque insert, sans trigger, donc sans dépendre de l'auto-setup : le worker
+  est réveillé dès qu'un événement arrive. Mais un retry différé ne déclenche aucune notification
+  à son échéance. Seul le contrôle périodique le voit, et il n'a lieu que toutes les 60 s par
+  défaut : chaque retry attendait au moins une minute. Détail et mesure dans
+  [`config/packages/messenger.md`](config/packages/messenger.md). Attention : `use_notify` est une
+  **option de transport**, pas un paramètre de DSN — la factory la retire des options avant de
+  valider l'URL, où elle devient une clé inconnue qui fait échouer le démarrage.
 
 Le bus lui-même :
 

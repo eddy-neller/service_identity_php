@@ -26,6 +26,8 @@ framework:
     transports:
       domain_events:
         dsn: "doctrine://default?queue_name=domain_events&auto_setup=false"
+        options:
+          check_delayed_interval: 1000
         failure_transport: failed_domain_events
         retry_strategy:
           max_retries: 6

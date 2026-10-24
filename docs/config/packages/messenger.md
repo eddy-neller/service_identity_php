@@ -103,6 +103,28 @@ dsn: "doctrine://default?queue_name=domain_events&auto_setup=false"
   que personne n'écoute, et les workers retomberaient en polling. À `true`, le coût producteur est
   identique et le réveil est immédiat.
 
+### `options.check_delayed_interval: 1000`
+
+Le réveil par `NOTIFY` ne vaut que pour un message **disponible tout de suite**. Un retry réinsère
+le message avec un `available_at` futur : le `NOTIFY` part à l'insertion, le consommateur relit, ne
+trouve rien d'échu, et se remet à écouter. Plus aucune notification ne viendra pour ce message. Seul
+un contrôle périodique le rattrape, toutes les `check_delayed_interval` millisecondes
+(`PostgreSqlConnection::get()`), et ce contrôle est réglé à **60 000 ms par défaut**.
+
+Avec le défaut, aucun retry ne partait donc avant une minute, quel que soit son délai : 10 s, 20 s
+et 40 s devenaient chacun « environ 60 s ». Mesuré le 2026-10-24, bus éteint : essais n° 1 à 4 relus
+à 60 s d'intervalle chacun (délais de 10, 18 et 38 s), et la publication est partie 61 s après le
+retour du bus.
+
+À 1 000 ms, le retard ajouté reste sous le jitter du premier délai (10 s ± 1 s). Le prix est un
+`SELECT … FOR UPDATE SKIP LOCKED` par seconde et par consommateur quand la file est vide, sur une
+table de quelques lignes. Un message neuf, lui, reste réveillé immédiatement par `NOTIFY`.
+
+Elle ne joue qu'avec `use_notify` actif : sans `LISTEN`, le consommateur sonde la table à chaque
+tour et voit les messages différés à l'échéance. Elle est rangée sous `options:` plutôt que dans la
+DSN, où elle serait pourtant acceptée, pour qu'un entier reste un entier — la DSN la rendrait en
+chaîne.
+
 ### `retry_strategy`
 
 ```yaml
