@@ -115,6 +115,18 @@ refermé, `service_shop` invalidant par tags depuis ses Domain Events.
 La règle à retenir pour la suite : **une Query ne devient `CacheableQueryInterface` qu'avec son
 invalidation.** Les deux ensemble, ou aucun des deux.
 
+### À traiter plus tard : Redis injoignable pendant la purge
+
+Décidé le 2026-10-24, pas encore fait. La purge appelle Redis **après** le commit, dans la requête
+d'écriture, sans tolérance déclarée. Ce qui se passe si Redis ne répond pas n'a pas été vérifié :
+on peut craindre une réponse 500 pour une écriture pourtant committée — un client qui la rejoue
+la ferait deux fois — et un cache périmé jusqu'à son TTL.
+
+Le chantier : mesurer d'abord (Redis arrêté, une commande qui invalide), puis **déclarer** la
+tolérance au lieu de l'espérer — journaliser et répondre normalement, avec un TTL qui borne la
+péremption, ou une autre issue si la mesure le justifie. Même sujet côté `service_shop`, où la purge
+touche aussi Varnish.
+
 ## 7) Diagnostic
 
 ```bash
