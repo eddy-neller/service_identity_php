@@ -114,6 +114,11 @@ Règles pour un handler d'événement (`src/Infrastructure/Symfony/Messenger/Eve
   Messenger en `RecoverableMessageHandlingException` : rejouée sans limite de nombre, elle se rattrape
   seule au retour de la dépendance. Jamais pour un échec quelconque, qui n'atteindrait alors jamais la
   file d'échec. Exemple et raisons : `PublishUserIntegrationEventHandler`.
+- **Un appel réseau d'un worker est borné dans le temps**, sans quoi une connexion coupée sans
+  réponse le bloque jusqu'à `default_socket_timeout` (300 s) et retient tous les messages derrière
+  lui. Le client SNS passe par `BoundedSnsClientFactory` (10 s) ; ne pas le reconstruire par simple
+  autowiring, qui lui retirerait aussi les nouvelles tentatives d'AsyncAws. Gardé par
+  `SnsClientWiringTest` (`infra.messaging`).
 - Tout handler consommant un transport asynchrone porte `sign: true` dans `#[AsMessageHandler]` :
   Messenger vérifie ainsi l'HMAC du corps avant le handler. La signature protège l'intégrité, jamais
   la confidentialité ; les messages restent dépourvus de secrets.

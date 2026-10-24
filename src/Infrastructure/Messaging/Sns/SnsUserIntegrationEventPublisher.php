@@ -47,7 +47,9 @@ use AsyncAws\Sns\ValueObject\MessageAttributeValue;
  * sans limite, jusqu'au retour du bus.
  *
  * Quand l'une d'elles arrive ici, AsyncAws l'a **déjà** réessayée quelques fois en interne
- * (`AwsRetryStrategy`) : ce n'est pas un hoquet, c'est une indisponibilité.
+ * (`AwsRetryStrategy`) : ce n'est pas un hoquet, c'est une indisponibilité. Ces tentatives, et la
+ * borne de 10 s qui fait d'une connexion morte une `NetworkException`, viennent du client que
+ * construit `BoundedSnsClientFactory` — l'autowiring les lui retirait.
  *
  * Toute autre erreur — `InvalidParameter`, droits refusés, topic inexistant — remonte **telle
  * quelle**. Rejouer une requête que SNS refuse ne la fera jamais passer : elle doit finir dans la file

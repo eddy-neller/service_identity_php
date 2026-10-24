@@ -168,6 +168,18 @@ intervention humaine.
 Une requête que SNS **refuse** (`InvalidParameter`, droits, topic inexistant) garde ce chemin
 ordinaire : attendre ne la ferait jamais passer, elle doit finir dans la file d'échec et être vue.
 
+**Une connexion coupée sans réponse aussi.** Un bus éteint refuse la connexion et lève aussitôt ;
+une connexion coupée en silence — réseau partitionné, interface retirée — ne levait qu'au bout des
+300 s de `default_socket_timeout`, pendant lesquelles le worker `domain_events` restait bloqué, et
+avec lui tous les messages de l'outbox. `BoundedSnsClientFactory` borne la publication à 10 s,
+nouvelles tentatives comprises, et rend à AsyncAws ses `AwsRetryStrategy`, que l'autowiring de son
+client HTTP lui retirait. Une publication abandonnée a pu atteindre SNS : la rejouer peut donner un
+doublon, que l'inbox du consommateur absorbe.
+
+Mesuré le 2026-10-24 : une publication réussie, `docker network disconnect en_shop_php_bus` sur le
+worker, puis une seconde publication sur la même connexion keep-alive. Avant : `NetworkException`
+au bout de **300 s**, en un seul essai. Après : au bout de **10 s**.
+
 ## État
 
 **Les trois faits sont publiés.** `PublishUserIntegrationEventHandler` réagit aux trois événements

@@ -47,6 +47,7 @@
         </testsuite>
         <testsuite name="infra.messaging">
             <directory>tests/Infrastructure/Unit/Messaging</directory>
+            <directory>tests/Infrastructure/Integration/Messaging</directory>
         </testsuite>
         <testsuite name="infra.persist">
             <directory>tests/Infrastructure/Integration/Persistence</directory>

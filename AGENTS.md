@@ -276,7 +276,7 @@ Règles :
 | `infra.adapter.hasher` | `tests/Infrastructure/Integration/Adapter/Hasher` | non |
 | `infra.adapter.storage` | `tests/Infrastructure/Unit/Adapter/Storage` | non |
 | `infra.adapter.token` | `tests/Infrastructure/Unit/Adapter/Token` | non |
-| `infra.messaging` | `tests/Infrastructure/Unit/Messaging` | non |
+| `infra.messaging` | `tests/Infrastructure/Unit/Messaging`, `tests/Infrastructure/Integration/Messaging` | non |
 | `infra.persist` | `tests/Infrastructure/Integration/Persistence` | **oui** |
 | `infra.symfony.command` | `tests/Infrastructure/Unit/Symfony/Command` | non |
 | `infra.symfony.event_subscriber` | `tests/Infrastructure/Unit/Symfony/EventSubscriber` | non |

@@ -51,8 +51,10 @@ services:
   # Aucun identifiant n'est passe — la chaine par defaut d'AsyncAws s'en charge, ce qui donne
   # EKS Pod Identity en production. `endpoint` est toujours renseigne : vide, AsyncAws retomberait
   # sur son modele `https://%%service%%.%%region%%.amazonaws.com`, ce qui masquerait une erreur de
-  # configuration en developpement.
+  # configuration en developpement. La fabrique borne chaque requete et rend a AsyncAws ses
+  # nouvelles tentatives, que l'autowiring de son client HTTP lui retirait.
   AsyncAws\Sns\SnsClient:
+    factory: ['@App\Infrastructure\Messaging\Sns\BoundedSnsClientFactory', 'create']
     arguments:
       $configuration:
         region: '%app.bus.region%'
@@ -100,3 +102,9 @@ when@test:
 
     App\Infrastructure\Messaging\UserIntegrationEventPublisherInterface:
       alias: App\Tests\Infrastructure\Double\Messaging\InMemoryUserIntegrationEventPublisher
+
+    # Garde le client SNS de production joignable par `SnsClientWiringTest` : sans autre usage en
+    # test, le conteneur le retirerait, et rien ne verrait sa fabrique disparaitre.
+    test.sns_client:
+      alias: AsyncAws\Sns\SnsClient
+      public: true
