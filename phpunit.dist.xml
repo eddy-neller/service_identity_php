@@ -65,6 +65,9 @@
             <directory>tests/Infrastructure/Unit/Symfony/Messenger/Event</directory>
             <directory>tests/Infrastructure/Integration/Symfony/Messenger/Event</directory>
         </testsuite>
+        <testsuite name="infra.symfony.messenger.failure">
+            <directory>tests/Infrastructure/Unit/Symfony/Messenger/Failure</directory>
+        </testsuite>
         <testsuite name="infra.symfony.security">
             <directory>tests/Infrastructure/Unit/Symfony/Security</directory>
         </testsuite>

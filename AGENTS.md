@@ -282,6 +282,7 @@ Règles :
 | `infra.symfony.event_subscriber` | `tests/Infrastructure/Unit/Symfony/EventSubscriber` | non |
 | `infra.symfony.messenger.cqrs` | `tests/Infrastructure/Unit/Symfony/Messenger/CQRS`, `tests/Infrastructure/Integration/Symfony/Messenger/CQRS` | non |
 | `infra.symfony.messenger.event` | `tests/Infrastructure/Unit/Symfony/Messenger/Event`, `tests/Infrastructure/Integration/Symfony/Messenger/Event` | **oui** |
+| `infra.symfony.messenger.failure` | `tests/Infrastructure/Unit/Symfony/Messenger/Failure` | non |
 | `infra.symfony.security` | `tests/Infrastructure/Unit/Symfony/Security` | non |
 | `infra.symfony.service.notification` | `tests/Infrastructure/Unit/Symfony/Service/Notification` | non |
 | `pres.state.sendmail` | `tests/Presentation/Unit/State/SendMail` | non |

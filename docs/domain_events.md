@@ -515,6 +515,21 @@ bin/console messenger:failed:show --transport=failed_domain_events <id> -vv
 bin/console messenger:failed:retry --transport=failed_domain_events
 ```
 
+**Un rejeu qui échoue encore reste dans `failed_domain_events`**, avec l'erreur du dernier essai,
+grâce à `KeepFailedReplayInFailureTransportListener`. Sans lui, Messenger le supprimait : la file
+globale est sa propre file d'échec, et Messenger renonce à y renvoyer un message qui en vient. Un
+e-mail rejoué trop tôt, SMTP toujours coupé, disparaissait ainsi.
+
+Un rejeu n'est pas un seul essai : `failed_domain_events` n'ayant pas de `retry_strategy`, Messenger
+applique la sienne par défaut, trois retries à 1, 2 puis 4 s, chacun sous un nouvel `id`. Chaque
+`messenger:failed:retry` n'en joue qu'un ; la perte survenait au quatrième.
+
+Mesuré le 2026-10-24, SMTP coupé, sur deux demandes de réinitialisation arrivées dans
+`failed_domain_events` après leurs six essais. Sans l'écouteur, le quatrième rejeu de la première a
+journalisé « Removing from transport », et le message n'existait plus nulle part. Avec lui, la seconde
+est restée dans la file, origine `domain_events` et erreur conservées, puis, Mailpit redémarré, un
+dernier rejeu l'a remise : l'e-mail est arrivé.
+
 ### Dépendance injoignable : `RecoverableMessageHandlingException`
 
 L'inverse du cas suivant. Quand l'échec tient à une dépendance **momentanément injoignable**, et que

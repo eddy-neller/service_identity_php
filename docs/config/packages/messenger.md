@@ -144,6 +144,14 @@ des reprises adaptées à chaque flux.
 (`messenger:failed:show`, `messenger:failed:retry`), jamais par un worker en attente. Le `LISTEN`
 n'aurait personne à réveiller.
 
+**Un rejeu raté retourne dans sa file, et c'est `KeepFailedReplayInFailureTransportListener` qui le
+garantit.** Laissé à lui-même, Messenger envoie un message rejoué depuis une file d'échec, s'il échoue
+sans être réessayé, dans la file d'échec **de cette file** : la globale, `failed_domain_events`, faute
+de réglage propre. Pour `failed_async`, le message changeait donc de file. Et pour
+`failed_domain_events` elle-même, qui est sa propre file d'échec, Messenger renonce, puis le worker
+supprime la ligne : le message est **perdu**. Déclarer une file comme sa propre `failure_transport`
+ne corrige rien : c'est précisément le cas où Messenger renonce.
+
 ---
 
 ## `routing`

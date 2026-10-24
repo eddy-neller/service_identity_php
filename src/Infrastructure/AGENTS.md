@@ -119,6 +119,11 @@ Règles pour un handler d'événement (`src/Infrastructure/Symfony/Messenger/Eve
   la confidentialité ; les messages restent dépourvus de secrets.
 - Les événements sont sérialisés par le `PhpSerializer` de Messenger : **vider `domain_events` et `failed_domain_events`
   avant tout renommage ou déplacement** d'une classe d'événement ou d'un Value Object qu'elle transporte.
+- **Un `messenger:failed:retry` qui échoue de nouveau laisse le message dans sa file d'échec** : c'est
+  `Symfony/Messenger/Failure/KeepFailedReplayInFailureTransportListener` qui le garantit. Sans lui,
+  Messenger supprimait un rejeu raté depuis `failed_domain_events`, sa propre file d'échec, et rangeait
+  dans celle-ci un rejeu raté depuis `failed_async`. Ne pas « corriger » en déclarant une file comme sa
+  propre `failure_transport` : c'est exactement le cas où Messenger renonce.
 
 > Référence complète (outbox, worker, régimes d'idempotence, diagnostic, recettes) :
 > [`docs/domain_events.md`](../../docs/domain_events.md).
@@ -337,8 +342,8 @@ Deux périmètres, jamais mélangés :
   aucun accès conteneur, aucune DB : l'adapter est instancié à la main avec des doubles (`ArrayAdapter`,
   stubs de `EntityManagerInterface`, etc.). Suites : `infra.api_platform`, `infra.adapter.storage`,
   `infra.adapter.token`, `infra.symfony.command`, `infra.symfony.event_subscriber`,
-  `infra.symfony.messenger.cqrs`, `infra.symfony.messenger.event`, `infra.symfony.security`,
-  `infra.symfony.service.notification`.
+  `infra.symfony.messenger.cqrs`, `infra.symfony.messenger.event`, `infra.symfony.messenger.failure`,
+  `infra.symfony.security`, `infra.symfony.service.notification`.
 - **`tests/Infrastructure/Integration/`** — `KernelTestCase` : ce qu'on ne peut vérifier qu'avec le vrai
   Doctrine ou le vrai conteneur (requêtes DQL, mappers, outbox/ledger, câblage Messenger et bindings de
   Ports). Suites : `infra.adapter.hasher`, `infra.persist`, `infra.symfony.messenger.cqrs`,
