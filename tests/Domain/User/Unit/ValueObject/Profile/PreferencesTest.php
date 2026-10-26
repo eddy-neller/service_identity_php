@@ -107,4 +107,14 @@ final class PreferencesTest extends TestCase
 
         $this->assertNotSame($preferences, $newPreferences);
     }
+
+    public function testEqualsComparesNormalizedLang(): void
+    {
+        $this->assertTrue(Preferences::create('FR')->equals(Preferences::create('fr')));
+    }
+
+    public function testEqualsReturnsFalseForDifferentLang(): void
+    {
+        $this->assertFalse(Preferences::create('fr')->equals(Preferences::create('en')));
+    }
 }

@@ -15,4 +15,14 @@ final class RefreshTokenIdTest extends TestCase
 
         $this->assertSame('550e8400-e29b-41d4-a716-446655440001', $id->toString());
     }
+
+    public function testEqualsReturnsTrueForSameValue(): void
+    {
+        $this->assertTrue(RefreshTokenId::fromString('550e8400-e29b-41d4-a716-446655440001')->equals(RefreshTokenId::fromString('550e8400-e29b-41d4-a716-446655440001')));
+    }
+
+    public function testEqualsReturnsFalseForDifferentValue(): void
+    {
+        $this->assertFalse(RefreshTokenId::fromString('550e8400-e29b-41d4-a716-446655440001')->equals(RefreshTokenId::fromString('550e8400-e29b-41d4-a716-446655440002')));
+    }
 }

@@ -129,4 +129,12 @@ final readonly class ActiveEmail implements JsonSerializable
             lastAttempt: $lastAttempt,
         );
     }
+
+    /**
+     * Compare la forme persistée : `lastAttempt` à la seconde, comme il est relu.
+     */
+    public function equals(self $other): bool
+    {
+        return $this->toArray() === $other->toArray();
+    }
 }

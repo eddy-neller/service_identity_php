@@ -66,4 +66,9 @@ final readonly class Preferences implements JsonSerializable
     {
         return new self(lang: $lang);
     }
+
+    public function equals(self $other): bool
+    {
+        return $this->lang === $other->lang;
+    }
 }

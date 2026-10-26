@@ -240,4 +240,14 @@ final class ActiveEmailTest extends TestCase
         $this->assertSame(1000, $newActiveEmail->getTokenTtl());
         $this->assertSame($lastAttempt, $newActiveEmail->getLastAttempt());
     }
+
+    public function testEqualsReturnsTrueForSameValue(): void
+    {
+        $this->assertTrue(ActiveEmail::create(1, 'token', 3600, new DateTimeImmutable('2025-01-01 10:00:00'))->equals(ActiveEmail::create(1, 'token', 3600, new DateTimeImmutable('2025-01-01 10:00:00'))));
+    }
+
+    public function testEqualsReturnsFalseForDifferentValue(): void
+    {
+        $this->assertFalse(ActiveEmail::create(1, 'token', 3600)->equals(ActiveEmail::create(2, 'token', 3600)));
+    }
 }

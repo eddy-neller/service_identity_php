@@ -22,4 +22,9 @@ final readonly class RefreshTokenId
     {
         return $this->value->toString();
     }
+
+    public function equals(self $other): bool
+    {
+        return $this->value->equals($other->value);
+    }
 }

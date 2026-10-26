@@ -75,4 +75,17 @@ final readonly class RoleSet
 
         return new self($roles);
     }
+
+    /**
+     * Un ensemble : l'ordre des rôles ne compte pas.
+     */
+    public function equals(self $other): bool
+    {
+        $roles = $this->roles;
+        $otherRoles = $other->roles;
+        sort($roles);
+        sort($otherRoles);
+
+        return $roles === $otherRoles;
+    }
 }

@@ -173,4 +173,14 @@ final class ResetPasswordTest extends TestCase
         $this->assertSame('token', $newResetPassword->getToken());
         $this->assertSame(1000, $newResetPassword->getTokenTtl());
     }
+
+    public function testEqualsReturnsTrueForSameValue(): void
+    {
+        $this->assertTrue(ResetPassword::create(1, 'token', 3600)->equals(ResetPassword::create(1, 'token', 3600)));
+    }
+
+    public function testEqualsReturnsFalseForDifferentValue(): void
+    {
+        $this->assertFalse(ResetPassword::create(1, 'token', 3600)->equals(ResetPassword::create(1, 'other', 3600)));
+    }
 }

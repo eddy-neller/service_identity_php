@@ -136,4 +136,14 @@ final class RoleSetTest extends TestCase
         $this->assertSame('ROLE_ADMIN', RoleSet::ROLE_ADMIN);
         $this->assertSame('ROLE_SUPER_ADMIN', RoleSet::ROLE_SUPER_ADMIN);
     }
+
+    public function testEqualsIgnoresRoleOrder(): void
+    {
+        $this->assertTrue(RoleSet::fromArray([RoleSet::ROLE_ADMIN, RoleSet::ROLE_USER])->equals(RoleSet::fromArray([RoleSet::ROLE_USER, RoleSet::ROLE_ADMIN])));
+    }
+
+    public function testEqualsReturnsFalseForDifferentRoles(): void
+    {
+        $this->assertFalse(RoleSet::fromArray([RoleSet::ROLE_USER])->equals(RoleSet::fromArray([RoleSet::ROLE_ADMIN])));
+    }
 }

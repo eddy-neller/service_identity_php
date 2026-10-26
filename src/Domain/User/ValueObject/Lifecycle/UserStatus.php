@@ -56,4 +56,9 @@ final class UserStatus
     {
         return self::BLOCKED === $this->value;
     }
+
+    public function equals(self $other): bool
+    {
+        return $this->value === $other->value;
+    }
 }

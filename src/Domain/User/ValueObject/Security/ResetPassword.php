@@ -91,4 +91,9 @@ final readonly class ResetPassword implements JsonSerializable
             tokenTtl: $tokenTtl,
         );
     }
+
+    public function equals(self $other): bool
+    {
+        return $this->toArray() === $other->toArray();
+    }
 }

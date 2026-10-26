@@ -116,4 +116,14 @@ final class UserStatusTest extends TestCase
 
         $this->assertSame(UserStatus::ACTIVE, $status->toInt());
     }
+
+    public function testEqualsReturnsTrueForSameValue(): void
+    {
+        $this->assertTrue(UserStatus::active()->equals(UserStatus::fromInt(UserStatus::ACTIVE)));
+    }
+
+    public function testEqualsReturnsFalseForDifferentValue(): void
+    {
+        $this->assertFalse(UserStatus::active()->equals(UserStatus::blocked()));
+    }
 }

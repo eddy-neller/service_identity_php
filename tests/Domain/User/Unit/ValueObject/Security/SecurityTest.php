@@ -163,4 +163,14 @@ final class SecurityTest extends TestCase
         $this->assertSame(2, $newSecurity->getTotalWrongTwoFactorCode());
         $this->assertSame(3, $newSecurity->getTotalTwoFactorSmsSent());
     }
+
+    public function testEqualsReturnsTrueForSameValue(): void
+    {
+        $this->assertTrue(Security::create(1, 2, 3)->equals(Security::create(1, 2, 3)));
+    }
+
+    public function testEqualsReturnsFalseForDifferentValue(): void
+    {
+        $this->assertFalse(Security::create(1, 2, 3)->equals(Security::create(0, 2, 3)));
+    }
 }

@@ -91,4 +91,9 @@ final readonly class Security implements JsonSerializable
             totalTwoFactorSmsSent: $totalTwoFactorSmsSent,
         );
     }
+
+    public function equals(self $other): bool
+    {
+        return $this->toArray() === $other->toArray();
+    }
 }
