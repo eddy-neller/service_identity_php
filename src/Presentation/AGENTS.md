@@ -14,6 +14,15 @@
   - Symfony (validation, sécurité, sérialisation), API Platform.
 - Ne doit **pas** dépendre de : repositories Doctrine, services `src/Infrastructure/*` (hashers, FS, …), implémentations concrètes des Ports.
   - **Exception** : `stateOptions: new Options(entityClass: ...)` dans `#[ApiResource]` peut référencer une entité Doctrine — couplage imposé par l'ORM bridge d'API Platform, acceptable **uniquement** pour ce paramètre `entityClass`.
+- Vérifié par `DependencyRule` (`make stan`), trois règles :
+  - `testPresentationTalksToApplicationThroughBuses` — d'Application, seuls `Shared\CQRS`, les Commands/Queries
+    (pas leurs handlers), les read models, `Shared\Messenger\Message` et deux Ports : `FileInterface`,
+    `AvatarUrlResolverInterface`. Une constante dont la Presentation a besoin vit sur la Query, pas sur un
+    Port (`DisplayListUserQuery::SORT_FIELDS`).
+  - `testPresentationIgnoresInfrastructure` — exclut les seuls dossiers `ApiResource/`, pour `entityClass`.
+  - `testPresentationNeverBuildsDomainObjects` — du Domain, seuls les `ValueObject` sont visibles. PHPat ne
+    distingue pas `RoleSet::ROLE_ADMIN` de `RoleSet::fromArray()` : l'appel de factory reste à chercher à la
+    main (skill `regle-dependance`).
 
 ---
 

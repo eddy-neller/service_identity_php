@@ -18,6 +18,11 @@
 
 - Infrastructure peut dépendre de : `App\Application\...Port\...Interface` (Ports seulement), `App\Domain\...` (agrégats, VOs, events), frameworks & libs externes.
 - Infrastructure ne doit **jamais** dépendre de `App\Presentation\*`.
+- « Ports seulement » se lit au sens large : ce qu'Application expose comme **contrat** —
+  `…\Port\*`, `Shared\CQRS\*` (buses, interfaces de messages, pour les adapters Messenger),
+  `Shared\Messenger\Message\*` et `…\ReadModel\*`. Jamais un use case (Command, Query, Handler) ni un
+  service applicatif. Vérifié par `DependencyRule::testInfrastructureSeesOnlyApplicationContracts` et
+  `testInfrastructureIgnoresPresentation` (`make stan`).
 
 ---
 

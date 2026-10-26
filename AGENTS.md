@@ -207,6 +207,13 @@ Presentation  →  Application  →  Domain
 - **Infrastructure** : implémente les Ports. Dépend de Domain + frameworks. Jamais de Presentation.
 - **Presentation** : expose l'API, parle à Application **uniquement via les Buses CQRS** + DTOs. Jamais d'accès direct aux repos/services Infrastructure ni aux implémentations concrètes des Ports.
 
+**Ces règles sont vérifiées, pas seulement écrites** : `tests/Architecture/DependencyRule.php`
+(PHPat, extension de PHPStan) les traduit en règles que `make stan` applique — donc GrumPHP à chaque
+commit et la CI. Une violation sort comme une erreur PHPStan `phpat.<règle>`. Changer une règle de
+dépendance, c'est changer **les deux** : le `AGENTS.md` de la couche et la méthode correspondante.
+Ne jamais faire taire une violation par un `ignoreErrors` sans l'écrire comme écart connu dans le
+`AGENTS.md` de la couche. Diagnostic et remèdes : skill `regle-dependance` (`back_php/.claude/skills/`).
+
 ### CQRS — mantra transverse
 
 - Tout cas d'usage passe par `CommandBusInterface` (écritures) / `QueryBusInterface` (lectures).
@@ -364,10 +371,9 @@ find tests -name '*Test.php' | sort | comm -13 /tmp/phpunit_listed.txt -
 
 ## Checklist architecture (transverse)
 
-- [ ] Aucun `use App\Application\*`, `App\Infrastructure\*`, `App\Presentation\*` dans Domain.
-- [ ] Aucun import Symfony/Doctrine/API Platform/Ramsey dans Domain ni Application.
-- [ ] Presentation communique uniquement via les Buses (pas d'injection de Handlers).
-- [ ] Infrastructure ne dépend pas de Presentation.
+- [ ] `make stan` vert : il porte la règle de dépendance (`tests/Architecture/DependencyRule.php`) —
+      Domain pur, Application sans framework, Infrastructure sans use case ni Presentation,
+      Presentation par les Buses seulement.
 - [ ] Chaque Port Application a son implémentation dans Infrastructure avec binding dans `config/services.yaml`.
 - [ ] `declare(strict_types=1);` dans tout nouveau fichier PHP.
 - [ ] `make stan` et `make phpcsfixer_dry` passent ; suite(s) de tests concernée(s) vertes.
