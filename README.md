@@ -125,10 +125,11 @@ Les ressources et endpoints sont décrits via les **attributs PHP** d’API Plat
 Exemples de commandes utiles (via `make`) :
 
 ```bash
-make cs           # vérifie les standards de code
-make cs-fix       # corrige automatiquement le style
-make phpstan      # lance l’analyse statique
-make test         # exécute la suite de tests
+make phpcs            # vérifie les standards de code
+make phpcsfixer_fix   # corrige automatiquement le style
+make stan             # lance l’analyse statique
+make unit             # exécute la suite de tests
+make grumphp          # lance tous les contrôles du pre-commit
 ```
 
 **Pourquoi autant d’outils ?**  

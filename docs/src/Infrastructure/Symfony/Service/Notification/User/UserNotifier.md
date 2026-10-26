@@ -115,4 +115,4 @@ Les tests unitaires de
 - la forme, la séparation par canal et la rotation des clés de verrou ;
 - l'absence d'envoi quand un verrou identique est déjà détenu.
 
-Exécuter cette couverture avec `make unit-suite s=infra.notif`.
+Exécuter cette couverture avec `make unit-suite s=infra.symfony.service.notification`.
