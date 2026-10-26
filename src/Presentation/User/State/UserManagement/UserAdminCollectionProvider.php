@@ -7,7 +7,6 @@ namespace App\Presentation\User\State\UserManagement;
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProviderInterface;
 use App\Application\Shared\CQRS\Query\QueryBusInterface;
-use App\Application\User\Port\UserRepositoryInterface;
 use App\Application\User\UseCase\Query\UserManagement\DisplayListUser\DisplayListUserQuery;
 use App\Presentation\Shared\State\CollectionParameterNormalizerTrait;
 use App\Presentation\User\Presenter\UserResourcePresenter;
@@ -30,7 +29,7 @@ final readonly class UserAdminCollectionProvider implements ProviderInterface
             $filters = [];
         }
 
-        $orderBy = $this->normalizeOrderBy($filters['order'] ?? null, UserRepositoryInterface::SORT_FIELDS);
+        $orderBy = $this->normalizeOrderBy($filters['order'] ?? null, DisplayListUserQuery::SORT_FIELDS);
 
         $output = $this->queryBus->dispatch(new DisplayListUserQuery(
             page: $this->normalizePaginationParameter($filters['page'] ?? null),

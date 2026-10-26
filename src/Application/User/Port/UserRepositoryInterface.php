@@ -11,8 +11,6 @@ use App\Domain\User\ValueObject\Identity\Username;
 
 interface UserRepositoryInterface
 {
-    public const array SORT_FIELDS = ['username', 'email', 'createdAt'];
-
     public function nextIdentity(): UserId;
 
     public function list(array $filters, array $orderBy, int $page, int $itemsPerPage): array;
