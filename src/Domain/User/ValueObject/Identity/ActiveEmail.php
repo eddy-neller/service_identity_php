@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Domain\User\ValueObject\Identity;
 
-use DateTime;
+use DateTimeImmutable;
 use DateTimeInterface;
 use Exception;
 use JsonSerializable;
@@ -16,7 +16,7 @@ final readonly class ActiveEmail implements JsonSerializable
         private int $mailSent = 0,
         private ?string $token = null,
         private ?int $tokenTtl = null,
-        private ?DateTimeInterface $lastAttempt = null,
+        private ?DateTimeImmutable $lastAttempt = null,
     ) {
     }
 
@@ -24,7 +24,7 @@ final readonly class ActiveEmail implements JsonSerializable
         int $mailSent = 0,
         ?string $token = null,
         ?int $tokenTtl = null,
-        ?DateTimeInterface $lastAttempt = null,
+        ?DateTimeImmutable $lastAttempt = null,
     ): self {
         return new self(
             mailSent: $mailSent,
@@ -39,9 +39,11 @@ final readonly class ActiveEmail implements JsonSerializable
         $lastAttempt = null;
         if (isset($data['lastAttempt'])) {
             try {
-                $lastAttempt = $data['lastAttempt'] instanceof DateTimeInterface
-                    ? $data['lastAttempt']
-                    : new DateTime($data['lastAttempt']);
+                $lastAttempt = match (true) {
+                    $data['lastAttempt'] instanceof DateTimeImmutable => $data['lastAttempt'],
+                    $data['lastAttempt'] instanceof DateTimeInterface => DateTimeImmutable::createFromInterface($data['lastAttempt']),
+                    default => new DateTimeImmutable($data['lastAttempt']),
+                };
             } catch (Exception $exception) {
                 throw new UnexpectedValueException('Unable to parse the "lastAttempt" date value.', previous: $exception);
             }
@@ -85,7 +87,7 @@ final readonly class ActiveEmail implements JsonSerializable
         return $this->tokenTtl;
     }
 
-    public function getLastAttempt(): ?DateTimeInterface
+    public function getLastAttempt(): ?DateTimeImmutable
     {
         return $this->lastAttempt;
     }
@@ -120,7 +122,7 @@ final readonly class ActiveEmail implements JsonSerializable
         );
     }
 
-    public function withLastAttempt(?DateTimeInterface $lastAttempt): self
+    public function withLastAttempt(?DateTimeImmutable $lastAttempt): self
     {
         return new self(
             mailSent: $this->mailSent,
