@@ -354,7 +354,7 @@ find tests -name '*Test.php' | sort | comm -13 /tmp/phpunit_listed.txt -
 ## Documentation
 
 - `README.md` : quickstart, env, commandes, architecture courte.
-- `docs/` : références techniques (`CQRS_messenger.md`, `domain_events.md`) et **audits** d'architecture datés dans `docs/audits/` (instantanés d'évaluation, **non normatifs** — les règles font foi dans les `AGENTS.md`).
+- `docs/` : références techniques (`CQRS_messenger.md`, `domain_events.md`) et **audits** d'architecture datés, `docs/audits/AAAA-MM-JJ-architecture.md` (instantanés **non normatifs**, jamais réécrits — les règles font foi dans les `AGENTS.md` ; produits par le skill `audit-archi`, qui compare chaque audit au précédent).
 - `docs/config/` et `docs/src/` **reflètent l'arborescence du code** : la doc d'un fichier vit au
   même chemin, avec l'extension `.md` — par exemple
   [`docs/config/packages/messenger.md`](docs/config/packages/messenger.md), qui explique chaque
