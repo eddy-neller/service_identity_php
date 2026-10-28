@@ -16,6 +16,7 @@ use App\Application\User\Service\AuthTokenIssuer;
 use App\Domain\User\Exception\Lifecycle\AccountNotActivatedException;
 use App\Domain\User\Exception\Security\InvalidCredentialsException;
 use App\Domain\User\Exception\Security\UserLockedException;
+use App\Domain\User\Model\User;
 use App\Domain\User\ValueObject\Identity\EmailAddress;
 
 final readonly class LoginCommandHandler implements CommandHandlerInterface
@@ -49,13 +50,18 @@ final readonly class LoginCommandHandler implements CommandHandlerInterface
 
         $passwordValid = $this->passwordHasher->verify($user->getPassword()->toString(), $command->password);
 
+        // Ce qui précède est lu hors verrou, pour ne pas tenir une ligne pendant le hachage. Ce qui
+        // écrit relit l'utilisateur verrouillé : des tentatives concurrentes perdraient sinon des
+        // incréments du compteur, et un login réussi débloquerait un compte bloqué entre-temps.
         if (!$passwordValid) {
             $locked = $this->transactional->transactional(function () use ($user, $maxAttempts, $now): bool {
-                $user->registerWrongPasswordAttempt($maxAttempts, $now);
-                $this->repository->save($user);
-                $this->eventBus->publishAll($user->releaseEvents());
+                $current = $this->lockedUser($user);
+                $current->registerWrongPasswordAttempt($maxAttempts, $now);
 
-                return $user->isLocked();
+                $this->repository->save($current);
+                $this->eventBus->publishAll($current->releaseEvents());
+
+                return $current->isLocked();
             });
 
             if ($locked) {
@@ -65,18 +71,29 @@ final readonly class LoginCommandHandler implements CommandHandlerInterface
             throw new InvalidCredentialsException();
         }
 
-        if (!$user->isActive()) {
-            throw new AccountNotActivatedException();
-        }
-
         return $this->transactional->transactional(function () use ($user, $now): AuthTokens {
-            $user->resetWrongPasswordAttempts($now);
-            $user->recordSuccessfulLogin($now);
+            $current = $this->lockedUser($user);
 
-            $this->repository->save($user);
-            $this->eventBus->publishAll($user->releaseEvents());
+            if ($current->isLocked()) {
+                throw new UserLockedException();
+            }
 
-            return $this->tokenIssuer->issue($user, $now);
+            if (!$current->isActive()) {
+                throw new AccountNotActivatedException();
+            }
+
+            $current->resetWrongPasswordAttempts($now);
+            $current->recordSuccessfulLogin($now);
+
+            $this->repository->save($current);
+            $this->eventBus->publishAll($current->releaseEvents());
+
+            return $this->tokenIssuer->issue($current, $now);
         });
+    }
+
+    private function lockedUser(User $user): User
+    {
+        return $this->repository->findByIdForUpdate($user->getId()) ?? throw new InvalidCredentialsException();
     }
 }

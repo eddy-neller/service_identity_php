@@ -20,6 +20,7 @@ use App\Application\User\UseCase\Command\Auth\Login\LoginCommandHandler;
 use App\Domain\User\Event\Security\UserReauthenticationRequiredEvent;
 use App\Domain\User\Event\Security\UserWrongPasswordAttemptRegisteredEvent;
 use App\Domain\User\Event\Security\UserWrongPasswordAttemptsResetEvent;
+use App\Domain\User\Exception\Lifecycle\AccountNotActivatedException;
 use App\Domain\User\Exception\Security\InvalidCredentialsException;
 use App\Domain\User\Exception\Security\UserLockedException;
 use App\Domain\User\Model\User;
@@ -219,7 +220,98 @@ final class LoginTest extends TestCase
         $this->assertSame(1, $user->getLoginCount());
     }
 
-    private function configureLoginAttempt(User $user, DateTimeImmutable $now, int $maxAttempts): void
+    public function testHandleCountsTheWrongAttemptOnTheLockedRereadNotOnTheFirstRead(): void
+    {
+        $now = new DateTimeImmutable('2026-07-18 11:00:00');
+        $this->expectNoTokenIssued();
+        $firstRead = $this->createActiveUser();
+        $current = $this->createUserWithWrongAttempts(2, maxAttempts: 3);
+
+        $this->configureLoginAttempt($firstRead, $now, maxAttempts: 3, current: $current);
+        $this->passwordHasher->expects($this->once())->method('verify')->willReturn(false);
+        $this->runTransactionalCallback();
+        $this->repository->expects($this->once())->method('save')->with($current);
+        $this->eventBus->expects($this->once())->method('publishAll');
+
+        try {
+            $this->handler->handle(new LoginCommand('john@example.com', 'invalid-password'));
+            $this->fail('Le troisième échec doit bloquer le compte.');
+        } catch (UserLockedException) {
+        }
+
+        $this->assertSame(3, $current->getSecurity()->getTotalWrongPassword());
+        $this->assertSame(0, $firstRead->getSecurity()->getTotalWrongPassword());
+    }
+
+    public function testHandleRefusesAValidPasswordOnAnAccountLockedInTheMeantime(): void
+    {
+        $now = new DateTimeImmutable('2026-07-18 11:00:00');
+        $this->expectNoTokenIssued();
+        $current = $this->createUserWithWrongAttempts(1, maxAttempts: 1);
+
+        $this->configureLoginAttempt($this->createActiveUser(), $now, maxAttempts: 3, current: $current);
+        $this->passwordHasher->expects($this->once())->method('verify')->willReturn(true);
+        $this->runTransactionalCallback();
+        $this->repository->expects($this->never())->method('save');
+        $this->eventBus->expects($this->never())->method('publishAll');
+
+        $this->expectException(UserLockedException::class);
+
+        $this->handler->handle(new LoginCommand('john@example.com', 'valid-password'));
+    }
+
+    public function testHandleRefusesAValidPasswordOnAnInactiveAccount(): void
+    {
+        $now = new DateTimeImmutable('2026-07-18 11:00:00');
+        $this->expectNoTokenIssued();
+        $user = User::createByAdmin(
+            id: UserId::fromString('550e8400-e29b-41d4-a716-446655440000'),
+            username: Username::fromString('john'),
+            email: EmailAddress::fromString('john@example.com'),
+            password: HashedPassword::fromString('hash'),
+            roles: RoleSet::fromArray(['ROLE_USER']),
+            status: UserStatus::inactive(),
+            now: new DateTimeImmutable('2026-07-18 10:00:00'),
+            preferences: Preferences::create(),
+        );
+
+        $this->configureLoginAttempt($user, $now, maxAttempts: 3);
+        $this->passwordHasher->expects($this->once())->method('verify')->willReturn(true);
+        $this->runTransactionalCallback();
+        $this->repository->expects($this->never())->method('save');
+
+        $this->eventBus->expects($this->never())->method('publishAll');
+
+        $this->expectException(AccountNotActivatedException::class);
+
+        $this->handler->handle(new LoginCommand('john@example.com', 'valid-password'));
+    }
+
+    public function testHandleRejectsAUserDeletedInTheMeantime(): void
+    {
+        $now = new DateTimeImmutable('2026-07-18 11:00:00');
+        $this->expectNoTokenIssued();
+        $user = $this->createActiveUser();
+
+        $this->clock->expects($this->once())->method('now')->willReturn($now);
+        $this->config->expects($this->once())->method('get')->willReturn(3);
+        $this->repository->expects($this->once())->method('findByEmail')->willReturn($user);
+        $this->repository->expects($this->once())->method('findByIdForUpdate')->willReturn(null);
+        $this->passwordHasher->expects($this->once())->method('verify')->willReturn(true);
+        $this->runTransactionalCallback();
+        $this->repository->expects($this->never())->method('save');
+        $this->eventBus->expects($this->never())->method('publishAll');
+
+        $this->expectException(InvalidCredentialsException::class);
+
+        $this->handler->handle(new LoginCommand('john@example.com', 'valid-password'));
+    }
+
+    /**
+     * @param User|null $current l'utilisateur relu verrouillé dans la transaction : par défaut le même
+     *                           que la première lecture, différent pour simuler une écriture concurrente
+     */
+    private function configureLoginAttempt(User $user, DateTimeImmutable $now, int $maxAttempts, ?User $current = null): void
     {
         $this->clock->expects($this->once())->method('now')->willReturn($now);
         $this->config->expects($this->once())
@@ -230,6 +322,37 @@ final class LoginTest extends TestCase
             ->method('findByEmail')
             ->with(EmailAddress::fromString('john@example.com'))
             ->willReturn($user);
+        $this->repository->expects($this->once())
+            ->method('findByIdForUpdate')
+            ->with($user->getId())
+            ->willReturn($current ?? $user);
+    }
+
+    private function expectNoTokenIssued(): void
+    {
+        $this->accessTokenProvider->expects($this->never())->method('issue');
+        $this->tokenProvider->expects($this->never())->method('generateRandomToken');
+        $this->refreshTokenHasher->expects($this->never())->method('hash');
+        $this->refreshTokenRepository->expects($this->never())->method('save');
+    }
+
+    private function runTransactionalCallback(): void
+    {
+        $this->transactional->expects($this->once())
+            ->method('transactional')
+            ->willReturnCallback(static fn (callable $callback): mixed => $callback());
+    }
+
+    private function createUserWithWrongAttempts(int $attempts, int $maxAttempts): User
+    {
+        $user = $this->createActiveUser();
+        for ($i = 0; $i < $attempts; ++$i) {
+            $user->registerWrongPasswordAttempt($maxAttempts, new DateTimeImmutable('2026-07-18 10:30:00'));
+        }
+
+        $user->clearDomainEvents();
+
+        return $user;
     }
 
     private function createActiveUser(): User

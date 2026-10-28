@@ -23,6 +23,14 @@ interface UserRepositoryInterface
 
     public function findById(UserId $id): ?User;
 
+    /**
+     * Relit l'utilisateur en base et verrouille sa ligne jusqu'à la fin de la transaction, qu'elle
+     * exige. Pour une décision prise sur un état que des requêtes concurrentes modifient (compteur
+     * de tentatives, statut) : en READ COMMITTED, une simple relecture laisserait deux transactions
+     * écrire chacune sur le même état de départ.
+     */
+    public function findByIdForUpdate(UserId $id): ?User;
+
     public function findByUsername(Username $username): ?User;
 
     public function findByEmail(EmailAddress $email): ?User;

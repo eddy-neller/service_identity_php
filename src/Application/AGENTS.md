@@ -77,6 +77,12 @@ Les commandes d'écriture utilisent `TransactionalInterface`, avec des transacti
 
 - **Avant la transaction** : préparer tout ce qui est pur et indépendant de l'état persistant : validation de format, parsing d'identifiants, construction de Value Objects, calculs, génération locale de slug/UUID et validation de fichier. Une erreur à ce stade ne doit pas ouvrir de transaction.
 - **Dans la transaction** : toute lecture de repository qui conditionne une écriture, puis les mutations et persistance associées. Cela couvre les contrôles d'existence, d'appartenance, de stock, de parenté, d'unicité applicative et les relectures nécessaires au résultat de la commande.
+- **Relire ne suffit pas toujours** : en READ COMMITTED (défaut de PostgreSQL), une lecture dans la
+  transaction ne pose aucun verrou. Deux requêtes qui décident sur le même état (un compteur, un
+  statut) l'écrivent chacune depuis le même point de départ, et l'une des deux mises à jour se perd.
+  Quand des requêtes concurrentes modifient réellement l'agrégat, le relire par
+  `UserRepositoryInterface::findByIdForUpdate()`, qui verrouille la ligne et rafraîchit l'entité
+  déjà chargée. Modèle : `LoginCommandHandler`, qui garde le hachage du mot de passe hors verrou.
 - **Hors transaction** : les lectures réellement indépendantes de l'écriture (par exemple un use case de lecture) et tout I/O externe ou potentiellement long (HTTP, stockage de fichier, queue). Ces effets doivent être coordonnés par un mécanisme adapté, pas maintenus sous verrou DB.
 
 Les Domain Events enregistrés par un agrégat sont publiés par le handler via `DomainEventBusInterface`,

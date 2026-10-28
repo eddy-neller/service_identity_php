@@ -14,7 +14,9 @@ use App\Domain\User\ValueObject\Identity\Username;
 use App\Infrastructure\Adapter\Uuid\UuidGeneratorInterface;
 use App\Infrastructure\Persistence\Doctrine\User\UserEntity as DoctrineUser;
 use Doctrine\DBAL\Exception\UniqueConstraintViolationException;
+use Doctrine\DBAL\LockMode;
 use Doctrine\ORM\EntityManagerInterface;
+use Doctrine\ORM\Query;
 use Doctrine\ORM\QueryBuilder;
 use Doctrine\ORM\Tools\Pagination\Paginator;
 use Throwable;
@@ -97,6 +99,23 @@ final readonly class DoctrineUserRepository implements UserRepositoryInterface
         $entity = $this->repository->find($id->toString());
 
         return $entity ? $this->mapper->toDomain($entity) : null;
+    }
+
+    public function findByIdForUpdate(UserId $id): ?DomainUser
+    {
+        // `HINT_REFRESH` : une entité déjà chargée par l'EntityManager serait rendue telle quelle par
+        // l'identity map, verrou posé mais état périmé.
+        $entity = $this->em->createQueryBuilder()
+            ->select('u')
+            ->from(DoctrineUser::class, 'u')
+            ->where('u.id = :id')
+            ->setParameter('id', $id->toString())
+            ->getQuery()
+            ->setLockMode(LockMode::PESSIMISTIC_WRITE)
+            ->setHint(Query::HINT_REFRESH, true)
+            ->getOneOrNullResult();
+
+        return $entity instanceof DoctrineUser ? $this->mapper->toDomain($entity) : null;
     }
 
     public function findByUsername(Username $username): ?DomainUser
