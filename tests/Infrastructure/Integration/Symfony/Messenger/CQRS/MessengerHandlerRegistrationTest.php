@@ -99,7 +99,7 @@ final class MessengerHandlerRegistrationTest extends KernelTestCase
     {
         // Compteurs volontairement en dur : ils cassent des qu'un handler apparait ou disparait,
         // ce qui force a constater le changement au lieu de le subir. A mettre a jour a la main.
-        yield 'commands' => ['command.bus', 'CommandHandler.php', 15];
+        yield 'commands' => ['command.bus', 'CommandHandler.php', 14];
         yield 'queries' => ['query.bus', 'QueryHandler.php', 3];
     }
 
